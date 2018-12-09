@@ -1,0 +1,303 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/app-layout/app-drawer/app-drawer.html">
+<link rel="import" href="../bower_components/app-layout/app-drawer-layout/app-drawer-layout.html">
+<link rel="import" href="../bower_components/app-layout/app-header/app-header.html">
+<link rel="import" href="../bower_components/app-layout/app-header-layout/app-header-layout.html">
+<link rel="import" href="../bower_components/app-layout/app-scroll-effects/app-scroll-effects.html">
+<link rel="import" href="../bower_components/app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../bower_components/app-route/app-location.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../bower_components/iron-selector/iron-selector.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="my-icons.html">
+<link rel="import" href="navigation/gts-navigation-menu.html">
+<link rel="import" href="../bower_components/iron-icons/notification-icons.html">
+<link rel="import" href="../bower_components/iron-icons/device-icons.html">
+<link rel="import" href="../bower_components/paper-progress/paper-progress.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../bower_components/neon-animation/web-animations.html">
+<link rel="import" href="my-auth.html">
+<link rel="import" href="shared-styles.html">
+
+
+<link rel="import" href="general/default-page.html">
+
+<link rel="import" href="general/my-view1.html">
+<link rel="import" href="general/my-view1.html">
+<link rel="import" href="general/my-view2.html">
+<link rel="import" href="general/my-view3.html">
+<link rel="import" href="general/my-view3-page.html">
+<link rel="import" href="general/my-view404.html">
+<link rel="import" href="general/my-unauthenticated-page.html">
+<link rel="import" href="utils/current-time.html">
+
+<dom-module id="my-app">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+        height: 100%;
+      }
+
+      app-header-layout {
+        z-index: 1 !important;
+      }
+
+      app-drawer-layout {
+        --app-drawer-layout-content-transition: margin 0.2s;
+      }
+
+      app-header {
+        z-index: 1 !important;
+        background-color: var(--app-primary-color);
+        color: var(--app-primary-contrast-text-color);
+        transition: background-color ease-in-out 300ms !important;
+      }
+
+      app-toolbar {
+        transition: color ease-in-out 300ms !important;
+      }
+
+      app-toolbar img {
+        height: 100%;
+      }
+
+      app-toolbar span {
+        font-family: productsans, 'Roboto', sans-serif;
+        padding: 0px 16px;
+      }
+
+      iron-pages {
+        padding: 16px;
+      }
+
+      #help {
+        margin-left: 16px;
+      }
+
+      .drawer-list {
+        margin: 0 20px;
+      }
+
+      .drawer-list a {
+        display: block;
+        padding: 0 16px;
+        text-decoration: none;
+        color: var(--app-secondary-color);
+        line-height: 40px;
+      }
+
+      .drawer-list a.iron-selected {
+        color: black;
+        font-weight: bold;
+      }
+
+      current-time {
+        padding-right: 16px;
+      }
+
+      paper-progress {
+        width: 100%;
+        --paper-progress-active-color: var(--app-primary-contrast-text-color);
+        --paper-progress-container-color: var(--app-primary-color);
+
+        --paper-progress-container: {
+          transition: background-color ease-in-out 300ms !important;
+        }
+      }
+
+      #success {
+        --paper-toast-background-color: var(--app-success-color);
+      }
+
+      #warn {
+        --paper-toast-background-color: var(--app-warning-color);
+        color: black;
+      }
+
+      #error {
+        --paper-toast-background-color: var(--app-error-color);
+      }
+
+      #error>paper-icon-button {
+        margin-right: -8px;
+      }
+    </style>
+
+    <my-auth id="auth" user={{user}}></my-auth>
+
+    <app-location route="{{route}}" url-space-regex="^[[rootPath]]" use-hash-as-path>
+    </app-location>
+
+    <app-route route="{{route}}" pattern="[[rootPath]]:page" data="{{routeData}}" tail="{{subroute}}">
+    </app-route>
+
+    <app-header-layout>
+      <app-header shadow fixed slot="header">
+        <app-toolbar>
+          <paper-icon-button hidden="[[!user.authenticated]]" on-tap="_toggleDrawer" icon="menu"></paper-icon-button>
+          <span>Niky's App</span>
+          <div class="layout flex"></div>
+          <current-time></current-time>
+          <paper-icon-button hidden="[[!user.authenticated]]" id="logout" icon="power-settings-new" on-tap="logout"></paper-icon-button>
+        </app-toolbar>
+        <paper-progress indeterminate="{{_isLoading(currentlyLoading)}}"></paper-progress>
+      </app-header>
+    </app-header-layout>
+
+    <app-drawer-layout id="drawerLayout">
+      <app-drawer slot="drawer">
+        <gts-navigation-menu></gts-navigation-menu>
+      </app-drawer>
+      <iron-pages selected="[[routeData.page]]" attr-for-selected="name" selected-attribute="selected"
+        fallback-selection="view404" role="main">
+        <default-page name="default"></default-page>
+        <my-view1 name="view1"></my-view1>
+        <my-view2 name="view2"></my-view2>
+        <my-view3 name="view3"></my-view3>
+        <my-view404 name="view404"></my-view404>
+        <gts-unauthenticated-page name="unauthenticated"></gts-unauthenticated-page>
+      </iron-pages>
+    </app-drawer-layout>
+
+    <paper-toast id="success"></paper-toast>
+    <paper-toast id="warn"></paper-toast>
+    <paper-toast id="error" duration="-1">
+      <paper-icon-button icon="close" on-click="_closeErrorToast"></paper-icon-button>
+    </paper-toast>
+  </template>
+
+  <script>
+    // Gesture events like tap and track generated from touch will not be
+    // preventable, allowing for better scrolling performance.
+    Polymer.setPassiveTouchGestures(true);
+
+    class MyApp extends Polymer.Element {
+      static get is() { return 'my-app'; }
+
+      static get properties() {
+        return {
+          user: {
+            type: Object,
+            observer: '_userChanged'
+          },
+          routeData: Object,
+          subroute: String,
+          // This shouldn't be neccessary, but the Analyzer isn't picking up
+          // Polymer.Element#rootPath
+          rootPath: String,
+          currentlyLoading: {
+            type: Number,
+            value: 0
+          }
+        };
+      }
+
+      static get observers() {
+        return [
+          '_routeChanged(route.*)',
+          '_viewChanged(routeData.page)'
+        ];
+      }
+
+      _routeChanged(changeRecord) {
+        console.log('route changed to ', changeRecord);
+        if (changeRecord.path === 'path') {
+          console.log('Path changed to ', changeRecord);
+        }
+      }
+
+      _viewChanged(view) {
+        console.log('View changed to ', view);
+        if (view === undefined || view === "") {
+          // Wenn nichts gesetzt, navigier zu default seite
+          this.set('routeData.page', 'default');
+        }
+      }
+
+      ready() {
+        this.addEventListener('loading', this._loadingListener);
+        this.addEventListener('loadingFinished', this._loadingFinishedListener);
+        super.ready();
+      }
+
+      showToast(element, message, type) {
+        let toast = this.shadowRoot.querySelector(`#${type}`);
+        if (toast) {
+          toast.close();
+          toast.text = message;
+          toast.show();
+        } else {
+          alert("#showToast doesn't support type " + type);
+        }
+      }
+
+      _toggleDrawer() {
+        var drawerLayout = this.$.drawerLayout;
+        if (drawerLayout.forceNarrow || !drawerLayout.narrow) {
+          drawerLayout.forceNarrow = !drawerLayout.forceNarrow;
+        } else {
+          drawerLayout.drawer.toggle();
+        }
+      }
+
+      _closeErrorToast(e) {
+        this.shadowRoot.querySelector('#error').close();
+      }
+
+      _isLoading(activeLoadings) {
+        return activeLoadings !== 0;
+      }
+
+      _loadingListener(event) {
+        this.set('currentlyLoading', this.currentlyLoading + 1);
+      }
+
+      _loadingFinishedListener(event) {
+        this.set('currentlyLoading', this.currentlyLoading - 1);
+      }
+
+      /**
+       * Sendet GET-Request zum Erlangen der Logout-Url.
+       */
+      logout() {
+        console.debug("#logout");
+        this.$.auth.logout();
+      }
+
+      /**
+      * @argument user Das neue User-Objekt
+      * Prüft, ob der aktuelle Benutzer angemeldet ist. Wenn nicht, wird er auf die Startseite
+      * verwiesen und die Seitennavigation wird ausgeblendet.
+      **/
+      _userChanged(user) {
+        if (!user.authenticated) {
+          this.$.drawerLayout.drawer.close();
+          this.$.drawerLayout.forceNarrow = true;
+          this.set('routeData.page', 'unauthenticated');
+        } else {
+          this.$.drawerLayout.drawer.open();
+          this.$.drawerLayout.forceNarrow = false;
+          if (this.routeData.page != null) {
+            this.set('routeData.page', 'default');
+          }
+        }
+      }
+    }
+
+    window.customElements.define(MyApp.is, MyApp);
+  </script>
+</dom-module>

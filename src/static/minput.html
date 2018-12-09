@@ -1,0 +1,65 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/webcomponentsjs/webcomponents-lite.js">
+
+
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="min-put">
+  <template>
+    
+      <input type="text"  value="{{wert::input}}"/>
+  <slot></slot>
+  {{wert}}
+    
+  </template>
+
+  <script>
+    class MinPut extends Polymer.Element {
+      static get is() { return 'min-put'; }
+
+      static get config() {
+        return {
+          properties: {
+            wert: {
+              type: String,
+              value: "Hello",
+              notify: true
+              //observer: 'wertChanged'
+            }
+          },
+          observers: [
+            'wertChanged("keinev",wert)'
+          ]
+        }
+      }
+      constructor() {
+        super();
+        console.log('created');
+      }
+      connectedCallback() {
+        super.connectedCallback();
+        console.log('attached');
+      }
+      ready() {
+        this.addEventListener('click', (e) => this.handleClick(e));
+        this.addEventListener('input', (e) => this.wertChanged(e, this.wert));
+        this._ensureAttribute('tabIndex', 0);
+        super.ready();
+        console.log('ready');
+      }
+      wertChanged(event, wert) {
+        if (wert === undefined) {
+          console.log("wertChanged: undefined");
+        } else {
+          console.log("wertChanged: " + wert);
+        }
+      }
+      handleClick(e) {
+        console.log("hamdleClick: " + e.type);
+      }
+    }
+
+    window.customElements.define(MinPut.is, MinPut);
+  </script>
+</dom-module>

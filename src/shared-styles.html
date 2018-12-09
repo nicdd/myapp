@@ -1,0 +1,147 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<!-- shared styles for all views -->
+<dom-module id="shared-styles">
+  <template>
+    <style include="iron-flex iron-flex-alignment">
+
+            .card {
+        margin: 24px;
+        padding: 16px;
+        border-radius: 5px;
+        background-color: #fff;
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+      }
+      .circle {
+        display: inline-block;
+        width: 64px;
+        height: 64px;
+        text-align: center;
+        color: #555;
+        border-radius: 50%;
+        background: #ddd;
+        font-size: 30px;
+        line-height: 64px;
+      }
+      :root {
+        --app-primary-color: black;
+        --app-primary-contrast-text-color: white;
+        --app-secondary-color: var(--paper-light-blue-500);
+        --app-secondary-light-color: var(--paper-light-blue-50);
+
+        --app-primary-text-color: black;
+        --app-secondary-text-color: rgba(0, 0, 0, 0.54);
+
+        --app-success-color: var(--paper-teal-500);
+        --app-warning-color: var(--paper-amber-500);
+        --app-error-color: var(--paper-red-500);
+      }
+
+      h1 {
+        margin: 16px 0;
+        font-size: 22px;
+      }
+
+      paper-tabs {
+        --paper-tabs-selection-bar-color: var(--app-secondary-color);
+      }
+
+      paper-tab {
+        color: #212121;
+      }
+
+      paper-tab.iron-selected {
+        color: var(--app-secondary-color);
+        font-weight: bold;
+      }
+
+      paper-button {
+        transition: opacity 0.2s ease-in-out;
+        background-color: var(--app-primary-color);
+        background: var(--app-primary-color);
+        color: var(--app-primary-contrast-text-color);
+      }
+
+      paper-button.flat {
+        background-color: transparent;
+        color: var(--app-primary-color);
+      }
+
+      paper-button.delete {
+        background-color: var(--app-warning-color);
+        color: white;
+      }
+
+      paper-button[disabled] {
+        opacity: 0.4;
+      }
+
+      paper-card.outer {
+        padding: 16px;
+        margin: 16px;
+      }
+
+      paper-card {
+        margin: 16px;
+      }
+
+      paper-progress-button[raised] {
+        --paper-button-mixin: {
+          background-color: var(--app-primary-color);
+          color: white;
+        }
+      }
+
+      paper-button[raised] {
+        background-color: var(--app-primary-color);
+        color: var(--app-primary-contrast-text-color);
+      }
+
+      .state.finished {
+        color: var(--app-success-color);
+        --paper-item-body-secondary-color: var(--app-success-color);
+      }
+
+      .state.inprogress {
+        color: var(--app-warning-color);
+        --paper-item-body-secondary-color: var(--app-warning-color);
+      }
+
+      paper-progress-button {
+        --paper-progress-active-color: var(--app-primary-color);
+        --paper-progress-container-color: #00000000;
+        --paper-button-mixin: {
+          color: var(--app-primary-color);
+        }
+        --paper-button-disabled-mixin: {
+          background-color: var(--app-primary-color);
+          color: white;
+          opacity: 0.4;
+        }
+        --paper-progress-mixin: {
+          background-color: white;
+        }
+      }
+
+      paper-progress-button[raised] {
+        --paper-button-mixin: {
+          background-color: var(--app-primary-color);
+          color: var(--app-primary-contrast-text-color);
+        }
+      }
+
+      paper-spinner {
+        --paper-spinner-layer-1-color: var(--app-primary-color);
+        --paper-spinner-layer-2-color: var(--app-primary-color);
+        --paper-spinner-layer-3-color: var(--app-primary-color);
+        --paper-spinner-layer-4-color: var(--app-primary-color);
+      }
+
+      paper-checkbox {
+        --paper-checkbox-checked-color: var(--app-primary-color);
+        --paper-checkbox-checked-ink-color: var(--app-primary-color);
+      }
+    </style>
+  </template>
+</dom-module>

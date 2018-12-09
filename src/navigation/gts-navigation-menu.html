@@ -1,0 +1,240 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-item/paper-icon-item.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item-body.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/social-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/hardware-icons.html">
+<link rel="import" href="../../bower_components/iron-collapse-button/iron-collapse-button.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../bower_components/iron-selector/iron-selector.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/vaadin-dialog/vaadin-dialog.html">
+<link rel="import" href="../shared-styles.html">
+
+
+<dom-module id="gts-navigation-menu">
+    <template>
+        <style include="shared-styles iron-flex iron-flex-alignment">
+
+            :host {
+                height: 100%;
+                width: 100%;
+                overflow: auto;
+                display: inline-block;
+            }
+
+            .drawer-content {
+                margin-top: 52px;
+                height: calc(100% - 52px);
+                overflow: auto;
+            }
+
+            .paper-item-link {
+                color: inherit;
+                text-decoration: none;
+            }
+
+            iron-icon {
+                color: inherit;
+                padding-right: 6px;
+            }
+
+            iron-collapse-button {
+                cursor: cursor;
+                padding-right: 12px;
+            }
+
+            iron-collapse-button div[slot="collapse-trigger"] {
+                height: 48px;
+                line-height: 48px;
+            }
+
+            iron-collapse-button div[slot="collapse-content"] {
+                margin-right: -12px;
+            }
+
+            paper-item {
+                transition: color ease-in-out 300ms;
+            }
+
+            .parent {
+                padding-left: 12px;
+                --paper-item-icon-width: 28px;
+                --paper-item-icon: {
+                    padding-right: 12px;
+                };
+                color: inherit;
+                font-weight: inherit;
+                font-size: 16px;
+            }
+
+            paper-item.child {
+                padding-left: 46px;
+                font-size: 16px;
+            }
+
+            paper-icon-item.child {
+                padding: 0px;
+                padding-left: 16px;
+                --paper-item-icon-width: 32px;
+            }
+
+            .erstekategorie .iron-selected {
+                font-weight: bold;
+                background-color: #eeeeee;
+                color: var(--app-primary-color);
+            }
+
+            .iron-selected {
+                font-weight: bold;
+                background-color: #eeeeee;
+            }
+
+            .nav {
+                padding-top: 16px;
+            }
+
+            .nav-item {
+                transition: all 0.2s ease-in-out;
+                cursor: pointer;
+                font-family: productsans, 'Roboto', sans-serif;
+                --paper-font-body1_-_font-family: productsans, 'Roboto', sans-serif;
+                --paper-item-focused-before: {
+                    opacity: 0;
+                }
+            }
+
+            .nav-item.child:hover {
+                transform: scale(1.08);
+            }
+
+            .erstekategorie {
+                 color: var(--app-primary-contrast-text-color); 
+                background-color: var(--app-primary-color);
+                padding-top: 12px;
+            }
+        </style>
+
+        <div class="drawer-content">
+            <div class="nav">
+
+                <iron-selector selected="[[page]]" attr-for-selected="name">
+
+                    <iron-collapse-button class="erstekategorie" forbidden$='false' opened>
+                        <div slot="collapse-trigger" class="nav-item parent flex">
+                            ErsteKategorie
+                        </div>
+                        <div slot="collapse-content">
+                            <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list">
+                                <paper-item on-click="_navigateEvent" name="default" class="nav-item child" href="#[[rootPath]]default">Home</paper-item>
+                                <paper-item on-click="_navigateEvent" name="view1" class="nav-item child" href="#[[rootPath]]view1">View 1</paper-item>
+                                <paper-item on-click="_navigateEvent" name="view2" class="nav-item child" href="#[[rootPath]]view2">View 2</paper-item>
+                                <paper-item on-click="_navigateEvent" name="view3" class="nav-item child" href="#[[rootPath]]view3">View 3</paper-item>
+                                <paper-item on-click="_navigateEvent" name="view4" class="nav-item child" href="#[[rootPath]]view4">View 4</paper-item>
+                            </iron-selector>
+                        </div>
+                    </iron-collapse-button>
+
+
+                    <iron-collapse-button forbidden$='false' opened>
+                        <div slot="collapse-trigger" class="nav-item parent flex">
+                            Verwaltung
+                        </div>
+                        <div slot="collapse-content">
+                            <iron-selector selected="[[page]]" attr-for-selected="name">
+
+
+                                <paper-icon-item on-click="_navigateEvent" name="view1" class="nav-item child" href="#[[rootPath]]view1" style="color: #d84646">
+                                    <iron-icon icon="check-circle" slot="item-icon"></iron-icon>
+                                    <paper-item-body two-line>
+                                        <div>Versicherungsjahr 2018</div>
+                                        <div secondary>Abgeschlossen</div>
+                                    </paper-item-body>
+                                </paper-icon-item>
+
+                                <paper-icon-item on-click="_navigateEvent" name="view2" class="nav-item child" href="#[[rootPath]]view2" style="color: #917e7e">
+                                    <iron-icon icon="create" slot="item-icon"></iron-icon>
+                                    <paper-item-body two-line>
+                                        <div>NichtVersicherte 2018</div>
+                                        <div secondary>in Arbeit</div>
+                                    </paper-item-body>
+                                </paper-icon-item>
+
+                                <paper-icon-item class="nav-item child" disabled>
+                                    <iron-icon icon="block" slot="item-icon"></iron-icon>
+                                    <paper-item-body two-line>
+                                        <div>Verspätete 2018</div>
+                                        <div secondary>Zunächst Nicht Versicherte bearbeiten.</div>
+                                    </paper-item-body>
+                                </paper-icon-item>
+
+                            </iron-selector>
+                        </div>
+                    </iron-collapse-button>
+
+                </iron-selector>
+            </div>
+        </div>
+
+    </template>
+
+    <script>
+        class GtsNavigationMenu extends Polymer.Element {
+            static get is() {
+                return 'gts-navigation-menu';
+            }
+
+            static get properties() {
+                return {
+                    page: String,
+                    // This shouldn't be neccessary, but the Analyzer isn't picking up
+                    // Polymer.Element#rootPath
+                    rootPath: String,
+                };
+            }
+
+            _navigateEvent(event) {
+                this._navigate(event.currentTarget.href);
+            }
+
+            _hasUnsavedData(currentPage, newPage) {
+                const myAppShadowRoot = document.querySelector('my-app').shadowRoot;
+
+                if (currentPage === "parameter") {
+                    return myAppShadowRoot.querySelector('myapp-parameter').hasUnsavedData();
+                } else if (currentPage === "fehlermeldungen") {
+                    return myAppShadowRoot.querySelector('myapp-fehlermeldungen').hasUnsavedData();
+                } else if (currentPage === "xyz") {
+                    return myAppShadowRoot.querySelector('myapp-xyz').hasUnsavedData();
+                } else {
+                    return false;
+                }
+            }
+
+            _cancelNavigation() {
+                const popup = this.$.approveNavigation;
+                this.set('page', "");
+                this.set('page', popup.previousLocation);
+                popup.nextLocation = "";
+                popup.opened = false;
+            }
+
+            _acceptNavigation() {
+                const popup = this.$.approveNavigation;
+                const newLocation = popup.nextLocation;
+                popup.nextLocation = "";
+                popup.opened = false;
+                this._navigate(newLocation);
+            }
+
+            _navigate(newLocation) {
+                window.location = newLocation;
+            }
+
+        }
+
+        window.customElements.define(GtsNavigationMenu.is, GtsNavigationMenu);
+    </script>
+</dom-module>

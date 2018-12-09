@@ -1,0 +1,161 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<!-- <link rel="import" href="rest/auth-client.html">
+<link rel="import" href="state/actions/basisdaten-aktionen.html"> -->
+
+<dom-module id="my-auth">
+    <template>
+
+        <auth-client id="authclient"></auth-client>
+
+    </template>
+
+    <script>
+        /**
+         * `my-auth` Description
+         *
+         * @summary ShortDescription.
+         * @customElement
+         * @polymer
+         * @extends {Polymer.Element}
+         */
+        class MyAuth extends Polymer.Element{//App.BasisDatenAktionenMixin(Polymer.Element) {
+            /**
+             * String providing the tag name to register the element under.
+             */
+            static get is() {
+                return 'my-auth';
+            }
+
+            /**
+             * Object describing property-related metadata used by Polymer features
+             */
+            static get properties() {
+                return {
+                    // user: {
+                    //     type: Object,
+                    //     notify: true,
+                    //     value: {
+                    //         authenticated: false
+                    //     }
+                    // },
+                    user : {
+                                name: "nic",
+                                authorities: ["ROLE_LOGIN_gts_my"],
+                                authenticated: true,
+                                gartenbzrk: null
+                            }
+
+                };
+            }
+
+            /**
+             * Use for one-time configuration of your component after local DOM is initialized. 
+             */
+            ready() {
+                super.ready();
+                //this.authenticate();
+            }
+
+            authenticate() {
+                this.$.authclient.getUser()
+                    .then(data => {
+                        if (this._ismyUser(data.authorities)) {
+                            showToast(this, `Login erfolgreich. Willkommen ${data.username}.`, TOAST_TYPE.SUCCESS);
+                            this.user = {
+                                name: data.username,
+                                authorities: data.authorities,
+                                authenticated: true,
+                                gartenbzrk: data.gartenbzrk
+                            };
+                            console.log("Successfull authentication:", this.user)
+
+                            this._updateStore(data);
+                        } else {
+                            console.log("Nutzer hat nicht das Recht ROLE_LOGIN_gts_my", data);
+                            showToast(this, `Sie haben keine Berechtigung das mysystem zu benutzen.`,
+                                TOAST_TYPE.ERROR);
+                            this.logout();
+                        }
+                    })
+                    .catch(error => {
+                        console.log("Unsuccsessfull authentication:", error)
+                        showToast(this, "Login fehlgeschlagen.", TOAST_TYPE.ERROR);
+                        this.user = {
+                            authenticated: false
+                        };
+                    })
+            }
+
+            _ismyUser(authorities) {
+                return authorities.indexOf("ROLE_LOGIN_gts_my") > -1;
+            }
+
+            //dispatcht neueste User informationen an den Store.
+            _updateStore(user) {
+                let dispatchOrError = (action, value) => {
+                    if (value === undefined)
+                        throw new Error(
+                            "Undefinierte Userdaten gefunden! Fehler bei der Durchführung von: " +
+                            action + '.');
+                    this.dispatch(action, value);
+                };
+                dispatchOrError("setgartenbzrk", user.gartenbzrk);
+                dispatchOrError("setgartenbzrksart", user.gartenbzrksart);
+                dispatchOrError("setgartenbzrkID", user.gartenbzrkID);
+                dispatchOrError("setgartentag", user.gartentag);
+                dispatchOrError("setgartentagID", user.gartentagID);
+                dispatchOrError("setPin", user.pin);
+            }
+
+            logout() {
+                return this.$.authclient.getLogoutURL()
+                    .then(authserverUrl => { // Beenden der Session am Authserver und am API-Gateway (dieses Artefakt)
+                        console.info('Authserver URL: ' + authserverUrl.url);
+                        this.$.authclient.executeLogout(authserverUrl.url)
+                            .then(resp => {
+                                this.$.authclient.logout()
+                                    .then(res => this._logoutFinishedHandler())
+                                    .catch(reason => showToast(this, reason, TOAST_TYPE.ERROR));
+                            })
+                            .catch(reason => showToast(this, reason, TOAST_TYPE.ERROR));
+                    })
+                    .catch(reason => showToast(this, reason, TOAST_TYPE.ERROR));
+            }
+
+            /**
+             * Gibt eine Erfolgsmeldung aus und löscht alle Cookies.
+             */
+            _logoutFinishedHandler() {
+                this.user = {
+                    authenticated: false
+                };
+                showToast(this, "Die Abmeldung war erfolgreich.", TOAST_TYPE.SUCCESS);
+                this._deleteCookies();
+            }
+
+            /**
+             * Löscht alle Cookies.
+             */
+            _deleteCookies() {
+                console.debug("Deleting all cookies:", document.cookie);
+                let cookies = document.cookie.split(";");
+                for (let i = 0; i < cookies.length; i++) {
+                    let spcook = cookies[i].split("=");
+                    deleteCookie(spcook[0]);
+                }
+
+                function deleteCookie(cookiename) {
+                    let d = new Date();
+                    d.setDate(d.getDate() - 1);
+                    let expires = ";expires=" + d;
+                    let name = cookiename;
+                    let value = "";
+                    document.cookie = name + "=" + value + expires + "; path=/";
+                }
+            }
+
+        }
+
+        window.customElements.define(MyAuth.is, MyAuth);
+    </script>
+</dom-module>

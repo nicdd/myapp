@@ -1,0 +1,132 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+
+<dom-module id="first-client">
+    <template></template>
+
+    <script>
+        class FirstClient extends Polymer.Element {
+            static get is() { return 'first-client'; }
+
+            static get properties() {
+                return {
+                    actualLocation: {
+                        type: Object,
+                        value: {
+                            protocol: null,
+                            hostname: null
+                        }
+
+                    },
+                    URLS: {
+                        type: Object,
+                        value: {
+                            CATS_BASIC: {
+                                path: '/api/cats',
+                                port: '8000'
+                            },
+                            CSV_BASIC: {
+                                path: '/loadCSV/gaertner',
+                                port: '8000'
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            ready() {
+                super.ready();
+                this._setActualLocation();
+            }
+
+            _setActualLocation() {
+                this.set('actualLocation', { protocol: window.location.protocol, hostname: window.location.hostname });
+            }
+
+            _getSourceURL(uriData, resPath, port) {
+                let urlToSource = uriData.protocol + "//" + uriData.hostname + ":" + port + resPath;
+                return urlToSource;
+            }
+
+            getCats() {
+                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.CATS_BASIC.path, this.URLS.CATS_BASIC.port);
+                let myHeaders = new Headers();
+                
+                let myInit = {
+                    method: 'GET',
+                    headers: myHeaders,
+                    mode: 'cors',
+                    cache: 'default',
+                    credentials: 'omit'
+                };
+
+                let myRequest = new Request(sourceURL, myInit);
+
+                return fetch(myRequest).then((response) => {
+                    console.log("getCats aaaaaaaantwort" + JSON.stringify(response));
+                    if (response.status === 204) {
+                        return { cats: [{ name: "" }, { name: "" }, { name: "" }] }
+                    } else return response.json();
+                }).catch(() => {
+                    console.log('getCats die Anfrage an api/cats war nicht erfolgreich')
+                });
+            }
+
+            postCats(theCats) {
+                let myHeaders = new Headers();
+                myHeaders.set("Content-Type", "application/json");
+
+                //let parsedObject = theCats.json();
+
+                let myInit = {
+                    method: 'POST',
+                    headers: myHeaders,
+                    mode: 'cors',
+                    cache: 'default',
+                    credentials: 'omit',
+                    body: theCats
+                };
+
+                let myRequest = new Request("http://192.168.2.146:8000/api/cats", myInit);
+
+                return fetch(myRequest).then((response) => {
+                    console.log("getCats antwort" + JSON.stringify(response));
+                    this.dispatchEvent(new CustomEvent('catschanged', { bubbles: true, composed: true }));
+                    return response.json();
+                }).catch(() => {
+                    console.log('getCats die Anfrage an api/cats war nicht erfolgreich')
+                });
+
+            }
+
+            getCSV() {
+                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.CSV_BASIC.path, this.URLS.CSV_BASIC.port);
+                let myHeaders = new Headers();
+                
+                let myInit = {
+                    method: 'GET',
+                    headers: myHeaders,
+                    mode: 'cors',
+                    cache: 'default',
+                    credentials: 'omit'
+                };
+
+                let myRequest = new Request(sourceURL, myInit);
+
+                return fetch(myRequest).then((response) => {
+                    console.log("getCSVs aaaaaaaantwort" + JSON.stringify(response));
+                    if (response.status === 204) {
+                        return  [['firstName','lastName','street','city'],[,,,]] 
+                    } else return response.json();
+                }).catch(() => {
+                    console.log('getCSV die Anfrage an api/cats war nicht erfolgreich')
+                });
+            }
+
+
+        }
+
+        window.customElements.define(FirstClient.is, FirstClient);
+    </script>
+</dom-module>

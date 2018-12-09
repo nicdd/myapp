@@ -1,0 +1,110 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="abstract-client.html">
+
+<dom-module id="auth-client">
+    <script>
+        class AuthClient extends customElements.get('abstract-client') {
+            static get is() {
+                return 'auth-client';
+            }
+
+            constructor() {
+                super();
+            }
+
+            /**
+             * Object describing property-related metadata used by Polymer features
+             */
+            static get properties() {
+                return {
+                    URLS: {
+                        type: Object,
+                        value: {
+                            USER_INFO: "/auth/uaa/user",
+                            LOGOUT_URL: "/authserver/logouturl",
+                            GATEWAY_LOGOUT_URL: "/logout"
+                        }
+                    }
+                };
+            }
+
+            ready() {
+                super.ready();
+            }
+
+            getUser() {
+                var request = new Request(
+                    this.URLS.USER_INFO,
+                    this.getBasicGetConfig()
+                )
+
+                return fetch(request)
+                    .then(this._responseHandler)
+                    .then(response => {
+                        return response.json();
+                    })
+                    .catch(error => {
+                        return Promise.reject(error);
+                    });
+            }
+
+            getLogoutURL() {
+                var request = new Request(
+                    this.URLS.LOGOUT_URL,
+                    this.getBasicGetConfig()
+                )
+
+                return fetch(request) // Holen der url zum Authserver um die Session beenen zu können.
+                    .then(this._responseHandler)
+                    .then(response => {
+                        return response.json();
+                    })
+                    .catch(response => {
+                        console.log(`Fehler bei #getLogoutURL: ${response}`);
+                        return Promise.reject(`Fehler bei Logout: ${response}`);
+                    });
+            }
+
+            executeLogout(url) {
+                var request = new Request(
+                    url, {
+                        method: 'GET',
+                        credentials: 'include'
+                    }
+                )
+
+                return fetch(request) // Logout bei Auth-Service durchführen
+                    .then(this._responseHandler)
+                    .then(response => {
+                        return Promise.resolve();
+                    })
+                    .catch(response => {
+                        console.log(`Fehler bei #executeLogout: ${response}`);
+                        return Promise.reject(`Fehler bei Logout: ${response}`);
+                    });
+            }
+
+            logout() {
+                var request = new Request(
+                    this.URLS.GATEWAY_LOGOUT_URL,
+                    this.getBasicPostConfig()
+                )
+
+                return fetch(request) // Holen der url zum Authserver um die Session beenen zu können.
+                    .then(this._responseHandler)
+                    .then(response => {
+                        return Promise.resolve();
+                    })
+                    .catch(response => {
+                        console.log(`Fehler bei #logout: ${response}`);
+                        return Promise.reject(`Fehler bei Logout: ${response}`);
+                    });
+            }
+
+            
+
+        }
+
+        window.customElements.define(AuthClient.is, AuthClient);
+    </script>
+</dom-module>

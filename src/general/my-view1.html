@@ -1,0 +1,585 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/paper-progress-button/paper-progress-button.html">
+<!-- <link rel="import" href="../../bower_components/papa-parse/papa-parse.html">
+<link rel="import" href="../../bower_components/papa-parse/papa-unparse.html"> -->
+
+
+<link rel="import" href="../../bower_components/vaadin-grid/theme/material/all-imports.html">
+<link rel="import" href="../../bower_components/vaadin-button/vaadin-button.html">
+<link rel="import" href="../clients/firstclient.html">
+<link rel="import" href="../shared-styles.html">
+
+
+<dom-module id="my-view1">
+  <template>
+    <style include="shared-styles">
+      :host {
+        /* Stretch this element to fill viewport */
+        height: 85vh;
+
+        /* Make a flex column layout of children */
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* iron-pages { */
+      /* Stretch this element in the parent flex */
+      /* flex: 1;  */
+
+      /* Make a flex column layout of children */
+      /* display: flex;
+          flex-direction: column;
+        } */
+
+      .toolbar {
+        height: 32px;
+        padding: 10px;
+        line-height: 32px;
+        background: #eee;
+      }
+
+      .page {
+        /* Stretch this element in the parent flex */
+        flex: 1;
+
+        /* Make a flex column layout of children */
+        display: flex;
+        flex-direction: column;
+
+        /*
+            Let the page contents scroll. Unnecessary for <vaadin-grid>,
+            but could be useful for other pages.
+          */
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* .content {
+          padding: 8px;
+        } */
+
+      vaadin-grid {
+        /* Stretch this element in the parent flex */
+        flex: 1;
+      }
+
+      /* :host {
+        height: 100%;
+        width: 100%;
+        overflow: auto;
+        display: inline-block;
+      } */
+      /* :host {
+        display: block;
+
+        padding: 10px;
+        height: 100% !important;
+      } */
+
+      /* #mygrid {
+        min-height: calc(100vH - 250px);
+      } */
+
+      /* .page-content {
+
+        margin: 16px;
+        padding: 16px;
+        border-radius: 5px;
+        background-color: #fff;
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+        margin-top: 62px;
+        min-height: calc(100% - 62px);
+        overflow: auto;
+        width: 96%;
+      } */
+
+      .demo {
+        --paper-progress-active-color: #1875d1;
+        --paper-progress-container-color: #00000000;
+
+
+        --paper-button-mixin: {
+          padding: 0em 0.5em 0em 0.5em;
+          background-color: #1976d2;
+          color: white;
+        }
+
+        --paper-button-disabled-mixin: {
+          background: #efefef;
+          color: black;
+        }
+      }
+
+      .vaadin-demo-input[readonly] {
+        border: 2px solid transparent;
+        pointer-events: none;
+      }
+
+      input[vaadin-demo-input] {
+        max-width: 10px !important;
+      }
+
+      vaadin-button {
+        margin-bottom: 20px;
+      }
+
+      .vaadin-demo-input {
+        font: inherit;
+        width: 100%;
+        max-width: 50%;
+      }
+
+      /* Für Pagination */
+
+      #pages {
+        display: flex;
+        flex-wrap: wrap;
+        margin: 20px;
+      }
+
+      #pages>button {
+        user-select: none;
+        padding: 5px;
+        margin: 0 5px;
+        border-radius: 10%;
+        border: 0;
+        background: transparent;
+        font: inherit;
+        outline: none;
+        cursor: pointer;
+      }
+
+      #pages>button:not([disabled]):hover,
+      #pages>button:focus {
+        color: #ccc;
+        background-color: #eee;
+      }
+
+      #pages>button[selected] {
+        font-weight: bold;
+        color: white;
+        background-color: #ccc;
+      }
+
+      #pages>button[disabled] {
+        opacity: 0.5;
+        cursor: default;
+      }
+
+
+
+      /* .header {
+          max-height: 5px !important;
+        } */
+    </style>
+
+    <first-client id="firstclient"></first-client>
+    <!-- <papa-parse auto url="http://localhost:8000/loadCSV/gaertner" rows="{{mdata}}"></papa-parse> -->
+    <div class="toolbar">
+      <vaadin-checkbox checked="{{editing}}" style="margin-bottom: 20px">Enable Editing</vaadin-checkbox>
+      <vaadin-button raised id="addbtn">Add Item</vaadin-button>
+      <vaadin-button raised id="rmbtn">Remove Item</vaadin-button>
+      <paper-progress-button class="demo" bottom raised on-click="postCats" loading-label="Nicht so hecktisch ..."
+        loading="[[_loading]]">Speichern</paper-progress-button>
+    </div>
+
+    <div class="page">
+      <vaadin-grid id="mygrid" page-size="10" active-item="{{activeItem}}" aria-label="Basic Binding Example" items="[[mdata]]"
+        column-reordering-allowed>
+        <template class="row-details">
+          <div class="details">
+            <p>
+              <span>Bin [[item.alter]] alt</span><br>
+              <small>[[item.description]]</small>
+            </p>
+            <p>
+              <span>Hi! My name is [[item.firstName]]!</span><br>
+              <small>[[item.email]]</small>
+            </p>
+          </div>
+        </template>
+        <!--auto-select wenn man will dass man auch über das anklicken in der zeile nicht nur in der box selektieren kann-->
+        <vaadin-grid-selection-column auto-select></vaadin-grid-selection-column>
+
+        <vaadin-grid-column width="40px" flex-grow="0" text-align="end">
+          <template class="header">#</template>
+          <template>[[index]]</template>
+          <!-- If necessary, the footer could be set using <template class="footer"> -->
+          <!-- <template class="footer">#</template> -->
+        </vaadin-grid-column>
+        <!-- <vaadin-grid-column-group resizable> -->
+        <vaadin-grid-sort-column path="firstName">
+          <template class="header">First Name</template>
+          <template>
+            <input class="vaadin-demo-input" value="{{item.firstName::input}}" readonly$="[[!editing]]" hidden$="[[!editing]]"
+              style="max-width: -moz-available;">
+            <label hidden$="[[editing]]">[[item.firstName]]</label>
+          </template>
+          <!-- <template class="footer">First Name</template> -->
+        </vaadin-grid-sort-column>
+
+        <!-- <vaadin-grid-filter-column path="lastName" resizable> -->
+        <vaadin-grid-sort-column path="lastName" resizable>
+          <template class="header">Last Name</template>
+          <template>
+            <input class="vaadin-demo-input" value="{{item.lastName::input}}" readonly$="[[!editing]]" hidden$="[[!editing]]"
+              style="max-width: -moz-available;">
+            <label hidden$="[[editing]]">[[item.lastName]]</label>
+          </template>
+          <!-- <template class="footer">Last Name</template> -->
+          <!-- </vaadin-grid-filter-column> -->
+        </vaadin-grid-sort-column>
+        <!-- </vaadin-grid-column-group> -->
+        <vaadin-grid-sort-column path="alter" header="Alter" flex-grow="0" text-align="end" resizable>
+          <!-- <template class="header">Alter</template>
+              <template> <input class="vaadin-demo-input" value="{{item.alter::input}}" readonly$="[[!editing]]" style="max-width: -moz-available;"></template>
+              <template class="footer">Alter</template> -->
+        </vaadin-grid-sort-column>
+        <!-- <vaadin-grid-column-group> -->
+        <vaadin-grid-column width="200px">
+          <template class="header">Email</template>
+          <template>[[item.firstName]].[[item.lastName]]@example.com</template>
+        </vaadin-grid-column>
+
+        <vaadin-grid-column width="8em">
+          <template class="header">Address</template>
+          <template>
+            <div style="white-space: normal">[[item.street]], [[item.city]]</div>
+          </template>
+          <!-- <template class="footer">Address</template> -->
+        </vaadin-grid-column>
+        <!-- </vaadin-grid-column-group> -->
+
+        <vaadin-grid-column width="100px">
+          <template class="header"></template>
+          <template>
+            <vaadin-checkbox aria-label$="Show Details for [[firstName]]" checked="{{detailsOpened}}">Details</vaadin-checkbox>
+          </template>
+        </vaadin-grid-column>
+      </vaadin-grid>
+
+    </div>
+    <div id="pages"></div>
+
+  </template>
+
+
+
+
+
+  <script>
+    class MyView1 extends Polymer.Element {
+      static get is() { return 'my-view1'; }
+
+      static get properties() {
+        return {
+          _katzen: {
+            type: Array,
+            value: null,
+            notify: true
+          },
+          _loading: {
+            type: Boolean,
+            value: false
+          },
+          mdata: {
+            type: Array,
+            value: [
+              //   {
+              //   firstName: "addd",
+              //   lastName: "aaaa",
+              //   address: {
+              //     street: "stra",
+              //     city: "citya"
+              //   }
+              // }, {
+              //   firstName: "bddd",
+              //   lastName: "bbbb",
+              //   address: {
+              //     street: "strb",
+              //     city: "cityb"
+              //   }
+              // }, {
+              //   firstName: "cddd",
+              //   lastName: "cccc",
+              //   address: {
+              //     street: "strc",
+              //     city: "cityc"
+              //   }
+              // }
+            ],
+            notify: true
+          },
+          _pages: {
+            type: Object,
+            value: null
+          }
+        }
+      }
+
+      ready() {
+        super.ready();
+        this.$.firstclient.getCSV().then((resp) => {
+          console.log("die antwort kam:" + JSON.stringify(resp))
+          this.mapToJSON(resp);
+          //this.mdata = JSON.stringify(resp.cats)
+        })
+
+
+        this.$.addbtn.addEventListener('click', () => {
+          console.log('add gedruckt')
+          this.push('mdata', { firstName: "Psuhido", lastName: "Fake", alter: 222, street: "pushtest 22", city: "test" });
+          let pagesControl = this.shadowRoot.querySelector('#pages');
+          const selectedPage = parseInt(pagesControl.querySelector('[selected]').textContent);
+          this.updateItemsFromPage(selectedPage);
+
+        });
+
+        this.$.rmbtn.addEventListener('click', () => {
+          console.log('remove gedruckt')
+          this.pop('mdata');
+          let pagesControl = this.shadowRoot.querySelector('#pages');
+          const selectedPage = parseInt(pagesControl.querySelector('[selected]').textContent);
+          this.updateItemsFromPage(selectedPage);
+        });
+
+
+
+        this.$.mygrid.addEventListener('selected-items-changed', (e) => {
+          this.doOnSelection(e);
+        })
+        /**
+         *  When a row is clicked or the space key is pressed while a row cell is in focus, the related item object is assigned as the grid's activeItem.
+      
+      To programmatically select items, the activeItem, for example, could be added to the grid's selectedItems array. The methods selectItem(item) and deselectItem(item) can also be used to select or deselect items.
+      
+      In the example below, the grid's selectedItems array is replaced whenever activeItem changes, making it single-selectable. 
+         * ABER NICHT ZUSAMMEN MIT CHECCKBOX SELECTION sondern nur die akteull selektierte itm zu wissen
+         */
+        this.$.mygrid.addEventListener('active-item-changed', function (event) {
+          const item = event.detail.value;
+          //this.$.mygrid.selectedItems = item ? [item] : [];
+          console.log('active item' + JSON.stringify(event.target.activeItem))
+        });
+
+        // window.document.addEventListener('WebComponentsReady', () => {
+        //   let rws = this.shadowRoot.querySelectorAll('[part-="row"]');
+        //   this.doStyle(rws);
+        //   // rws.forEach((elem) => {
+        //   //   console.log('elem wird gestiled')
+        //   //   //elem.style['height'] = "10px";
+
+        //   // })
+
+        // })
+
+        // const groups = this.shadowRoot.querySelectorAll('vaadin-grid-column-group');
+        // groups[0].headerRenderer = function (root, column, rowData) {
+        //   root.textContent = 'GanzerName';
+        // };
+        // groups[1].headerRenderer = function (root, column, rowData) {
+        //   root.textContent = 'Kontaktdaten';
+        // };
+
+        //this.doPagination();
+
+      }
+
+      doOnSelection(e) {
+
+        console.log('selectiert sind' + JSON.stringify(e.target.selectedItems));
+
+
+      }
+
+      // doStyle(nodelist) {
+      //   for (let i = 0; i < nodelist.length; i++) {
+      //     console.log('for wird gestiled' + i);
+      //     //let a = nodelist[i];
+      //     // var list = nodelist[i].childNodes;
+      //     // debugger;
+      //     // list.forEach(
+      //     //   function (currentValue, currentIndex, listObj) {
+      //     //     console.log(currentValue + ', ' + currentIndex + ', ' + this);
+      //     //   },
+      //     //   'myThisArg'
+      //     // );
+      //     // nodelist[i].style["height"] = "30px";
+      //     // nodelist[i].style["line-height"] = "30px";
+
+      //   }
+
+
+      // }
+
+      doPagination() {
+        let self = this;
+
+
+        this.updateItemsFromPage(1);
+
+
+      }
+
+      updateItemsFromPage(page) {
+        const grid = this.shadowRoot.querySelector('vaadin-grid');
+        const pagesControl = this.shadowRoot.querySelector('#pages');
+        console.log('pagescontrol gefunden, hat id' + pagesControl.id)
+
+        let self = this;
+        if (page === undefined) {
+          return;
+        }
+
+        if (!self._pages) {
+          console.log('self.mdata.length' + self.mdata.length)
+          self._pages = Array.apply(null, { length: Math.ceil(self.mdata.length / grid.pageSize) }).map(function (item, index) {
+            return index + 1;
+          });
+
+          const prevBtn = window.document.createElement('button');
+          prevBtn.textContent = '<';
+          prevBtn.addEventListener('click', function () {
+            const selectedPage = parseInt(pagesControl.querySelector('[selected]').textContent);
+            self.updateItemsFromPage(selectedPage - 1);
+          });
+          prevBtn.setAttribute("id", "prevbtn");
+          pagesControl.appendChild(prevBtn);
+
+          self._pages.forEach(function (pageNumber) {
+            const pageBtn = window.document.createElement('button');
+            pageBtn.textContent = pageNumber;
+            pageBtn.addEventListener('click', function (e) {
+              self.updateItemsFromPage(parseInt(e.target.textContent));
+            });
+            console.log('id wird gesetzt auf p' + pageNumber)
+            let idValue = "p" + pageNumber;
+            pageBtn.setAttribute('id', idValue);
+            if (pageNumber === page) {
+              pageBtn.setAttribute('selected', true);
+            }
+            pagesControl.appendChild(pageBtn);
+          });
+
+          const nextBtn = window.document.createElement('button');
+          nextBtn.textContent = '>';
+          nextBtn.addEventListener('click', function () {
+            const selectedPage = parseInt(pagesControl.querySelector('[selected]').textContent);
+            self.updateItemsFromPage(selectedPage + 1);
+          });
+          nextBtn.setAttribute("id", "nextbtn");
+          pagesControl.appendChild(nextBtn);
+        } else {
+          if (Math.ceil(self.mdata.length / grid.pageSize) > self._pages.length) {
+            self._pages = Array.apply(self._pages, { length: Math.ceil(self.mdata.length / grid.pageSize) }).map(function (item, index) {
+              return index + 1;
+            });
+            const nb = self.shadowRoot.querySelector('#nextbtn');
+            const pageBtn = window.document.createElement('button');
+            pageBtn.textContent = self._pages.length;
+            pageBtn.addEventListener('click', function (e) {
+              self.updateItemsFromPage(parseInt(e.target.textContent));
+            });
+            console.log('id wird gesetzt auf' + pageBtn.textContent)
+            let idVal = "p" + pageBtn.textContent;
+            pageBtn.setAttribute('id', idVal);
+            if (self._pages.length === page) {
+              pageBtn.setAttribute('selected', true);
+            }
+            pagesControl.insertBefore(pageBtn, nb);
+
+          } else if (Math.ceil(self.mdata.length / grid.pageSize) < self._pages.length) {
+            let lpid = '#p' + self._pages.length;
+            const lastPageBtn = self.shadowRoot.querySelector(lpid);
+            pagesControl.removeChild(lastPageBtn);
+            self._pages = Array.apply(self._pages, { length: Math.ceil(self.mdata.length / grid.pageSize) }).map(function (item, index) {
+              return index + 1;
+            });
+            if (page > self._pages.length) {
+              page--;
+            }
+          }
+
+        }
+
+        const buttons = Array.from(pagesControl.children);
+        buttons.forEach(function (btn, index) {
+          if (parseInt(btn.textContent) === page) {
+            btn.setAttribute('selected', true);
+          } else {
+            btn.removeAttribute('selected');
+          }
+          if (index === 0) {
+            if (page === 1) {
+              btn.setAttribute('disabled', '');
+            } else {
+              btn.removeAttribute('disabled');
+            }
+          }
+          if (index === buttons.length - 1) {
+            if (page === self._pages.length) {
+              btn.setAttribute('disabled', '');
+            } else {
+              btn.removeAttribute('disabled');
+            }
+          }
+        });
+
+        var start = (page - 1) * grid.pageSize;
+        var end = page * grid.pageSize;
+        grid.items = self.mdata.slice(start, end);
+      }
+
+      mapToJSON(resp) {
+        let transformedResult = [];
+        let columns = resp[0];
+        console.log('das sind die columns' + columns.toString())
+        for (let i = 1; i < resp.length; i++) {
+          let myRowObj = {};
+          for (let j = 0; j < resp[i].length; j++) {
+            let attrName = columns[j];
+            let attrValue = (attrName === "alter") ? (isFinite(resp[i][j]) && !isNaN(resp[i][j]) ? parseInt(resp[i][j]) : 0) : resp[i][j];
+            myRowObj[attrName] = attrValue;
+            // Object.assign( myRowObj, {
+            //   attrName : resp[i][j]
+            // });
+          }
+          transformedResult.push(myRowObj);
+        }
+        console.log('transformed:' + JSON.stringify(transformedResult))
+        this.set('mdata', transformedResult);
+        this.doPagination()
+
+      }
+
+      postCats() {
+        console.log('data ist' + JSON.stringify(this.$.ggg.data))
+        let self = this;
+        self._setLoading(true)
+        console.log('speichern gedrückt');
+        self.$.firstclient.postCats(JSON.stringify({ cats: self._katzen })).finally(() => {
+          console.log('finally erreicht')
+          setTimeout(function () {
+            self._setLoading(false)
+          }, 1000);
+        })
+      }
+
+      _setLoading(val) {
+        this.set('_loading', val);
+      }
+    }
+
+    window.customElements.define(MyView1.is, MyView1);
+  </script>
+</dom-module>
