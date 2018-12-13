@@ -56,7 +56,7 @@ Pagination Element for Vaadin-Grid Tables
                 <label>Seite:</label>
                 <select id="sp" value="{{selPage::change}}">
                     <template is="dom-repeat" items="[[_pages]]">
-                        <option value="[[getPageNumber(index)]]">[[getPageNumber(index)]]</option>
+                        <option value="[[getPageNumber(index, _pages)]]">[[getPageNumber(index, _pages)]]</option>
                     </template>
                 </select>
                 <label>von [[_pages.length]]</label>
@@ -67,7 +67,7 @@ Pagination Element for Vaadin-Grid Tables
                         <option value="[[item.val]]">[[item.key]]</option>
                     </template>
                 </select>
-[[selPage]] pstart:[[pstart]]
+                [[selPage]] pstart:[[pstart]]
             </div>
         </div>
 
@@ -84,7 +84,7 @@ Pagination Element for Vaadin-Grid Tables
                         value: 1,
                         observer: 'pageChangedViaBox',
                         notify: true
-                        
+
                     },
 
                     rowsperPage: {
@@ -96,7 +96,7 @@ Pagination Element for Vaadin-Grid Tables
                     datalength: {
                         type: Number,
                         value: 0,
-                        observer: 'doPagination'
+                        observer: 'doOnDataLengthChanged'
                         //notify: true
                     },
                     _pages: {
@@ -131,6 +131,7 @@ Pagination Element for Vaadin-Grid Tables
             }
 
             getPageNumber(idx) {
+                console.log('getpAGENUMBER FOR IDX selected element + ' + idx)
                 return this.get('_pages.' + idx);
             }
 
@@ -139,300 +140,108 @@ Pagination Element for Vaadin-Grid Tables
                 let newValue = (newV) ? parseInt(newV) : 0;
                 let oldValue = (oldV) ? parseInt(oldV) : 0;
                 let anzahlSeiten = Math.ceil(this.datalength / parseInt(this.pageSize));
-                console.log('doPageSizeChanged newV' + newV + ' oldV' + oldV + ' newValue:' + newValue + ' oldValue' + oldValue + 'anzahlSeiten' + anzahlSeiten)
                 if (newValue && oldValue) {
                     // nur für gültige Seitengrößen behandeln
                     if ((newValue !== oldValue)) {
-                        let sel = Math.ceil(this.pstart / parseInt(this.pageSize));
-                        console.log('neuselected:' + sel)
-                        this.$.sp['selectedIndex'] = sel;
-                        this.selPage = sel + 1;
-                        let pagesControl = this.shadowRoot.querySelector('#pages');
-                        if (pagesControl)
-                            this.setSelectedAndDisabled(pagesControl, sel, anzahlSeiten);
-                        if (newValue < oldValue) {
-                            // wenn die neue Seitengröße kleiner als die alte ist, haben wir mehrere Seiten
-                            this.setMorePages(anzahlSeiten, this._pages.length);
-                        } else {
-                            // wenn die neue Seitengröße größer als die alte ist, haben wir weniger Seiten
-                            this.setFewerPages(anzahlSeiten, this._pages.length);
-                        }
-                        this.doPagination();
-                    } else {
-                        //this.pageSize = newValue;
+                        //this.setNumberOfPages(anzahlSeiten, this._pages.length);
+                        let sel = Math.floor((this.pstart) / parseInt(this.pageSize));
+                        //this.set('selPage', sel + 1);
+
+                        this.doPagination(sel + 1);
+                        // this.set('selPage', sel + 1);
                     }
                 }
             }
 
-            doPagination() {
-                console.log('dopagination datalength')
+            doPagination(pageToSelect) {
+                //console.log('dopagination datalength arg1' + arg1 + 'arg2' + arg2)
                 if (this.datalength > 0) {
                     console.log('dopagination datalength ' + this.datalength)
-                    let selectedElement = this.shadowRoot.querySelector('[selected]');
-                    let selectedPage = 1;//parseInt(this.shadowRoot.querySelector('[selected]').textContent);
-                    if (selectedElement) {
-                        selectedPage = parseInt(selectedElement.textContent);
-                    } else if (this.selPage && !isNaN(this.selPage)){
-                        this.updateItemsFromPage(parseInt(this.selPage));
-
-                    } else {
-                        console.log('und noch etwas')
-                        this.updateItemsFromPage(selectedPage);}
-
+                    let selectedPage = (pageToSelect && !isNaN(pageToSelect)) ? pageToSelect : 1;
+                    // if (this.selPage && !isNaN(this.selPage)) {
+                    //     console.log('nein selected element + ' + this.selPage)
+                    this.updateItemsFromPage(parseInt(selectedPage));
+                    // } 
                 } else {
                     console.log('dopagination datalength <= 0 ')
                 }
             }
 
-            updateItemsFromPage(page) {
-                console.log('ddupdateItemsFromPage' + page)
-                console.log('ddupdateItemsFromPage self_pages:' + JSON.stringify(this._pages))
-                if (page === 5) {
-                    //debugger;
-                }
-                // const grid = this.shadowRoot.querySelector('vaadin-grid');
-                const pagesControl = this.shadowRoot.querySelector('#pages');
-                if (pagesControl) {
-                    console.log('pagescontrol gefunden')
-                } else {
-                    console.log('pagescontrol nicht  gefunden')
-                }
-
-
-                let self = this;
-                if (page === undefined) {
-                    return;
-                }
-
-                if (!self._pages) {
-                    console.log('self.datalength' + self.datalength)
-                    self._pages = Array.apply(null, { length: Math.ceil(self.datalength / self.pageSize) }).map(function (item, index) {
-                        return index + 1;
-                    });
-                    if (pagesControl) {
-                        const prevBtn = window.document.createElement('button');
-                        prevBtn.textContent = '<';
-                        prevBtn.addEventListener('click', function () {
-                            const selectedPage = parseInt(pagesControl.querySelector('[selected]').textContent);
-                            self.$.sp['selectedIndex'] = (selectedPage - 2);
-                            self.updateItemsFromPage(selectedPage - 1);
-                        });
-                        prevBtn.setAttribute("id", "prevbtn");
-                        pagesControl.appendChild(prevBtn);
-
-                        self._pages.forEach(function (pageNumber) {
-                            const pageBtn = window.document.createElement('button');
-                            pageBtn.textContent = pageNumber;
-
-                            pageBtn.addEventListener('click', function (e) {
-                                self.$.sp['selectedIndex'] = (pageNumber - 1);
-                                self.updateItemsFromPage(parseInt(e.target.textContent));
-                            });
-                            console.log('id wird gesetzt auf p' + pageNumber)
-                            let idValue = "p" + pageNumber;
-                            pageBtn.setAttribute('id', idValue);
-                            if (pageNumber === page) {
-                                pageBtn.setAttribute('selected', true);
-                            }
-                            pagesControl.appendChild(pageBtn);
-                        });
-
-                        const nextBtn = window.document.createElement('button');
-                        nextBtn.textContent = '>';
-                        nextBtn.addEventListener('click', function () {
-                            const selectedPage = parseInt(pagesControl.querySelector('[selected]').textContent);
-                            self.$.sp['selectedIndex'] = selectedPage;
-                            self.updateItemsFromPage(selectedPage + 1);
-                        });
-                        nextBtn.setAttribute("id", "nextbtn");
-                        pagesControl.appendChild(nextBtn);
-                    }
-                } else {
-                    if (Math.ceil(self.datalength / self.pageSize) > self._pages.length) {
-                         let newpags = Array.apply(self._pages, { length: Math.ceil(self.datalength / self.pageSize) }).map(function (item, index) {
-                            return index + 1;
-                        });
-                        console.log('PPAGGGGGGE newpags' + JSON.stringify(newpags))
-                        self.set('_pages', newpags);
-                        if (self._pages.length === (page + 1)) {
-                            console.log('PPAGGGGGGE' + page + ' _pages.length' + self._pages.length + ':' + JSON.stringify(self._pages))
-                            page++;
-                            //for(let j = 0; j< 10000; j++)
-                            //window.sleep(5000, self.$.sp['selectedIndex'] = (page - 1));
-                            
-                            window.setTimeout(function(){
-                                self.$.sp['selectedIndex'] = page - 1;
-                
-                            }, 100);
-                            //this.$.sp['selectedIndex'] = (page - 1);
-                            //self.$.sp['selectedIndex'] = page;
-                            self.set('selPage', page);
-                            
-                        }
-                        if (pagesControl) {
-                            const nb = self.shadowRoot.querySelector('#nextbtn');
-                            const pageBtn = window.document.createElement('button');
-                            pageBtn.textContent = self._pages.length;
-                            pageBtn.addEventListener('click', function (e) {
-                                self.updateItemsFromPage(parseInt(e.target.textContent));
-                            });
-                            console.log('id wird gesetzt auf' + pageBtn.textContent)
-                            let idVal = "p" + pageBtn.textContent;
-                            pageBtn.setAttribute('id', idVal);
-                            //console.log('self._pages.length' + self._pages.length + ' PAGE'+ page)
-
-                            pagesControl.insertBefore(pageBtn, nb);
-                        }
-
-                    } else if (Math.ceil(self.datalength / self.pageSize) < self._pages.length) {
-                        if (pagesControl) {
-                            let lpid = '#p' + self._pages.length;
-
-                            const lastPageBtn = self.shadowRoot.querySelector(lpid);
-                            pagesControl.removeChild(lastPageBtn);
-                        }
-                        self._pages = Array.apply(self._pages, { length: Math.ceil(self.datalength / self.pageSize) }).map(function (item, index) {
-                            return index + 1;
-                        });
-
-                        if (page > self._pages.length) {
-                            page--;
-                            this.$.sp['selectedIndex'] = (page - 1);
-                            self.set('selPage', page);
-                        }
-                    }
-
-                }
-
-                // this.setSelectedAndDisabled(pagesControl, page);
-                console.log('dopag btnsende update')
-                if (pagesControl){
-                const buttons = Array.from(pagesControl.children);
-                //this.setSelectedAndDisabled(buttons, page);
-                buttons.forEach(function (btn, index) {
-                    if (parseInt(btn.textContent) === page) {
-                        btn.setAttribute('selected', true);
-                    } else {
-                        btn.removeAttribute('selected');
-                    }
-                    if (index === 0) {
-                        if (page === 1) {
-                            btn.setAttribute('disabled', '');
-                        } else {
-                            btn.removeAttribute('disabled');
-                        }
-                    }
-                    if (index === buttons.length - 1) {
-                        if (page === self._pages.length) {
-                            btn.setAttribute('disabled', '');
-                        } else {
-                            btn.removeAttribute('disabled');
-                        }
-                    }
-                });
-            }
-                console.log('dopag ende update')
-
-                this.set('pstart', (page - 1) * self.pageSize);
-                this.set('pend', page * self.pageSize);
-                this.dispatchEvent(new CustomEvent('pagechanged'));
-                
+            doOnDataLengthChanged() {
+                this.doPagination(this.selPage);
             }
 
 
-            setMorePages(newAnzahlSeiten, oldAnzahlSeiten) {
+
+
+            setNumberOfPages(newAnzahlSeiten, oldAnzahlSeiten) {
                 let self = this;
-                console.log('setMorePages newAnzahlSeiten' + newAnzahlSeiten + ' oldAnzahlSeiten' + oldAnzahlSeiten)
-
-                // const actbuttons = Array.from(pagesControl.children);
-                // actbuttons.forEach((btn)=>{
-                //         console.log('button id' + btn.id + ' text:' + btn.textContent)
-                // })
-
                 self._pages = Array.apply(self._pages, { length: newAnzahlSeiten }).map(function (item, index) {
                     return index + 1;
                 });
-
-                let pagesControl = self.shadowRoot.querySelector('#pages');
-
-                if (pagesControl) {
-                    const nb = self.shadowRoot.querySelector('#nextbtn');
-
-                    for (let i = oldAnzahlSeiten + 1; i <= newAnzahlSeiten; i++) {
-                        const pageBtn = window.document.createElement('button');
-                        pageBtn.textContent = i;
-
-                        pageBtn.addEventListener('click', function (e) {
-                            //self.selPage = i;
-                            self.$.sp['selectedIndex'] = (i - 1);
-                            self.updateItemsFromPage(parseInt(e.target.textContent));
-                        });
-                        console.log('id wird gesetzt auf' + pageBtn.textContent)
-                        let idVal = "p" + pageBtn.textContent;
-                        pageBtn.setAttribute('id', idVal);
-                        // if (self._pages.length === page) {
-                        //     pageBtn.setAttribute('selected', true);
-                        // }
-                        pagesControl.insertBefore(pageBtn, nb);
-
-                    }
-                }
-
-            }
-
-            setFewerPages(newAnzahlSeiten, oldAnzahlSeiten) {
-                let self = this;
-                console.log('setFewerPages fewer newAnzahlSeiten' + newAnzahlSeiten + ' oldAnzahlSeiten' + oldAnzahlSeiten)
-                let pagesControl = self.shadowRoot.querySelector('#pages');
-                console.log('forfor ')
-                if (pagesControl) {
-                    for (let i = oldAnzahlSeiten; i > newAnzahlSeiten; i--) {
-                        console.log('infor:' + i)
-                        let lpid = '#p' + i;
-                        let lastPageBtn = self.shadowRoot.querySelector(lpid);
-                        console.log('lastPageButton wird entfernt mit text' + lastPageBtn.textContent)
-                        pagesControl.removeChild(lastPageBtn);
-                    }
-                }
-                self._pages = Array.apply(self._pages, { length: newAnzahlSeiten }).map(function (item, index) {
-                    return index + 1;
-                });
-
-            }
-
-            setSelectedAndDisabled(pagesControl, selectedPage, anzahlSeiten) {
-                const buttons = Array.from(pagesControl.children);
-
-                buttons.forEach(function (btn, index) {
-                    if (parseInt(btn.textContent) === selectedPage) {
-                        btn.setAttribute('selected', true);
-                    } else {
-                        btn.removeAttribute('selected');
-                    }
-                    if (index === 0) {
-                        if (selectedPage === 1) {
-                            btn.setAttribute('disabled', '');
-                        } else {
-                            btn.removeAttribute('disabled');
-                        }
-                    }
-                    if (index === buttons.length - 1) {
-                        if (selectedPage === anzahlSeiten) {
-                            btn.setAttribute('disabled', '');
-                        } else {
-                            btn.removeAttribute('disabled');
-                        }
-                    }
-                });
-
             }
 
             pageChangedViaBox() {
-                // let self = this;
-                console.log('pageChangedViaBox')
-                this.updateItemsFromPage(parseInt(this.selPage))
-                //  this.set('pstart', (self.selPage - 1) * self.pageSize);
-                // this.dispatchEvent(new CustomEvent('pagechanged'));
+                //if (this.selPage)
+               this.updateItemsFromPage(parseInt(this.selPage));
+               //self.$.sp['selectedIndex'] = this.selPage;
+            }
+
+            updateItemsFromPage(page) {
+                if (typeof this.datalength === 'string') {
+                    console.log('AAACHTUUUUUNG')
+                }
+
+
+                let self = this;
+                let ps = parseInt(self.pageSize);
+                if (page === undefined) {
+                    return;
+                }
+                if (!self._pages) {
+                    console.log('if is 1')
+                    self._pages = Array.apply(null, { length: Math.ceil(self.datalength / ps) }).map(function (item, index) {
+                        return index + 1;
+                    });
+                } else if (Math.ceil(self.datalength / ps) > self._pages.length) {
+                    console.log('if is 2')
+                    let newpags = Array.apply(self._pages, { length: Math.ceil(self.datalength / ps) }).map(function (item, index) {
+                        return index + 1;
+                    });
+                    self.set('_pages', newpags);
+                    if (self._pages.length === (page + 1)) {
+                        console.log('if is 3')
+                        page++;
+                        window.setTimeout(function () {
+                            self.$.sp['selectedIndex'] = page - 1;
+
+                        }, 100);
+                        self.set('selPage', page);
+                    } else {
+                        this.set('selPage', page);
+                    }
+                } else if (Math.ceil(self.datalength / ps) < self._pages.length) {
+                    console.log('if is 4')
+                    self._pages = Array.apply(self._pages, { length: Math.ceil(self.datalength / ps) }).map(function (item, index) {
+                        return index + 1;
+                    });
+                    if (page > self._pages.length) {
+                        console.log('if is 5')
+                        page--;
+                        this.$.sp['selectedIndex'] = (page - 1);
+                        self.set('selPage', page);
+                    } else {
+                        this.set('selPage', page);
+                    }
+                } else {
+                    console.log('if is 6')
+                    this.set('selPage', page);
+                }
+
+
+                this.set('pstart', (page - 1) * ps);
+                this.set('pend', page * ps);
+                this.dispatchEvent(new CustomEvent('pagechanged'));
             }
 
 
