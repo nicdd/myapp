@@ -7,67 +7,51 @@ Pagination Element for Vaadin-Grid Tables
     <template>
         <style include="shared-styles">
             :host {
-                display: block;
+                display: inline-block;
 
                 padding: 10px;
             }
 
             #pagination {
-                display: flex;
+                display: block;
                 flex-wrap: wrap;
-                margin: 5px;
+                margin: 20px;
             }
 
-            #pages>button {
-                user-select: none;
-                /* padding: 5px;
-                margin: 0 5px; */
-                border-radius: 10%;
-                border: 0;
-                background: transparent;
-                font: inherit;
-                outline: none;
-                cursor: pointer;
-            }
-
-            #pages>button:not([disabled]):hover,
-            #pages>button:focus {
-                color: #ccc;
-                background-color: #eee;
-            }
-
-            #pages>button[selected] {
-                font-weight: bold;
-                color: white;
-                background-color: #ccc;
-            }
-
-            #pages>button[disabled] {
-                opacity: 0.5;
-                cursor: default;
-            }
+           
         </style>
         <div class="layout horizontal center-justified">
-            <div id="pagination">
-                <!-- <div id="pages"></div> -->
-            </div>
 
-            <div>
-                <label>Seite:</label>
-                <select id="sp" value="{{selPage::change}}">
-                    <template is="dom-repeat" items="[[_pages]]">
-                        <option value="[[getPageNumber(index, _pages)]]">[[getPageNumber(index, _pages)]]</option>
-                    </template>
-                </select>
-                <label>von [[_pages.length]]</label>
 
-                <label>Zeilen pro Seite:</label>
-                <select id="si" value="{{pageSize::input}}">
-                    <template is="dom-repeat" items="[[rowsperPage]]">
-                        <option value="[[item.val]]">[[item.key]]</option>
-                    </template>
-                </select>
-                [[selPage]] pstart:[[pstart]]
+            <div class="layout horizontal center-justified">
+                <div style="padding: 0rem 0.3rem;" class="layout horizontal center-justified">
+                    <div style="padding: 0rem 0.1rem;">
+                        <button id="first" class="endpagebutton" on-click="firstPage">
+                            <<</button> <button id="previous" class="pagebutton" on-click="previousPage">
+                                <</button> </div>
+                     <div style="padding: 0rem 0.1rem;">
+                        <label style="color:#999; font-size:14px;">Seite:</label>
+                        <select id="sp" value="{{selPage::change}}">
+
+                            <template is="dom-repeat" items="[[_pages]]">
+                                <option value="[[item]]">[[item]] von [[_pages.length]]</option>
+                            </template>
+                        </select>
+                    </div>
+                    <div style="padding: 0rem 0.1rem;">
+                        <button id="next" class="pagebutton" on-click="nextPage">></button>
+                        <button id="last" class="endpagebutton" on-click="lastPage">>></button>
+                    </div>
+                </div>
+                <div style="padding: 0rem 0.3rem;">
+                    <label style="color:#999; font-size:14px;">Zeilen pro Seite:</label>
+                    <select id="si" value="{{pageSize::input}}">
+                        <template is="dom-repeat" items="[[rowsperPage]]">
+                            <option value="[[item.val]]">[[item.key]]</option>
+                        </template>
+                    </select>
+                </div>
+
             </div>
         </div>
 
@@ -100,8 +84,8 @@ Pagination Element for Vaadin-Grid Tables
                         //notify: true
                     },
                     _pages: {
-                        type: Object,
-                        value: null,
+                        type: Array,
+                        value: [],
                         notify: true
                     },
                     pageSize: {
@@ -127,117 +111,139 @@ Pagination Element for Vaadin-Grid Tables
 
             ready() {
                 super.ready();
+            }
+
+            static get observers() {
+                return [
+                    '_isButtonDisabled(pstart)'
+                ]
 
             }
 
-            getPageNumber(idx) {
-                console.log('getpAGENUMBER FOR IDX selected element + ' + idx)
-                return this.get('_pages.' + idx);
+            _isButtonDisabled() {
+
+                let fp = this.shadowRoot.querySelector('#first');
+                let pp = this.shadowRoot.querySelector('#previous');
+                let np = this.shadowRoot.querySelector('#next');
+                let lp = this.shadowRoot.querySelector('#last');
+                if (this.selPage && (parseInt(this.selPage) <= 1)) {
+                    fp.setAttribute('disabled', true);
+                    pp.setAttribute('disabled', true);
+                    np.removeAttribute('disabled');
+                    lp.removeAttribute('disabled');
+
+                } else if (this.selPage && (parseInt(this.selPage) >= this._pages.length)) {
+                    fp.removeAttribute('disabled');
+                    pp.removeAttribute('disabled');
+                    np.setAttribute('disabled', true);
+                    lp.setAttribute('disabled', true);
+                } else {
+                    fp.removeAttribute('disabled');
+                    pp.removeAttribute('disabled');
+                    np.removeAttribute('disabled');
+                    lp.removeAttribute('disabled');
+
+                }
+
+
+            }
+
+            firstPage() {
+                if (this.selPage && parseInt(this.selPage) > 1) {
+                    this.set('selPage', 1);
+                }
+            }
+
+            lastPage() {
+                if (this.selPage && parseInt(this.selPage) < this._pages.length) {
+                    this.set('selPage', this._pages.length);
+                }
+            }
+
+            previousPage() {
+                if (this.selPage && parseInt(this.selPage) > 1) {
+                    let previous = parseInt(this.selPage) - 1;
+                    this.set('selPage', previous);
+                }
+            }
+
+            nextPage() {
+                if (this.selPage && parseInt(this.selPage) < this._pages.length) {
+                    let next = parseInt(this.selPage) + 1;
+                    this.set('selPage', next);
+                }
             }
 
             doPageSizeChanged(newV, oldV) {
-                // change 'selected' page button
+
                 let newValue = (newV) ? parseInt(newV) : 0;
                 let oldValue = (oldV) ? parseInt(oldV) : 0;
                 let anzahlSeiten = Math.ceil(this.datalength / parseInt(this.pageSize));
                 if (newValue && oldValue) {
                     // nur für gültige Seitengrößen behandeln
                     if ((newValue !== oldValue)) {
-                        //this.setNumberOfPages(anzahlSeiten, this._pages.length);
                         let sel = Math.floor((this.pstart) / parseInt(this.pageSize));
-                        //this.set('selPage', sel + 1);
-
                         this.doPagination(sel + 1);
-                        // this.set('selPage', sel + 1);
                     }
                 }
             }
 
             doPagination(pageToSelect) {
-                //console.log('dopagination datalength arg1' + arg1 + 'arg2' + arg2)
+                let self = this;
                 if (this.datalength > 0) {
-                    console.log('dopagination datalength ' + this.datalength)
                     let selectedPage = (pageToSelect && !isNaN(pageToSelect)) ? pageToSelect : 1;
-                    // if (this.selPage && !isNaN(this.selPage)) {
-                    //     console.log('nein selected element + ' + this.selPage)
-                    this.updateItemsFromPage(parseInt(selectedPage));
-                    // } 
-                } else {
-                    console.log('dopagination datalength <= 0 ')
+                    let ps = parseInt(self.pageSize);
+                    let ln = Math.ceil(self.datalength / ps);
+                    let newpags = [];
+                    for (let i = 0; i < ln; i++) {
+                        newpags[i] = i + 1;
+                    }
+                    self.set('_pages', JSON.parse(JSON.stringify(newpags)));
+                    self.updateItemsFromPage(parseInt(selectedPage));
                 }
             }
 
-            doOnDataLengthChanged() {
-                this.doPagination(this.selPage);
+            doOnDataLengthChanged(newV, oldV) {
+                if (newV && newV !== oldV && this.pageSize) {
+                    this.doPagination(this.selPage);
+                }
             }
 
-
-
-
-            setNumberOfPages(newAnzahlSeiten, oldAnzahlSeiten) {
-                let self = this;
-                self._pages = Array.apply(self._pages, { length: newAnzahlSeiten }).map(function (item, index) {
-                    return index + 1;
-                });
-            }
-
-            pageChangedViaBox() {
-                //if (this.selPage)
-               this.updateItemsFromPage(parseInt(this.selPage));
-               //self.$.sp['selectedIndex'] = this.selPage;
+            pageChangedViaBox(newV, oldV) {
+                if (this.selPage && this.pageSize) {
+                    this.set('pstart', (this.selPage - 1) * parseInt(this.pageSize));
+                    this.set('pend', this.selPage * parseInt(this.pageSize));
+                    this.dispatchEvent(new CustomEvent('pagechanged'));
+                }
             }
 
             updateItemsFromPage(page) {
-                if (typeof this.datalength === 'string') {
-                    console.log('AAACHTUUUUUNG')
-                }
-
-
-                let self = this;
-                let ps = parseInt(self.pageSize);
-                if (page === undefined) {
+                if (!page) {
                     return;
                 }
-                if (!self._pages) {
-                    console.log('if is 1')
-                    self._pages = Array.apply(null, { length: Math.ceil(self.datalength / ps) }).map(function (item, index) {
-                        return index + 1;
-                    });
-                } else if (Math.ceil(self.datalength / ps) > self._pages.length) {
-                    console.log('if is 2')
-                    let newpags = Array.apply(self._pages, { length: Math.ceil(self.datalength / ps) }).map(function (item, index) {
-                        return index + 1;
-                    });
-                    self.set('_pages', newpags);
-                    if (self._pages.length === (page + 1)) {
-                        console.log('if is 3')
-                        page++;
-                        window.setTimeout(function () {
-                            self.$.sp['selectedIndex'] = page - 1;
+                let self = this;
+                let ps = parseInt(self.pageSize);
 
-                        }, 100);
-                        self.set('selPage', page);
-                    } else {
-                        this.set('selPage', page);
-                    }
-                } else if (Math.ceil(self.datalength / ps) < self._pages.length) {
-                    console.log('if is 4')
-                    self._pages = Array.apply(self._pages, { length: Math.ceil(self.datalength / ps) }).map(function (item, index) {
-                        return index + 1;
-                    });
-                    if (page > self._pages.length) {
-                        console.log('if is 5')
-                        page--;
-                        this.$.sp['selectedIndex'] = (page - 1);
-                        self.set('selPage', page);
-                    } else {
-                        this.set('selPage', page);
-                    }
+                if (self._pages.length === (page + 1)) {
+                    page++;
+                    self.set('selPage', page);
+                    window.setTimeout(function () {
+                        self.$.sp['selectedIndex'] = page - 1;
+
+                    }, 150);
+
+                } else if (page > self._pages.length) {
+                    page--;
+                    self.set('selPage', page);
+                    this.$.sp['selectedIndex'] = (page - 1);
+
                 } else {
-                    console.log('if is 6')
-                    this.set('selPage', page);
-                }
+                    self.set('selPage', page);
+                    window.setTimeout(function () {
+                        self.$.sp['selectedIndex'] = page - 1;
 
+                    }, 150);
+                }
 
                 this.set('pstart', (page - 1) * ps);
                 this.set('pend', page * ps);

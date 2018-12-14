@@ -153,11 +153,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <vaadin-button raised id="rmbtn">Remove Item</vaadin-button>
       <paper-progress-button class="demo" bottom raised on-click="postCats" loading-label="Nicht so hecktisch ..."
         loading="[[_loading]]">Speichern</paper-progress-button>
-        _pageStart:[[_pageStart]] _pageEnd:[[_pageEnd]] _pageSize:[[_pageSize]]
+        <grt-grid-pagination id="pages" datalength="[[mdata.length]]" page-size="{{pageSize}}" pstart="{{_pageStart}}" on-pagechanged="changePage"></grt-grid-pagination>
     </div>
-
+    
     <div class="page">
-      <vaadin-grid id="mygrid" page-size="{{_pageSize}}" active-item="{{activeItem}}" aria-label="Basic Binding Example" items="[[mdata]]"
+      <vaadin-grid id="mygrid" page-size="{{pageSize}}" active-item="{{activeItem}}" aria-label="Basic Binding Example" items="[[mdata]]"
         column-reordering-allowed>
         <template class="row-details">
           <div class="details">
@@ -233,7 +233,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     </div>
     <!-- <div id="pages"></div> -->
-    <grt-grid-pagination id="pages" datalength="[[mdata.length]]" page-size="{{_pageSize}}" pstart="{{_pageStart}}" on-pagechanged="changePage"></grt-grid-pagination>
+    
 
   </template>
 
@@ -247,7 +247,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       static get properties() {
         return {
-          _pageSize: {
+          pageSize: {
             type: Number,
             value: null,
             observer: 'changePage'
@@ -285,11 +285,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       changePage(){
        
-        console.log('do pagination changed page fff');
+        console.log('do pagination changed page fff + this._pageSize' + this.pageSize);
               
         //this.$.mygrid.items = this.mdata.slice(this._pageStart, end);
         if(this._pageStart || this._pageStart === 0){
-          let end = parseInt(this._pageStart) + parseInt(this._pageSize);
+          let end = parseInt(this._pageStart) + parseInt(this.pageSize);
           let newItems = this.mdata.slice(this._pageStart, end);
           // console.log('do pagination this._pageStart' + this._pageStart + ' pageSize' + this._pageSize + " newItemslength:" + newItems.length)
           // console.log('mdata.length' + this.mdata.length)
@@ -306,7 +306,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         super.ready();
         this.$.firstclient.getCSV().then((resp) => {
           console.log("die antwort kam:" + JSON.stringify(resp))
-          this.set('_pageSize', 10)
+          this.set('pageSize', 10)
           this.mapToJSON(resp);
           //this.mdata = JSON.stringify(resp.cats)
         })
