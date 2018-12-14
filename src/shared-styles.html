@@ -34,7 +34,7 @@
         color: #555;
         border-radius: 50%;
         background: #ddd;
-        
+
         line-height: 27px;
 
       }
@@ -42,9 +42,9 @@
       .pagebutton {
         background-color: var(--app-secondary-color);
         border: none;
-        color:white;
+        color: white;
         text-align: center;
-        text-decoration:none;
+        text-decoration: none;
         display: inline-block;
         font-size: 16px;
         width: 27px;
@@ -55,10 +55,14 @@
 
       .endpagebutton {
         background-color: var(--app-secondary-color);
-        color:white;
+        color: white;
         line-height: 27px;
         border-radius: 20%;
-        
+
+      }
+      /* removes ugly dotted lines on clicked button*/
+      button::-moz-focus-inner {
+        border: 0;
       }
 
       button[disabled] {
