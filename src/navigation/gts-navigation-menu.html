@@ -124,12 +124,12 @@
 
                     <iron-collapse-button class="erstekategorie" forbidden$='false' opened>
                         <div slot="collapse-trigger" class="nav-item parent flex">
-                            ErsteKategorie
+                            Versicherung
                         </div>
                         <div slot="collapse-content">
                             <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list">
                                 <paper-item on-click="_navigateEvent" name="default" class="nav-item child" href="#[[rootPath]]default">Home</paper-item>
-                                <paper-item on-click="_navigateEvent" name="view1" class="nav-item child" href="#[[rootPath]]view1">View 1</paper-item>
+                                <paper-item on-click="_navigateEvent" name="versicherte" class="nav-item child" href="#[[rootPath]]versicherte">Versicherte</paper-item>
                                 <paper-item on-click="_navigateEvent" name="view2" class="nav-item child" href="#[[rootPath]]view2">View 2</paper-item>
                                 <paper-item on-click="_navigateEvent" name="view3" class="nav-item child" href="#[[rootPath]]view3">View 3</paper-item>
                                 <paper-item on-click="_navigateEvent" name="view4" class="nav-item child" href="#[[rootPath]]view4">View 4</paper-item>
@@ -146,7 +146,7 @@
                             <iron-selector selected="[[page]]" attr-for-selected="name">
 
 
-                                <paper-icon-item on-click="_navigateEvent" name="view1" class="nav-item child" href="#[[rootPath]]view1" style="color: #d84646">
+                                <paper-icon-item on-click="_navigateEvent" name="versicherte" class="nav-item child" href="#[[rootPath]]versicherte" style="color: #d84646">
                                     <iron-icon icon="check-circle" slot="item-icon"></iron-icon>
                                     <paper-item-body two-line>
                                         <div>Versicherungsjahr 2018</div>
