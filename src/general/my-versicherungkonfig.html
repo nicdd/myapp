@@ -1,0 +1,148 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../clients/basicclient.html">
+<link rel="import" href="../shared-styles.html">
+
+<dom-module id="my-versicherungkonfig">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+
+        padding: 10px;
+      }
+      paper-input {padding-right:20px }
+    </style>
+    <basic-client id="bclient"></basic-client>
+    <div class="layout vertical">
+    <div class="card">
+      <h3>Gebäude-Feuer-Versicherung (GBV)</h3>
+
+      <div class="layout vertical card">
+        <h4>Grundbeitrag: Feuer, Sturm u. Hagel lt. Merkblatt Punkt 2.2</h4>
+        <div class="layout horizontal">
+          <paper-input always-float-label label="Grundbeitrag (EUR)" type="number" value="{{vc.GBV.grundbeitrag.beitrag::change}}"></paper-input>
+          <paper-input always-float-label label="Versicherungssumme (EUR)" type="number" value="{{vc.GBV.grundbeitrag.versicherteSumme::change}}"></paper-input>
+        </div>
+      </div>
+
+      <div class="layout vertical card">
+        <h4>Erhöhung der Versicherungssumme: GBV Merkblatt Punkt 3</h4>
+        <div class="layout horizontal">
+          <paper-input always-float-label label="Erhöhung (EURO)" type="number" value="{{vc.GBV.schritt.versicherteSumme::change}}"></paper-input>
+          <paper-input always-float-label label="Beitrag (EUR)" type="number" value="{{vc.GBV.schritt.beitrag::change}}"></paper-input>
+        </div>
+      </div>
+
+    </div>
+    <div class="card">
+
+      <h3>Inventar Grundversicherung (Feuer-Einbruch-Diebstahl FED)</h3>
+      <div class="layout vertical card">
+        <h4>Grundbeitrag</h4>
+        <div class="layout horizontal">
+          <paper-input always-float-label label="Grundbeitrag (EUR)" type="number" value="{{vc.FED.grundbeitrag.beitrag::change}}"></paper-input>
+          <paper-input always-float-label label="Versicherungssumme (EUR)" type="number" value="{{vc.FED.grundbeitrag.versicherteSumme::change}}"></paper-input>
+        </div>
+      </div>
+
+      <div class="layout vertical card">
+        <h4>Höherversicherung: Merkblatt Punkt 6.2</h4>
+        <div class="layout horizontal">
+          <paper-input always-float-label label="Erhöhung (EURO)" type="number" value="{{vc.FED.schritt.versicherteSumme::change}}"></paper-input>
+          <paper-input always-float-label label="Beitrag (EUR)" type="number" value="{{vc.FED.schritt.beitrag::change}}"></paper-input>
+        </div>
+      </div>
+
+      <div class="layout vertical card">
+        <h4>Zusatzversicherungen: Merkblatt Punkt 7</h4>
+        <template is="dom-repeat" items="{{vc.FED.zusatzversicherungen}}">
+          <div class="layout vertical">
+            <label>[[item.bezeichnung]]</label>
+            <div class="layout horizontal">
+              <paper-input always-float-label label="Erhöhung (EURO)" type="number" value="{{item.schritt.versicherteSumme::change}}"></paper-input>
+              <paper-input always-float-label label="Beitrag (EUR)" type="number" value="{{item.schritt.beitrag::change}}"></paper-input>
+              <paper-input always-float-label label="Maximum Versicherungssumme" type="number" value="{{item.maximumVerischerungssumme::change}}"></paper-input>
+            </div>
+          </div>
+        </template>
+      </div>
+
+    </div>
+    <div class="card">
+      <h3>Familien-Unfallversicherung (UV) - optional</h3>
+      <div class="layout vertical card">
+        <h4>Versicherungsbeitrag</h4>
+        <div class="layout horizontal">
+          <paper-input always-float-label label="Beitrag (EUR)" type="number" value="{{vc.UV.grundbeitrag.beitrag::change}}"></paper-input>
+        </div>
+      </div>
+    </div>
+    <paper-progress-button class="demo" bottom raised on-click="_saveVersicherungKonfiguration" loading-label=" ... "
+        loading="[[_loading]]">Konfiguration Speichern</paper-progress-button>
+    </div>
+  </template>
+
+  <script>
+    class MyVersicherungkonfig extends Polymer.Element {
+      static get is() { return 'my-versicherungkonfig'; }
+
+      static get properties() {
+        return {
+          vconfig: {
+            type: Object,
+            value: null,
+            notify: true
+          },
+          vc: {
+            type: Object,
+            value: null,
+            notify: true
+          },
+          etwasanderes: {
+            type: Object,
+            value: "aaa"
+          }
+
+        }
+      }
+
+
+      ready() {
+        super.ready();
+        window.addEventListener('vconfig-changed', (e) => {
+          this._setVersicherungKonfig(e.detail);
+        })
+      }
+
+
+
+      _setVersicherungKonfig(vconfig) {
+
+        this.set('vc', vconfig);
+      }
+
+      _saveVersicherungKonfiguration(){
+        this.$.bclient.postVersicherungconfig(this.vc).then(()=>{
+          this.showToast(this, 'Versicherungskonfiguration erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
+        }).catch(()=>{
+          this.showToast(this, 'Fehler beim Speichern der Versicherungskonfiguration', TOAST_TYPE.ERROR);
+        })
+
+      }
+
+    }
+
+    window.customElements.define(MyVersicherungkonfig.is, MyVersicherungkonfig);
+  </script>
+</dom-module>

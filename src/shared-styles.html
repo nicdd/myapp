@@ -131,12 +131,7 @@
         margin: 16px;
       }
 
-      paper-progress-button[raised] {
-        --paper-button-mixin: {
-          background-color: var(--app-primary-color);
-          color: white;
-        }
-      }
+      
 
       paper-button[raised] {
         background-color: var(--app-primary-color);
@@ -173,11 +168,20 @@
       }
 
       paper-progress-button[raised] {
+        
         --paper-button-mixin: {
           background-color: var(--app-primary-color);
           color: var(--app-primary-contrast-text-color);
+          padding: 0.5rem 1rem;
         }
       }
+
+      /* paper-progress-button[raised] {
+        --paper-button-mixin: {
+          background-color: var(--app-primary-color);
+          color: white;
+        }
+      } */
 
       paper-spinner {
         --paper-spinner-layer-1-color: var(--app-primary-color);
@@ -190,6 +194,8 @@
         --paper-checkbox-checked-color: var(--app-primary-color);
         --paper-checkbox-checked-ink-color: var(--app-primary-color);
       }
+
+      
     </style>
   </template>
 </dom-module>

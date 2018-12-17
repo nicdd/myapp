@@ -1,0 +1,133 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+
+<dom-module id="basic-client">
+        <template>
+                <style></style>
+                </template>
+    <script>
+        class BasicClient extends Polymer.Element {
+            static get is() { return 'basic-client'; }
+
+            static get properties() {
+                return {
+                    actualLocation: {
+                        type: Object,
+                        value: {
+                            protocol: null,
+                            hostname: null
+                        }
+                    },
+                    URLS: {
+                        type: Object,
+                        value: {
+                            VERSICHERUNG_CONFIG: {
+                                path: '/api/versicherungconfig',
+                                port: '8000'
+                            }
+                        }
+                    },
+                    versicherungconfig: {
+                        type: Object,
+                        observer: '_vconfigChanged'
+                    }
+                }
+            }
+
+            _vconfigChanged(newV, oldV) {
+                if (newV) {
+                    console.log('event config wird gefeuert')// + JSON.stringify(newV))
+                    this.dispatchEvent(new CustomEvent('vconfig-changed', {bubbles: true, composed: true, detail: newV }));
+                }
+            }
+
+
+            ready() {
+                super.ready();
+                this._setActualLocation();
+            }
+
+            _setActualLocation() {
+                this.set('actualLocation', { protocol: window.location.protocol, hostname: window.location.hostname });
+            }
+
+            _getSourceURL(uriData, resPath, port) {
+                let urlToSource = uriData.protocol + "//" + uriData.hostname + ":" + port + resPath;
+                return urlToSource;
+            }
+
+            getVersicherungconfig() {
+                let self = this;
+                let sourceURL = self._getSourceURL(self.actualLocation, self.URLS.VERSICHERUNG_CONFIG.path, self.URLS.VERSICHERUNG_CONFIG.port);
+                let myHeaders = new Headers();
+
+                let myInit = {
+                    method: 'GET',
+                    headers: myHeaders,
+                    mode: 'cors',
+                    cache: 'default',
+                    credentials: 'omit'
+                };
+
+                let myRequest = new Request(sourceURL, myInit);
+
+                return fetch(myRequest).then((response) => {
+                    if (response.status && response.status === 204) {
+                        console.log("getVersicherungconfig status 204")
+                        return Promise.reject("NotFound");
+                    } else {
+                        return response.json();
+                    }
+                })
+                    .then((data) => {
+                        console.log('basicclient versicherungconfig wird gesetzt auf' + JSON.stringify(data))
+                        self.set('versicherungconfig', data);
+                        console.log('basicclient versicherungconfig wurde gesetzt auf' + JSON.stringify(this.versicherungconfig))
+                        return Promise.resolve(data);
+                    })
+                    .catch((err) => {
+                        console.log('getVersicherungconfig die Anfrage an api/versicherungconfig war nicht erfolgreich' + JSON.stringify(error))
+                    });
+            }
+
+            postVersicherungconfig(theConfig) {
+                let tosend=JSON.stringify(theConfig);
+                console.log('theconfigtosave' + JSON.stringify(theConfig))
+                let self = this;
+                let sourceURL = self._getSourceURL(self.actualLocation, self.URLS.VERSICHERUNG_CONFIG.path, self.URLS.VERSICHERUNG_CONFIG.port);
+                let myHeaders = new Headers();
+                myHeaders.set("Content-Type", "application/json");
+
+                //let parsedObject = theConfig.json();
+
+                let myInit = {
+                    method: 'POST',
+                    headers: myHeaders,
+                    mode: 'cors',
+                    cache: 'default',
+                    credentials: 'omit',
+                    body: tosend
+                };
+
+                let myRequest = new Request(sourceURL, myInit);
+
+                return fetch(myRequest).then((response) => {
+                    console.log("getVersicherungconfig antwort" + JSON.stringify(response));
+                    //this.dispatchEvent(new CustomEvent('versicherungconfigchanged', { bubbles: true, composed: true }));
+                    return response.json();
+                }).catch(() => {
+                    console.log('postVersicherungconfig die Anfrage an api/versicherungconfig war nicht erfolgreich')
+                });
+
+            }
+
+            getLocalVersicherungconfig() {
+                console.log('getLocalVersicherungconfig basicclient + ' + JSON.stringify(this.versicherungconfig))
+                return this.versicherungconfig;
+            }
+
+        }
+
+        customElements.define(BasicClient.is, BasicClient);
+    </script>
+</dom-module>
