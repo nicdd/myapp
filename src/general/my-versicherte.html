@@ -1,17 +1,43 @@
 <!--
-@license
-Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+Die Versicherten-Seite
+Auf dieser Seite werden nur die Pächter dargestellt die eine Versicherung abgeschlossen haben.
+Diese kann beim KVD oder bei einer externen Versicherungsgesellschaft abgeschlossen sein.
+Ein bisher Versicherter der nicht mehr bezahlt hat, wird zuerst telefonisch, per E-Mail oder per Brief erinnert.
+
+Wenn für diesen Pächter keine Zahlung und keinen Versicherungsnachweis erfasst wurden, OBWOHL für ihn die Erinnerungsversuche
+unternommen wurden, wird dieser:
+
+  - authomatisch vom System nach 14 Tagen nach dem Erinnerungskontakt; 
+  - manuell durch den Versicherungsbeauftragten;
+
+in die Liste der "nicht versicherten" verschoben. Die Verschiebung in die Liste der anzumahnenden Pächter setzt
+zwingend voraus, dass der Versicherungsbeauftragter die Erinnerungsversuche unternommen und protokolliert hat.
+
+Für die nicht - versicherten Pächter wird eine Benachrichtigungs-EMail an den Verein samt einem 
+an der E-Mail angehängten Mahnungs-Anschreiben verschickt. Die E-Mail an den Verein enthält zwingend
+die Informationen über die nicht erfolgreichen Versuche, ihn zur Zahlung zu bewegen.
+Der 14-Tage Frist kann vom Versicherungsbeauftragten auf maximal 1 Monat verlängert werden.
+
+***********************************************
+Entstehung und Änderungen der Versichertenliste
+***********************************************
+Die Versichertenliste entsteht initial durch das Importieren der Versichertenbestand aus der CSV-Datei vom KVD.
+Weiterhin, kann der Benutzer, manuell durch die Bearbeitung der "nicht verischerten" Liste, einzelne "nicht Verischerte"
+in die Versichertenliste verschieben. Dabei musste er die Informationen über den letzten gültigen Zahlungseing erfasst haben
+(eingezahlten Zahlungsbetrag, Datum, Vericherungsoptionen(FED usw)).
+
+Man kann Einträge aus dieser Liste in die Nicht-Versicherten-Liste verschieben oder ganz Löschen.
+Eine Löschung aus der Versichertenliste führt nicht zu einer tatsächlichen Löschung, sondern in die Verschiebung der 
+Daten in einer Versicherten-Passivliste, denn es könnte durchaus sein, dass man uach nach einer Kündigung die 
+Daten über die Versicherung noch braucht. Die Einträge in der Passivliste werden vom System nach 2 Jahren aus der Liste entfernt.
+Ab diesem Zeitpunkt kennt das System keine Informationen mehr über die versicherte Person.
+
+
 -->
 
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/paper-progress-button/paper-progress-button.html">
-<!-- <link rel="import" href="../../bower_components/papa-parse/papa-parse.html">
-<link rel="import" href="../../bower_components/papa-parse/papa-unparse.html"> -->
+
 
 
 <link rel="import" href="../../bower_components/vaadin-grid/theme/material/all-imports.html">
@@ -20,7 +46,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../shared-styles.html">
 
 
-<dom-module id="my-view1">
+<dom-module id="my-versicherte">
   <template>
     <style include="shared-styles">
       :host {
@@ -278,8 +304,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
   <script>
-    class MyView1 extends Polymer.Element {
-      static get is() { return 'my-view1'; }
+    class MyVersicherte extends Polymer.Element {
+      static get is() { return 'my-versicherte'; }
 
       static get properties() {
         return {
@@ -580,6 +606,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
     }
 
-    window.customElements.define(MyView1.is, MyView1);
+    window.customElements.define(MyVersicherte.is, MyVersicherte);
   </script>
 </dom-module>

@@ -5,14 +5,14 @@
 <dom-module id="shared-styles">
   <template>
     <style include="iron-flex iron-flex-alignment">
-
-            .card {
+      .card {
         margin: 24px;
         padding: 16px;
         border-radius: 5px;
         background-color: #fff;
         box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
       }
+
       .circle {
         display: inline-block;
         width: 64px;
@@ -24,6 +24,51 @@
         font-size: 30px;
         line-height: 64px;
       }
+
+      .littlecircle {
+        display: inline-block;
+        font-size: 20px;
+        width: 27px;
+        height: 27px;
+        text-align: center;
+        color: #555;
+        border-radius: 50%;
+        background: #ddd;
+
+        line-height: 27px;
+
+      }
+
+      .pagebutton {
+        background-color: var(--app-secondary-color);
+        border: none;
+        color: white;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        width: 27px;
+        height: 27px;
+        line-height: 27px;
+        border-radius: 50%;
+      }
+
+      .endpagebutton {
+        background-color: var(--app-secondary-color);
+        color: white;
+        line-height: 27px;
+        border-radius: 20%;
+
+      }
+      /* removes ugly dotted lines on clicked button*/
+      button::-moz-focus-inner {
+        border: 0;
+      }
+
+      button[disabled] {
+        opacity: 0.4;
+      }
+
       :root {
         --app-primary-color: black;
         --app-primary-contrast-text-color: white;
@@ -86,12 +131,7 @@
         margin: 16px;
       }
 
-      paper-progress-button[raised] {
-        --paper-button-mixin: {
-          background-color: var(--app-primary-color);
-          color: white;
-        }
-      }
+      
 
       paper-button[raised] {
         background-color: var(--app-primary-color);
@@ -111,25 +151,37 @@
       paper-progress-button {
         --paper-progress-active-color: var(--app-primary-color);
         --paper-progress-container-color: #00000000;
+
         --paper-button-mixin: {
           color: var(--app-primary-color);
         }
+
         --paper-button-disabled-mixin: {
           background-color: var(--app-primary-color);
           color: white;
           opacity: 0.4;
         }
+
         --paper-progress-mixin: {
           background-color: white;
         }
       }
 
       paper-progress-button[raised] {
+        
         --paper-button-mixin: {
           background-color: var(--app-primary-color);
           color: var(--app-primary-contrast-text-color);
+          padding: 0.5rem 1rem;
         }
       }
+
+      /* paper-progress-button[raised] {
+        --paper-button-mixin: {
+          background-color: var(--app-primary-color);
+          color: white;
+        }
+      } */
 
       paper-spinner {
         --paper-spinner-layer-1-color: var(--app-primary-color);
@@ -142,6 +194,8 @@
         --paper-checkbox-checked-color: var(--app-primary-color);
         --paper-checkbox-checked-ink-color: var(--app-primary-color);
       }
+
+      
     </style>
   </template>
 </dom-module>

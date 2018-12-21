@@ -7,67 +7,51 @@ Pagination Element for Vaadin-Grid Tables
     <template>
         <style include="shared-styles">
             :host {
-                display: block;
+                display: inline-block;
 
                 padding: 10px;
             }
 
             #pagination {
-                display: flex;
+                display: block;
                 flex-wrap: wrap;
-                margin: 5px;
+                margin: 20px;
             }
 
-            #pages>button {
-                user-select: none;
-                /* padding: 5px;
-                margin: 0 5px; */
-                border-radius: 10%;
-                border: 0;
-                background: transparent;
-                font: inherit;
-                outline: none;
-                cursor: pointer;
-            }
-
-            #pages>button:not([disabled]):hover,
-            #pages>button:focus {
-                color: #ccc;
-                background-color: #eee;
-            }
-
-            #pages>button[selected] {
-                font-weight: bold;
-                color: white;
-                background-color: #ccc;
-            }
-
-            #pages>button[disabled] {
-                opacity: 0.5;
-                cursor: default;
-            }
+           
         </style>
         <div class="layout horizontal center-justified">
-            <div id="pagination">
-                <!-- <div id="pages"></div> -->
-            </div>
 
-            <div>
-                <label>Seite:</label>
-                <select id="sp" value="{{selPage::change}}">
-                    <template is="dom-repeat" items="[[_pages]]">
-                        <option value="[[getPageNumber(index)]]">[[getPageNumber(index)]]</option>
-                    </template>
-                </select>
-                <label>von [[_pages.length]]</label>
 
-                <label>Zeilen pro Seite:</label>
-                <select id="si" value="{{pageSize::input}}">
-                    <template is="dom-repeat" items="[[rowsperPage]]">
-                        <option value="[[item.val]]">[[item.key]]</option>
-                    </template>
-                </select>
-[[selPage]] pstart:[[pstart]]
+            <div class="layout horizontal center-justified">
+                <div style="padding: 0rem 0.3rem;" class="layout horizontal center-justified">
+                    <div style="padding: 0rem 0.1rem;">
+                        <button id="first" class="endpagebutton" on-click="firstPage">
+                            <<</button> <button id="previous" class="pagebutton" on-click="previousPage">
+                                <</button> </div>
+                     <div style="padding: 0rem 0.1rem;">
+                        <label style="color:#999; font-size:14px;">Seite:</label>
+                        <select id="sp" value="{{selPage::change}}">
+
+                            <template is="dom-repeat" items="[[_pages]]">
+                                <option value="[[item]]">[[item]] von [[_pages.length]]</option>
+                            </template>
+                        </select>
+                    </div>
+                    <div style="padding: 0rem 0.1rem;">
+                        <button id="next" class="pagebutton" on-click="nextPage">></button>
+                        <button id="last" class="endpagebutton" on-click="lastPage">>></button>
+                    </div>
+                </div>
+                <div style="padding: 0rem 0.3rem;">
+                    <label style="color:#999; font-size:14px;">Zeilen pro Seite:</label>
+                    <select id="si" value="{{pageSize::input}}">
+                        <template is="dom-repeat" items="[[rowsperPage]]">
+                            <option value="[[item.val]]">[[item.key]]</option>
+                        </template>
+                    </select>
+                </div>
+                [[datalength]]
             </div>
         </div>
 
@@ -84,7 +68,7 @@ Pagination Element for Vaadin-Grid Tables
                         value: 1,
                         observer: 'pageChangedViaBox',
                         notify: true
-                        
+
                     },
 
                     rowsperPage: {
@@ -96,12 +80,12 @@ Pagination Element for Vaadin-Grid Tables
                     datalength: {
                         type: Number,
                         value: 0,
-                        observer: 'doPagination'
+                        observer: 'doOnDataLengthChanged'
                         //notify: true
                     },
                     _pages: {
-                        type: Object,
-                        value: null,
+                        type: Array,
+                        value: [],
                         notify: true
                     },
                     pageSize: {
@@ -127,312 +111,143 @@ Pagination Element for Vaadin-Grid Tables
 
             ready() {
                 super.ready();
+            }
+
+            static get observers() {
+                return [
+                    '_isButtonDisabled(pstart)'
+                ]
 
             }
 
-            getPageNumber(idx) {
-                return this.get('_pages.' + idx);
+            _isButtonDisabled() {
+
+                let fp = this.shadowRoot.querySelector('#first');
+                let pp = this.shadowRoot.querySelector('#previous');
+                let np = this.shadowRoot.querySelector('#next');
+                let lp = this.shadowRoot.querySelector('#last');
+                if (this.selPage && (parseInt(this.selPage) <= 1)) {
+                    fp.setAttribute('disabled', true);
+                    pp.setAttribute('disabled', true);
+                    np.removeAttribute('disabled');
+                    lp.removeAttribute('disabled');
+
+                } else if (this.selPage && (parseInt(this.selPage) >= this._pages.length)) {
+                    fp.removeAttribute('disabled');
+                    pp.removeAttribute('disabled');
+                    np.setAttribute('disabled', true);
+                    lp.setAttribute('disabled', true);
+                } else {
+                    fp.removeAttribute('disabled');
+                    pp.removeAttribute('disabled');
+                    np.removeAttribute('disabled');
+                    lp.removeAttribute('disabled');
+
+                }
+
+
+            }
+
+            firstPage() {
+                if (this.selPage && parseInt(this.selPage) > 1) {
+                    this.set('selPage', 1);
+                }
+            }
+
+            lastPage() {
+                if (this.selPage && parseInt(this.selPage) < this._pages.length) {
+                    this.set('selPage', this._pages.length);
+                }
+            }
+
+            previousPage() {
+                if (this.selPage && parseInt(this.selPage) > 1) {
+                    let previous = parseInt(this.selPage) - 1;
+                    this.set('selPage', previous);
+                }
+            }
+
+            nextPage() {
+                if (this.selPage && parseInt(this.selPage) < this._pages.length) {
+                    let next = parseInt(this.selPage) + 1;
+                    this.set('selPage', next);
+                }
             }
 
             doPageSizeChanged(newV, oldV) {
-                // change 'selected' page button
+
                 let newValue = (newV) ? parseInt(newV) : 0;
                 let oldValue = (oldV) ? parseInt(oldV) : 0;
                 let anzahlSeiten = Math.ceil(this.datalength / parseInt(this.pageSize));
-                console.log('doPageSizeChanged newV' + newV + ' oldV' + oldV + ' newValue:' + newValue + ' oldValue' + oldValue + 'anzahlSeiten' + anzahlSeiten)
                 if (newValue && oldValue) {
                     // nur für gültige Seitengrößen behandeln
                     if ((newValue !== oldValue)) {
-                        let sel = Math.ceil(this.pstart / parseInt(this.pageSize));
-                        console.log('neuselected:' + sel)
-                        this.$.sp['selectedIndex'] = sel;
-                        this.selPage = sel + 1;
-                        let pagesControl = this.shadowRoot.querySelector('#pages');
-                        if (pagesControl)
-                            this.setSelectedAndDisabled(pagesControl, sel, anzahlSeiten);
-                        if (newValue < oldValue) {
-                            // wenn die neue Seitengröße kleiner als die alte ist, haben wir mehrere Seiten
-                            this.setMorePages(anzahlSeiten, this._pages.length);
-                        } else {
-                            // wenn die neue Seitengröße größer als die alte ist, haben wir weniger Seiten
-                            this.setFewerPages(anzahlSeiten, this._pages.length);
-                        }
-                        this.doPagination();
-                    } else {
-                        //this.pageSize = newValue;
+                        let sel = Math.floor((this.pstart) / parseInt(this.pageSize));
+                        this.doPagination(sel + 1);
                     }
                 }
             }
 
-            doPagination() {
-                console.log('dopagination datalength')
+            doPagination(pageToSelect) {
+                let self = this;
                 if (this.datalength > 0) {
-                    console.log('dopagination datalength ' + this.datalength)
-                    let selectedElement = this.shadowRoot.querySelector('[selected]');
-                    let selectedPage = 1;//parseInt(this.shadowRoot.querySelector('[selected]').textContent);
-                    if (selectedElement) {
-                        selectedPage = parseInt(selectedElement.textContent);
-                    } else if (this.selPage && !isNaN(this.selPage)){
-                        this.updateItemsFromPage(parseInt(this.selPage));
+                    let selectedPage = (pageToSelect && !isNaN(pageToSelect)) ? pageToSelect : 1;
+                    let ps = parseInt(self.pageSize);
+                    let ln = Math.ceil(self.datalength / ps);
+                    let newpags = [];
+                    for (let i = 0; i < ln; i++) {
+                        newpags[i] = i + 1;
+                    }
+                    self.set('_pages', JSON.parse(JSON.stringify(newpags)));
+                    self.updateItemsFromPage(parseInt(selectedPage));
+                }
+            }
 
-                    } else {
-                        console.log('und noch etwas')
-                        this.updateItemsFromPage(selectedPage);}
+            doOnDataLengthChanged(newV, oldV) {
+                if (newV && newV !== oldV && this.pageSize) {
+                    this.doPagination(this.selPage);
+                }
+            }
 
-                } else {
-                    console.log('dopagination datalength <= 0 ')
+            pageChangedViaBox(newV, oldV) {
+                if (this.selPage && this.pageSize) {
+                    this.set('pstart', (this.selPage - 1) * parseInt(this.pageSize));
+                    this.set('pend', this.selPage * parseInt(this.pageSize));
+                    this.dispatchEvent(new CustomEvent('pagechanged'));
                 }
             }
 
             updateItemsFromPage(page) {
-                console.log('ddupdateItemsFromPage' + page)
-                console.log('ddupdateItemsFromPage self_pages:' + JSON.stringify(this._pages))
-                if (page === 5) {
-                    //debugger;
-                }
-                // const grid = this.shadowRoot.querySelector('vaadin-grid');
-                const pagesControl = this.shadowRoot.querySelector('#pages');
-                if (pagesControl) {
-                    console.log('pagescontrol gefunden')
-                } else {
-                    console.log('pagescontrol nicht  gefunden')
-                }
-
-
-                let self = this;
-                if (page === undefined) {
+                if (!page) {
                     return;
                 }
+                let self = this;
+                let ps = parseInt(self.pageSize);
 
-                if (!self._pages) {
-                    console.log('self.datalength' + self.datalength)
-                    self._pages = Array.apply(null, { length: Math.ceil(self.datalength / self.pageSize) }).map(function (item, index) {
-                        return index + 1;
-                    });
-                    if (pagesControl) {
-                        const prevBtn = window.document.createElement('button');
-                        prevBtn.textContent = '<';
-                        prevBtn.addEventListener('click', function () {
-                            const selectedPage = parseInt(pagesControl.querySelector('[selected]').textContent);
-                            self.$.sp['selectedIndex'] = (selectedPage - 2);
-                            self.updateItemsFromPage(selectedPage - 1);
-                        });
-                        prevBtn.setAttribute("id", "prevbtn");
-                        pagesControl.appendChild(prevBtn);
+                if (self._pages.length === (page + 1)) {
+                    page++;
+                    self.set('selPage', page);
+                    window.setTimeout(function () {
+                        self.$.sp['selectedIndex'] = page - 1;
 
-                        self._pages.forEach(function (pageNumber) {
-                            const pageBtn = window.document.createElement('button');
-                            pageBtn.textContent = pageNumber;
+                    }, 150);
 
-                            pageBtn.addEventListener('click', function (e) {
-                                self.$.sp['selectedIndex'] = (pageNumber - 1);
-                                self.updateItemsFromPage(parseInt(e.target.textContent));
-                            });
-                            console.log('id wird gesetzt auf p' + pageNumber)
-                            let idValue = "p" + pageNumber;
-                            pageBtn.setAttribute('id', idValue);
-                            if (pageNumber === page) {
-                                pageBtn.setAttribute('selected', true);
-                            }
-                            pagesControl.appendChild(pageBtn);
-                        });
+                } else if (page > self._pages.length) {
+                    page--;
+                    self.set('selPage', page);
+                    this.$.sp['selectedIndex'] = (page - 1);
 
-                        const nextBtn = window.document.createElement('button');
-                        nextBtn.textContent = '>';
-                        nextBtn.addEventListener('click', function () {
-                            const selectedPage = parseInt(pagesControl.querySelector('[selected]').textContent);
-                            self.$.sp['selectedIndex'] = selectedPage;
-                            self.updateItemsFromPage(selectedPage + 1);
-                        });
-                        nextBtn.setAttribute("id", "nextbtn");
-                        pagesControl.appendChild(nextBtn);
-                    }
                 } else {
-                    if (Math.ceil(self.datalength / self.pageSize) > self._pages.length) {
-                         let newpags = Array.apply(self._pages, { length: Math.ceil(self.datalength / self.pageSize) }).map(function (item, index) {
-                            return index + 1;
-                        });
-                        console.log('PPAGGGGGGE newpags' + JSON.stringify(newpags))
-                        self.set('_pages', newpags);
-                        if (self._pages.length === (page + 1)) {
-                            console.log('PPAGGGGGGE' + page + ' _pages.length' + self._pages.length + ':' + JSON.stringify(self._pages))
-                            page++;
-                            //for(let j = 0; j< 10000; j++)
-                            //window.sleep(5000, self.$.sp['selectedIndex'] = (page - 1));
-                            
-                            window.setTimeout(function(){
-                                self.$.sp['selectedIndex'] = page - 1;
-                
-                            }, 100);
-                            //this.$.sp['selectedIndex'] = (page - 1);
-                            //self.$.sp['selectedIndex'] = page;
-                            self.set('selPage', page);
-                            
-                        }
-                        if (pagesControl) {
-                            const nb = self.shadowRoot.querySelector('#nextbtn');
-                            const pageBtn = window.document.createElement('button');
-                            pageBtn.textContent = self._pages.length;
-                            pageBtn.addEventListener('click', function (e) {
-                                self.updateItemsFromPage(parseInt(e.target.textContent));
-                            });
-                            console.log('id wird gesetzt auf' + pageBtn.textContent)
-                            let idVal = "p" + pageBtn.textContent;
-                            pageBtn.setAttribute('id', idVal);
-                            //console.log('self._pages.length' + self._pages.length + ' PAGE'+ page)
+                    self.set('selPage', page);
+                    window.setTimeout(function () {
+                        self.$.sp['selectedIndex'] = page - 1;
 
-                            pagesControl.insertBefore(pageBtn, nb);
-                        }
-
-                    } else if (Math.ceil(self.datalength / self.pageSize) < self._pages.length) {
-                        if (pagesControl) {
-                            let lpid = '#p' + self._pages.length;
-
-                            const lastPageBtn = self.shadowRoot.querySelector(lpid);
-                            pagesControl.removeChild(lastPageBtn);
-                        }
-                        self._pages = Array.apply(self._pages, { length: Math.ceil(self.datalength / self.pageSize) }).map(function (item, index) {
-                            return index + 1;
-                        });
-
-                        if (page > self._pages.length) {
-                            page--;
-                            this.$.sp['selectedIndex'] = (page - 1);
-                            self.set('selPage', page);
-                        }
-                    }
-
+                    }, 150);
                 }
 
-                // this.setSelectedAndDisabled(pagesControl, page);
-                console.log('dopag btnsende update')
-                if (pagesControl){
-                const buttons = Array.from(pagesControl.children);
-                //this.setSelectedAndDisabled(buttons, page);
-                buttons.forEach(function (btn, index) {
-                    if (parseInt(btn.textContent) === page) {
-                        btn.setAttribute('selected', true);
-                    } else {
-                        btn.removeAttribute('selected');
-                    }
-                    if (index === 0) {
-                        if (page === 1) {
-                            btn.setAttribute('disabled', '');
-                        } else {
-                            btn.removeAttribute('disabled');
-                        }
-                    }
-                    if (index === buttons.length - 1) {
-                        if (page === self._pages.length) {
-                            btn.setAttribute('disabled', '');
-                        } else {
-                            btn.removeAttribute('disabled');
-                        }
-                    }
-                });
-            }
-                console.log('dopag ende update')
-
-                this.set('pstart', (page - 1) * self.pageSize);
-                this.set('pend', page * self.pageSize);
+                this.set('pstart', (page - 1) * ps);
+                this.set('pend', page * ps);
                 this.dispatchEvent(new CustomEvent('pagechanged'));
-                
-            }
-
-
-            setMorePages(newAnzahlSeiten, oldAnzahlSeiten) {
-                let self = this;
-                console.log('setMorePages newAnzahlSeiten' + newAnzahlSeiten + ' oldAnzahlSeiten' + oldAnzahlSeiten)
-
-                // const actbuttons = Array.from(pagesControl.children);
-                // actbuttons.forEach((btn)=>{
-                //         console.log('button id' + btn.id + ' text:' + btn.textContent)
-                // })
-
-                self._pages = Array.apply(self._pages, { length: newAnzahlSeiten }).map(function (item, index) {
-                    return index + 1;
-                });
-
-                let pagesControl = self.shadowRoot.querySelector('#pages');
-
-                if (pagesControl) {
-                    const nb = self.shadowRoot.querySelector('#nextbtn');
-
-                    for (let i = oldAnzahlSeiten + 1; i <= newAnzahlSeiten; i++) {
-                        const pageBtn = window.document.createElement('button');
-                        pageBtn.textContent = i;
-
-                        pageBtn.addEventListener('click', function (e) {
-                            //self.selPage = i;
-                            self.$.sp['selectedIndex'] = (i - 1);
-                            self.updateItemsFromPage(parseInt(e.target.textContent));
-                        });
-                        console.log('id wird gesetzt auf' + pageBtn.textContent)
-                        let idVal = "p" + pageBtn.textContent;
-                        pageBtn.setAttribute('id', idVal);
-                        // if (self._pages.length === page) {
-                        //     pageBtn.setAttribute('selected', true);
-                        // }
-                        pagesControl.insertBefore(pageBtn, nb);
-
-                    }
-                }
-
-            }
-
-            setFewerPages(newAnzahlSeiten, oldAnzahlSeiten) {
-                let self = this;
-                console.log('setFewerPages fewer newAnzahlSeiten' + newAnzahlSeiten + ' oldAnzahlSeiten' + oldAnzahlSeiten)
-                let pagesControl = self.shadowRoot.querySelector('#pages');
-                console.log('forfor ')
-                if (pagesControl) {
-                    for (let i = oldAnzahlSeiten; i > newAnzahlSeiten; i--) {
-                        console.log('infor:' + i)
-                        let lpid = '#p' + i;
-                        let lastPageBtn = self.shadowRoot.querySelector(lpid);
-                        console.log('lastPageButton wird entfernt mit text' + lastPageBtn.textContent)
-                        pagesControl.removeChild(lastPageBtn);
-                    }
-                }
-                self._pages = Array.apply(self._pages, { length: newAnzahlSeiten }).map(function (item, index) {
-                    return index + 1;
-                });
-
-            }
-
-            setSelectedAndDisabled(pagesControl, selectedPage, anzahlSeiten) {
-                const buttons = Array.from(pagesControl.children);
-
-                buttons.forEach(function (btn, index) {
-                    if (parseInt(btn.textContent) === selectedPage) {
-                        btn.setAttribute('selected', true);
-                    } else {
-                        btn.removeAttribute('selected');
-                    }
-                    if (index === 0) {
-                        if (selectedPage === 1) {
-                            btn.setAttribute('disabled', '');
-                        } else {
-                            btn.removeAttribute('disabled');
-                        }
-                    }
-                    if (index === buttons.length - 1) {
-                        if (selectedPage === anzahlSeiten) {
-                            btn.setAttribute('disabled', '');
-                        } else {
-                            btn.removeAttribute('disabled');
-                        }
-                    }
-                });
-
-            }
-
-            pageChangedViaBox() {
-                // let self = this;
-                console.log('pageChangedViaBox')
-                this.updateItemsFromPage(parseInt(this.selPage))
-                //  this.set('pstart', (self.selPage - 1) * self.pageSize);
-                // this.dispatchEvent(new CustomEvent('pagechanged'));
             }
 
 
