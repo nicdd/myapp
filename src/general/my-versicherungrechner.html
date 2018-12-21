@@ -39,17 +39,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       .inlinecard{
           display: inline-block !important;
-          
+      }
+
+      .mcard{
+        margin: 0px !important;
       }
       paper-input {padding-right:20px }
     </style>
         <basic-client id="bclient"></basic-client>
         <div class="layout vertical">
             <div class="card layout horizontal justified">
-                <div class="layout vertical inlinecard">
+                <!-- <div class="layout vertical inlinecard"> -->
+                        <div class="layout">
                     <h3>Gebäude-Feuer-Versicherung (GBV)</h3>
-
-                    <div class="layout vertical card ">
+                    <div class="layout vertical card mcard ">
                         <h4>Grundbeitrag: Feuer, Sturm u. Hagel lt. Merkblatt Punkt 2.2</h4>
                         <div class="layout horizontal justified">
                             <div class="layout vertical labelgroup">
@@ -63,7 +66,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         </div>
                     </div>
 
-                    <div class="layout vertical card ">
+                    <div class="layout vertical card mcard">
                         <h4>Erhöhung der Versicherungsumme: GBV Merkblatt Punkt 3</h4>
                         <div class="layout horizontal">
                             <paper-input min="0" always-float-label label="Erhöhung (EURO)" type="number" step="[[vcs.GBV.schritt.versicherteSumme]]"
@@ -77,7 +80,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
                 <div class="layout vertical inlinecard">
                     <h3>GBV Gesamtberechnung</h3>
-                    <div class="layout vertical card ">
+                    <div class="layout vertical card mcard">
 
                         <div class="layout horizontal justified">
                             <div class="layout vertical labelgroup">
@@ -87,7 +90,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             </div>
                         </div>
                     </div>
-                    <div class="layout vertical card ">
+                    <div class="layout vertical card mcard">
 
                         <div class="layout horizontal justified">
                             <div class="layout vertical labelgroup">
@@ -102,7 +105,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <div class="card layout horizontal justified">
                 <div class="layout vertical inlinecard">
                     <h3>Inventar Grundversicherung (Feuer-Einbruch-Diebstahl FED)</h3>
-                    <div class="layout vertical card ">
+                    <div class="layout vertical card mcard">
                         <h4>Grundbeitrag</h4>
                         <div class="layout horizontal justified">
                             <div class="layout vertical labelgroup">
@@ -116,7 +119,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         </div>
                     </div>
 
-                    <div class="layout vertical card ">
+                    <div class="layout vertical card mcard">
                         <h4>Höherversicherung: Merkblatt Punkt 6.2</h4>
                         <div class="layout horizontal">
                             <paper-input min="0" always-float-label label="Erhöhung (EURO)" type="number" step="[[vcs.FED.schritt.versicherteSumme]]"
@@ -126,7 +129,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         </div>
                     </div>
 
-                    <div class="layout vertical card ">
+                    <div class="layout vertical card mcard">
                         <h4>Zusatzversicherungen: Merkblatt Punkt 7</h4>
                         <template is="dom-repeat" items="{{vc.FED.zusatzversicherungen}}" index-as="i">
                             <div class="layout vertical">
@@ -146,7 +149,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 </div>
                 <div class="layout vertical inlinecard">
                     <h3>FED Gesamtberechnung</h3>
-                    <div class="layout vertical card ">
+                    <div class="layout vertical card mcard">
 
                         <div class="layout horizontal justified">
                             <div class="layout vertical labelgroup">
@@ -156,7 +159,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             </div>
                         </div>
                     </div>
-                    <div class="layout vertical card ">
+                    <div class="layout vertical card mcard">
                         <div class="layout horizontal justified">
                             <div class="layout vertical labelgroup">
                                 <label class="titlelabel">Kosten (EUR)</label>
@@ -170,7 +173,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <div class="card layout horizontal justified">
                 <div class="layout vertical inlinecard">
                     <h3>Familien-Unfallversicherung (UV) - optional</h3>
-                    <div class="layout vertical card ">
+                    <div class="layout vertical card mcard">
                         <h4>Versicherungsbeitrag</h4>
                         <div class="layout horizontal">
                             <paper-input min="0" always-float-label label="Beitrag (EUR)" type="number" step="[[vcs.UV.grundbeitrag.beitrag]]"
@@ -181,9 +184,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             </div>
             <div class="card layout horizontal justified">
                 <div class="layout vertical inlinecard">
-                    <h3>GBV</h3>
-                    <div class="layout vertical card ">
-
+                    <div class="layout vertical card mcard">
+                        <h4>GBV</h4>
                         <div class="layout horizontal justified">
                             <div class="layout vertical labelgroup">
                                 <label class="titlelabel">Kosten (EUR)</label>
@@ -191,7 +193,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             </div>
                         </div>
                     </div>
-                    <div class="layout vertical card ">
+                    <div class="layout vertical card mcard">
                         <div class="layout horizontal justified">
                             <div class="layout vertical labelgroup">
                                 <label class="titlelabel">Versicherungsumme (EUR)</label>
@@ -202,8 +204,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 </div>
 
                 <div class="layout vertical inlinecard">
-                    <h3>FED</h3>
-                    <div class="layout vertical card ">
+                    <div class="layout vertical card mcard">
+                        <h4>FED</h4>
                         <div class="layout horizontal justified">
                             <div class="layout vertical labelgroup">
                                 <label class="titlelabel">Kosten (EUR)</label>
@@ -211,7 +213,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             </div>
                         </div>
                     </div>
-                    <div class="layout vertical card ">
+                    <div class="layout vertical card mcard">
                         <div class="layout horizontal justified">
                             <div class="layout vertical labelgroup">
                                 <label class="titlelabel">Versicherungsumme (EUR)</label>
@@ -222,8 +224,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 </div>
 
                 <div class="layout vertical inlinecard">
-                    <h3>Unfallversicherung</h3>
-                    <div class="layout vertical card ">
+                    <div class="layout vertical card mcard">
+                        <h4>Unfallversicherung</h4>
                         <div class="layout horizontal justified">
                             <div class="layout vertical labelgroup">
                                 <label class="titlelabel">Kosten (EUR)</label>
@@ -233,8 +235,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     </div>
                 </div>
                 <div class="layout vertical inlinecard">
-                    <h3>Gesamt</h3>
-                    <div class="layout vertical card ">
+                    <div class="layout vertical card mcard">
+                        <h4>Zusammen</h4>
                         <div class="layout horizontal justified">
                             <div class="layout vertical labelgroup">
                                 <label class="titlelabel">Kosten (EUR)</label>
@@ -243,7 +245,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             </div>
                         </div>
                     </div>
-                    <div class="layout vertical card ">
+                    <div class="layout vertical card mcard">
                         <div class="layout horizontal justified">
                             <div class="layout vertical labelgroup">
                                 <label class="titlelabel">Versicherungsumme (EUR)</label>
