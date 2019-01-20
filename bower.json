@@ -29,7 +29,9 @@
     "paper-card": "PolymerElements/paper-card#2.1.0",
     "papa-parse": "PolymerVis/papa-parse#^2.0.1",
     "vaadin-button": "vaadin/vaadin-button#^2.1.0",
-    "paper-dropdown-input": "Juravenator/paper-dropdown-input#^2.5.2"
+    "paper-dropdown-input": "Juravenator/paper-dropdown-input#^2.5.2",
+    "jquery": "^3.3.1",
+    "jQuery": "^3.3.1"
   },
   "resolutions": {
     "polymer": "^2.0.0",
