@@ -26,7 +26,15 @@
                                 port: '8000'
                             },
                             CSV_BASIC: {
-                                path: '/loadCSV/gaertner',
+                                path: '/loadCSV/test',
+                                port: '8000'
+                            },
+                            CSV_GAERTLER: {
+                                path: '/loadCSV/gaertler',
+                                port: '8000'
+                            },
+                            CSV_VERSICHERTE: {
+                                path: '/loadCSV/versicherte',
                                 port: '8000'
                             }
                         }
@@ -120,7 +128,57 @@
                         return  [['firstName','lastName','street','city'],[,,,]] 
                     } else return response.json();
                 }).catch(() => {
-                    console.log('getCSV die Anfrage an api/cats war nicht erfolgreich')
+                    console.log('getCSV die Anfrage an /loadCSV/test war nicht erfolgreich')
+                });
+            }
+
+            getGaertlerCSV(){
+                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.CSV_GAERTLER.path, this.URLS.CSV_GAERTLER.port);
+                let myHeaders = new Headers();
+                
+                let myInit = {
+                    method: 'GET',
+                    headers: myHeaders,
+                    mode: 'cors',
+                    cache: 'default',
+                    credentials: 'omit'
+                };
+
+                let myRequest = new Request(sourceURL, myInit);
+
+                return fetch(myRequest).then((response) => {
+                    console.log("getCSVs aaaaaaaantwort" + JSON.stringify(response));
+                    if (response.status === 204) {
+                        return  [['firstName','lastName','street','city'],[,,,]] 
+                    } else return response.json();
+                }).catch((err) => {
+                    console.log('getGaertlerCSV die Anfrage an /loadCSV/gaertler war nicht erfolgreich')
+                    return Promise.reject(err);
+                });
+            }
+
+            getVersicherteCSV(){
+                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.CSV_VERSICHERTE.path, this.URLS.CSV_VERSICHERTE.port);
+                let myHeaders = new Headers();
+                
+                let myInit = {
+                    method: 'GET',
+                    headers: myHeaders,
+                    mode: 'cors',
+                    cache: 'default',
+                    credentials: 'omit'
+                };
+
+                let myRequest = new Request(sourceURL, myInit);
+
+                return fetch(myRequest).then((response) => {
+                    console.log("getCSVs aaaaaaaantwort" + JSON.stringify(response));
+                    if (response.status === 204) {
+                        return  [['firstName','lastName','street','city'],[,,,]] 
+                    } else return response.json();
+                }).catch((err) => {
+                    console.log('getGaertlerCSV die Anfrage an /loadCSV/gaertler war nicht erfolgreich')
+                    return Promise.reject(err);
                 });
             }
 

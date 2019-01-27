@@ -370,12 +370,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       ready() {
         super.ready();
-        this.$.firstclient.getCSV().then((resp) => {
-          console.log("die antwort kam:" + JSON.stringify(resp))
-          this.set('pageSize', 10)
-          this.mapToJSON(resp);
-          //this.mdata = JSON.stringify(resp.cats)
-        })
+        // this.$.firstclient.getCSV().then((resp) => {
+        //   console.log("die antwort kam:" + JSON.stringify(resp))
+        //   this.set('pageSize', 10)
+        //   this.mapToJSON(resp);
+        //   //this.mdata = JSON.stringify(resp.cats)
+        // })
 
 
         this.$.addbtn.addEventListener('click', () => {

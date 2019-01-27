@@ -80,9 +80,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         } */
 
       .toolbar {
-        height: 32px;
-        padding: 10px;
-        line-height: 32px;
+        height: 40px;
+        padding: 5px;
+        /*line-height: 32px;*/
         background: #eee;
       }
 
@@ -146,7 +146,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         --paper-progress-container-icolor: #00000000;
 
         --paper-button-mixin: {
-          padding: 0em 0.5em 0em 0.5em;
+          padding: 0.2em 0.5em 0.2em 0.5em !important;
           background-color: #1976d2;
           color: white;
         }
@@ -183,103 +183,140 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </style>
 
     <first-client id="firstclient"></first-client>
-    <!-- <papa-parse auto url="http://localhost:8000/loadCSV/gaertner" rows="{{mdata}}"></papa-parse> -->
-    <div class="toolbar">
-      <vaadin-checkbox checked="{{editing}}" style="margin-bottom: 20px">Enable Editing</vaadin-checkbox>
-      <vaadin-button raised id="addbtn">Add Item</vaadin-button>
-      <vaadin-button raised id="rmbtn">Remove Item</vaadin-button>
-      <paper-progress-button class="demo" bottom raised on-click="postCats" loading-label="Nicht so hecktisch ..."
-        loading="[[_loading]]">Speichern</paper-progress-button>
-      <grt-grid-pagination id="pages" datalength="[[mdata.length]]" page-size="{{pageSize}}" pstart="{{_pageStart}}"
+    <div class="toolbar layout horizontal justified" flex>
+      <!-- <vaadin-button raised id="addbtn">Add Item</vaadin-button>
+      <vaadin-button raised id="rmbtn">Remove Item</vaadin-button> -->
+      <!-- <paper-progress-button class="demo" bottom raised on-click="postCats" loading-label="Nicht so hecktisch ..."
+        loading="[[_loading]]">Speichern</paper-progress-button> -->
+        
+      <grt-grid-pagination  id="pages" datalength="[[mvdata.length]]" page-size="{{pageSize}}" pstart="{{_pageStart}}"
         on-pagechanged="changePage"></grt-grid-pagination>
+      <div class="layout horizontal justified" flex="50">
+          <paper-progress-button class="demo" bottom raised on-click="postCats" loading-label="Nicht so hecktisch ..."
+          loading="[[_loading]]">Antrag erfassen <iron-icon icon="add-circle-outline" slot="item-icon" ></iron-icon></paper-progress-button>
+       <paper-progress-button class="demo" bottom raised on-click="postCats" loading-label="Nicht so hecktisch ..."
+        loading="[[_loading]]">Speichern</paper-progress-button>
+      </div>
     </div>
 
     <div class="page">
       <vaadin-grid id="mygrid" page-size="{{pageSize}}" active-item="{{activeItem}}" aria-label="Basic Binding Example"
-        items="[[mdata]]" column-reordering-allowed>
+        items="[[mvdata]]" column-reordering-allowed>
         <template class="row-details">
           <div class="details">
             <p>
-              <span>Bin [[item.alter]] alt</span><br>
-              <small>[[item.description]]</small>
-            </p>
-            <p>
-              <span>Hi! My name is [[item.firstName]]!</span><br>
-              <small>[[item.email]]</small>
+              <span>Anschrift</span><br>
+              <small>[[columnNames.3]]:[[item.STRASSE]]</small><br>
+              <small>[[columnNames.4]]:[[item.PLZ]]</small><br>
+              <small>[[columnNames.5]]:[[item.ORT]]</small><br>
             </p>
           </div>
         </template>
         <!--auto-select wenn man will dass man auch über das anklicken in der zeile nicht nur in der box selektieren kann-->
-        <vaadin-grid-selection-column auto-select></vaadin-grid-selection-column>
+        <vaadin-grid-selection-column auto-select width="40px"></vaadin-grid-selection-column>
 
-        <vaadin-grid-column width="40px" flex-grow="0" text-align="end">
-          <template class="header">#</template>
-          <template>[[index]]</template>
-          <!-- If necessary, the footer could be set using <template class="footer"> -->
-          <!-- <template class="footer">#</template> -->
-        </vaadin-grid-column>
-        <!-- <vaadin-grid-column-group resizable> -->
-        <vaadin-grid-column path="firstName">
+        <vaadin-grid-column path="GaNr" header="GaNr" width="75px" flex-grow="0" text-align="end">
           <template class="header">
-            <vaadin-grid-sorter path="firstName" on-sorter-changed="_sortChange">
-              First Name
-            </vaadin-grid-sorter>
-
-          </template>
-          <template>
-            <input class="vaadin-demo-input" value="{{item.firstName::input}}" readonly$="[[!editing]]" hidden$="[[!editing]]"
-              style="max-width: -moz-available;">
-            <label hidden$="[[editing]]">[[item.firstName]]</label>
-          </template>
-          <!-- <template class="footer">First Name</template> -->
-        </vaadin-grid-column>
-
-        <!-- <vaadin-grid-filter-column path="lastName" resizable> -->
-        <vaadin-grid-column path="lastName" resizable>
-          <template class="header">
-              <vaadin-grid-sorter path="lastName" on-sorter-changed="_sortChange">
-            Last Name
-          </vaadin-grid-sorter>
-          </template>
-          <template>
-            <input class="vaadin-demo-input" value="{{item.lastName::input}}" readonly$="[[!editing]]" hidden$="[[!editing]]"
-              style="max-width: -moz-available;">
-            <label hidden$="[[editing]]">[[item.lastName]]</label>
-          </template>
-          <!-- <template class="footer">Last Name</template> -->
-          <!-- </vaadin-grid-filter-column> -->
-        </vaadin-grid-column>
-        <!-- </vaadin-grid-column-group> -->
-        <vaadin-grid-column path="alter" header="Alter" flex-grow="0" text-align="end" resizable>
-          <template class="header">
-            <vaadin-grid-sorter path="alter" on-sorter-changed="_sortChange">
-              Alter
+            <vaadin-grid-sorter path="GaNr" on-sorter-changed="_sortChange">
+              [[columnNames.2]]
             </vaadin-grid-sorter>
           </template>
-          <!--
-              <template> <input class="vaadin-demo-input" value="{{item.alter::input}}" readonly$="[[!editing]]" style="max-width: -moz-available;"></template>
-              <template class="footer">Alter</template> -->
-              
-        </vaadin-grid-column>
-        <!-- <vaadin-grid-column-group> -->
-        <vaadin-grid-column width="200px">
-          <template class="header">Email</template>
-          <template>[[item.firstName]].[[item.lastName]]@example.com</template>
         </vaadin-grid-column>
 
-        <vaadin-grid-column width="8em">
-          <template class="header">Address</template>
-          <template>
-            <div style="white-space: normal">[[item.street]], [[item.city]]</div>
+        <vaadin-grid-column path="NAME" width="141px" resizable>
+          <template class="header">
+            <vaadin-grid-sorter path="NAME" on-sorter-changed="_sortChange">
+              [[columnNames.0]]
+            </vaadin-grid-sorter>
           </template>
-          <!-- <template class="footer">Address</template> -->
+        </vaadin-grid-column>
+
+        <vaadin-grid-column path="VORNAME" width="141px" resizable>
+          <template class="header">
+            <vaadin-grid-sorter path="VORNAME" on-sorter-changed="_sortChange">
+              [[columnNames.1]]
+            </vaadin-grid-sorter>
+          </template>
         </vaadin-grid-column>
         <!-- </vaadin-grid-column-group> -->
+        <vaadin-grid-column path="SA" width="60px" resizable>
+          <template class="header">
+            <vaadin-grid-sorter path="SA" on-sorter-changed="_sortChange">
+              [[columnNames.6]]
+            </vaadin-grid-sorter>
+          </template>
+        </vaadin-grid-column>
+
+        <vaadin-grid-column path="UV" width="60px" resizable text-align="end">
+          <template class="header">
+            <vaadin-grid-sorter path="UV" on-sorter-changed="_sortChange">
+              [[columnNames.7]]
+            </vaadin-grid-sorter>
+          </template>
+        </vaadin-grid-column>
+
+        <vaadin-grid-column path="Beitrag" width="90px" resizable text-align="end">
+          <template class="header">
+            <vaadin-grid-sorter path="Beitrag" on-sorter-changed="_sortChange">
+              [[columnNames.8]]
+            </vaadin-grid-sorter>
+          </template>
+        </vaadin-grid-column>
+
+        <vaadin-grid-column path="A73" width="80px" resizable text-align="end">
+          <template class="header">
+            <vaadin-grid-sorter path="A73" on-sorter-changed="_sortChange">
+              [[columnNames.9]]
+            </vaadin-grid-sorter>
+          </template>
+        </vaadin-grid-column>
+
+        <vaadin-grid-column path="Solar" width="80px" resizable text-align="end">
+          <template class="header">
+            <vaadin-grid-sorter path="Solar" on-sorter-changed="_sortChange">
+              [[columnNames.10]]
+            </vaadin-grid-sorter>
+          </template>
+        </vaadin-grid-column>
+
+        <vaadin-grid-column path="GBV" width="80px" resizable text-align="end">
+          <template class="header">
+            <vaadin-grid-sorter path="GBV" on-sorter-changed="_sortChange">
+              [[columnNames.11]]
+            </vaadin-grid-sorter>
+          </template>
+        </vaadin-grid-column>
+
+        <vaadin-grid-column path="FED" width="80px" resizable text-align="end">
+          <template class="header">
+            <vaadin-grid-sorter path="FED" on-sorter-changed="_sortChange">
+              [[columnNames.12]]
+            </vaadin-grid-sorter>
+          </template>
+        </vaadin-grid-column>
+
+        <vaadin-grid-column path="HoeV" width="80px" resizable text-align="end">
+          <template class="header">
+            <vaadin-grid-sorter path="HoeV" on-sorter-changed="_sortChange">
+              [[columnNames.13]]
+            </vaadin-grid-sorter>
+          </template>
+        </vaadin-grid-column>
+
+        <vaadin-grid-column path="Bemerkung" resizable>
+          <template class="header">
+            <vaadin-grid-sorter path="Bemerkung" on-sorter-changed="_sortChange">
+              [[columnNames.15]]
+            </vaadin-grid-sorter>
+          </template>
+        </vaadin-grid-column>
 
         <vaadin-grid-column width="100px">
           <template class="header"></template>
           <template>
-            <vaadin-checkbox aria-label$="Show Details for [[firstName]]" checked="{{detailsOpened}}">Details</vaadin-checkbox>
+              <iron-icon id="cr[[item.GaNr]]" icon="create" slot="item-icon" on-click="_openDetails"></iron-icon>
+              <iron-icon icon="delete" slot="item-icon" on-click="{{detailsOpened}}"></iron-icon>
+            <vaadin-checkbox aria-label$="Show Details for [[NAME]]" checked="{{detailsOpened}}">Details</vaadin-checkbox>
           </template>
         </vaadin-grid-column>
       </vaadin-grid>
@@ -323,7 +360,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             type: Boolean,
             value: false
           },
-          mdata: {
+          mvdata: {
             type: Array,
             value: [],
             notify: true,
@@ -334,71 +371,83 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             value: null
           },
           selected: {
-                    type: Boolean,
-                    value: false,
-                    observer: '_activeChanged',
-                }
+            type: Boolean,
+            value: false,
+            observer: '_activeChanged',
+          }
         }
       }
 
+      _openDetails(e){
+
+      }
+
       _sortChange(e) {
+        let self = this;
+        // Ganz wichtig hier e.stopPropagation, weil sonst der "sorter-changed" Event,
+        // weiter an den vaadin-grid propagiert worden wäre, und dieser würde noch einmal seine eigene 
+        // Sortierung die unsere "überladen"/ ändern würde. Bemerkbar wäre das dann insbesondere bei
+        // der selbst-implementierte "natural-alphanumerischen-Sortierung" (1,2,3,3a,4,4a etc)
+        e.stopPropagation();
+        console.log('sortchange called außer event' + (e.target) + (e.target.path) + (e.target.direction));
         if (e.target && e.target.path && e.target.direction) {
           let key = e.target.path;
           let direction = e.target.direction;
-          let records = this.mdata;
-          console.log('sortchange called');
+          let records = JSON.parse(JSON.stringify(self.mvdata));
+          console.log('sortchange called in event');
 
           console.log('sortchange called e.target.path' + key + ' e.target.direction' + direction + " nritems" + records.length)
-         
-          if(!isNaN(this.mdata[0][key])){
-             // for numbers
-            records.sort(function(a,b){
-            
-            if( direction === 'asc'){
-              if(a[key] < b[key]) return -1;
-              if(a[key] > b[key]) return 1;
-            } else {
-              if(a[key] < b[key]) return 1;
-              if(a[key] > b[key]) return -1;
-            }
-            return 0;
-          });
+          if (key === 'GaNr') {
+            // For Number-like Strings containing alphanummerical chars
+            records = records.sort(function (o1, o2) {
+              let result = self.naturalSorter(o1.GaNr, o2.GaNr);
+              if (direction === 'asc'){
+                return (result < 0) ? -1 : 1;
+              } else {
+                return (result < 0) ? 1 : -1;
+              }
+              return 0;
+            });
+          } else if (!isNaN(this.mvdata[0][key])) {
+            // for numbers
+            records.sort(function (a, b) {
 
-          } else{
+              if (direction === 'asc') {
+                if (a[key] < b[key]) return -1;
+                if (a[key] > b[key]) return 1;
+              } else {
+                if (a[key] < b[key]) return 1;
+                if (a[key] > b[key]) return -1;
+              }
+              return 0;
+            });
+
+          } else {
             // for strings
-            records.sort(function(a,b){
-            
-            if( direction === 'asc'){
-              if(a[key].toLowerCase() < b[key].toLowerCase()) return -1;
-              if(a[key].toLowerCase() > b[key].toLowerCase()) return 1;
-            } else {
-              if(a[key].toLowerCase() < b[key].toLowerCase()) return 1;
-              if(a[key].toLowerCase() > b[key].toLowerCase()) return -1;
-            }
-            return 0;
-          });
+            records.sort(function (a, b) {
+
+              if (direction === 'asc') {
+                if (a[key].toLowerCase() < b[key].toLowerCase()) return -1;
+                if (a[key].toLowerCase() > b[key].toLowerCase()) return 1;
+              } else {
+                if (a[key].toLowerCase() < b[key].toLowerCase()) return 1;
+                if (a[key].toLowerCase() > b[key].toLowerCase()) return -1;
+              }
+              return 0;
+            });
 
           }
-          
-          this.set('mdata', JSON.parse(JSON.stringify(records)));
-          this.changePage();
+          self.set('mvdata', records);
+          self.changePage();
         }
 
       }
 
       changePage() {
-
-        console.log('do pagination changed page fff + this._pageSize' + this.pageSize);
-
-        //this.$.mygrid.items = this.mdata.slice(this._pageStart, end);
         if (this._pageStart || this._pageStart === 0) {
           let end = parseInt(this._pageStart) + parseInt(this.pageSize);
-          let newItems = this.mdata.slice(this._pageStart, end);
-          // console.log('do pagination this._pageStart' + this._pageStart + ' pageSize' + this._pageSize + " newItemslength:" + newItems.length)
-          // console.log('mdata.length' + this.mdata.length)
-
-
-          this.$.mygrid.items = newItems;
+          let newItems = this.mvdata.slice(this._pageStart, end);
+         this.$.mygrid.items = newItems;
         }
 
       }
@@ -407,22 +456,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       ready() {
         super.ready();
-        this.$.firstclient.getCSV().then((resp) => {
-          console.log("die antwort kam:" + JSON.stringify(resp))
+        this.$.firstclient.getVersicherteCSV().then((resp) => {
           this.set('pageSize', 10)
           this.mapToJSON(resp);
-          //this.mdata = JSON.stringify(resp.cats)
+        }).catch((err) => {
+          console.log("Fehler beim get fuer versicherte  kam:" + JSON.stringify(err))
         })
 
 
         this.$.addbtn.addEventListener('click', () => {
           console.log('add gedruckt')
-          this.push('mdata', { firstName: "Psuhido", lastName: "Fake", alter: 222, street: "pushtest 22", city: "test" });
+          this.push('mvdata', { firstName: "Psuhido", lastName: "Fake", alter: 222, street: "pushtest 22", city: "test" });
         });
 
         this.$.rmbtn.addEventListener('click', () => {
           console.log('remove gedruckt')
-          this.pop('mdata');
+          this.pop('mvdata');
         });
 
         this.$.mygrid.addEventListener('selected-items-changed', (e) => {
@@ -441,26 +490,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           //this.$.mygrid.selectedItems = item ? [item] : [];
           console.log('active item' + JSON.stringify(event.target.activeItem))
         });
-
-        // window.document.addEventListener('WebComponentsReady', () => {
-        //   let rws = this.shadowRoot.querySelectorAll('[part-="row"]');
-        //   this.doStyle(rws);
-        //   // rws.forEach((elem) => {
-        //   //   console.log('elem wird gestiled')
-        //   //   //elem.style['height'] = "10px";
-
-        //   // })
-
-        // })
-
-        // const groups = this.shadowRoot.querySelectorAll('vaadin-grid-column-group');
-        // groups[0].headerRenderer = function (root, column, rowData) {
-        //   root.textContent = 'GanzerName';
-        // };
-        // groups[1].headerRenderer = function (root, column, rowData) {
-        //   root.textContent = 'Kontaktdaten';
-        // };
-
       }
 
       doOnSelection(e) {
@@ -476,52 +505,63 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         let columns = resp[0];
         console.log('das sind die columns' + columns.toString())
         for (let i = 1; i < resp.length; i++) {
-          let myRowObj = {};
-          for (let j = 0; j < resp[i].length; j++) {
-            let attrName = columns[j];
-            let attrValue = (attrName === "alter") ? (isFinite(resp[i][j]) && !isNaN(resp[i][j]) ? parseInt(resp[i][j]) : 0) : resp[i][j];
-            myRowObj[attrName] = attrValue;
-            // Object.assign( myRowObj, {
-            //   attrName : resp[i][j]
-            // });
+          if (resp[i][0] !== 'Ende der Liste') {
+            let myRowObj = {};
+            for (let j = 0; j < resp[i].length; j++) {
+              let attrName = columns[j].replace(/[\. ,:-]+/g, "");
+              attrName = attrName.replace(/ü/g, 'ue').replace(/ö/g, 'oe');
+              let attrValue = (attrName === "GBV" || attrName === "FED" || attrName === "Beitrag" || attrName === "UV" || attrName === "HoeV") ? (isFinite(resp[i][j]) && !isNaN(resp[i][j]) ? (parseInt(resp[i][j]) || 0) : 0) : resp[i][j];
+              myRowObj[attrName] = attrValue;
+            }
+            transformedResult.push(myRowObj);
+          } else {
+            break;
           }
-          transformedResult.push(myRowObj);
-          //this.push('mdata', myRowObj)
-        }
-        // console.log('transformed:' + JSON.stringify(transformedResult))
-        this.set('mdata', transformedResult);
-        // this.$.mygrid.items = transformedResult;
-        //this.doPagination()
 
+        }
+        this.set('columnNames', columns);
+        this.set('mvdata', transformedResult);
       }
 
-      postCats() {
-        console.log('data ist' + JSON.stringify(this.$.ggg.data))
-        let self = this;
-        self._setLoading(true)
-        console.log('speichern gedrückt');
-        self.$.firstclient.postCats(JSON.stringify({ cats: self._katzen })).finally(() => {
-          console.log('finally erreicht')
-          setTimeout(function () {
-            self._setLoading(false)
-          }, 1000);
-        })
+      naturalSorter(as, bs) {
+        let a, b, a1, b1, i = 0, n, L,
+          rx = /(\.\d+)|(\d+(\.\d+)?)|([^\d.]+)|(\.\D+)|(\.$)/g;
+        if (as === bs) return 0;
+        a = as.toLowerCase().match(rx);
+        b = bs.toLowerCase().match(rx);
+        console.log('path as:' + as + 'bs:' + bs);
+        L = a.length;
+        while (i < L) {
+          if (!b[i]) return 1;
+          a1 = a[i],
+            b1 = b[i++];
+          if (a1 !== b1) {
+            n = a1 - b1;
+            if (!isNaN(n)){
+              console.log('path returned wird' + n + ' for as' + as + 'bs' + bs + 'a1' + a1 + 'b1' + b1); 
+              return n;
+            } else {
+              console.log('path else')
+            }
+            return a1 > b1 ? 1 : -1;
+          }
+        }
+        return b[i] ? -1 : 0;
       }
 
       _setLoading(val) {
         this.set('_loading', val);
       }
 
-      _activeChanged(newV, oldV){
+      _activeChanged(newV, oldV) {
         console.log('selected changed newV:' + newV + " oldV:" + oldV)
-        if (newV){
-          this.$.firstclient.getCSV().then((resp) => {
-          console.log("die antwort kam:" + JSON.stringify(resp))
-          this.set('pageSize', 10)
-          this.mapToJSON(resp);
-          this.changePage()
-          //this.mdata = JSON.stringify(resp.cats)
-        })
+        if (newV) {
+          this.$.firstclient.getVersicherteCSV().then((resp) => {
+            console.log("die antwort kam:" + JSON.stringify(resp))
+            this.set('pageSize', 10)
+            this.mapToJSON(resp);
+            this.changePage()
+          })
         }
       }
     }
