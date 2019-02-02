@@ -315,7 +315,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <template class="header"></template>
           <template>
               <iron-icon id="cr[[item.GaNr]]" icon="create" slot="item-icon" on-click="_openDetails"></iron-icon>
-              <iron-icon icon="delete" slot="item-icon" on-click="{{detailsOpened}}"></iron-icon>
+              <iron-icon id="rm[[item.GaNr]]" icon="delete" slot="item-icon" on-click="_removeItem"></iron-icon>
             <vaadin-checkbox aria-label$="Show Details for [[NAME]]" checked="{{detailsOpened}}">Details</vaadin-checkbox>
           </template>
         </vaadin-grid-column>
@@ -379,7 +379,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       _openDetails(e){
+        e.preventDefault();
+        e.model.detailsOpened = !e.model.detailsOpened;
+        
 
+      }
+
+      _removeItem(e){
+        e.preventDefault();
+        let id = e.target.id.substring(2);
+        console.log('id ist' + id);
+        let elem = this.mvdata.find((v) => { 
+          return v.GaNr === id });
+        console.log('elem ist' + JSON.stringify(elem));
+        let idx = this.mvdata.indexOf(elem);
+        console.log('index ist' + idx);
+        if (idx >= 0){
+          this.splice('mvdata', idx, 1);
+        }
       }
 
       _sortChange(e) {
