@@ -36,6 +36,10 @@
                             CSV_VERSICHERTE: {
                                 path: '/loadCSV/versicherte',
                                 port: '8000'
+                            },
+                            JSON_VERSICHERTE:{
+                                path: '/api/versicherte',
+                                port: '8000'
                             }
                         }
                     }
@@ -180,6 +184,73 @@
                     console.log('getGaertlerCSV die Anfrage an /loadCSV/gaertler war nicht erfolgreich')
                     return Promise.reject(err);
                 });
+            }
+
+            postVersicherteAsJSON(versicherte){
+                console.log('topost' + JSON.stringify(versicherte))
+                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.JSON_VERSICHERTE.path, this.URLS.JSON_VERSICHERTE.port);
+                let myHeaders = new Headers();
+                myHeaders.set("Content-Type", "application/json");
+
+                let tosend=JSON.stringify(versicherte);
+
+                let myInit = {
+                    method: 'POST',
+                    headers: myHeaders,
+                    mode: 'cors',
+                    cache: 'default',
+                    credentials: 'omit',
+                    body: tosend
+                };
+
+                let myRequest = new Request(sourceURL, myInit);
+
+                return fetch(myRequest).then((response) => {
+                    console.log("postVersicherteAsJSON antwort" + JSON.stringify(response));
+                    if(response && response.ok){
+                        return response.json();
+                    } else return undefined;
+                    
+                    
+                }).catch(() => {
+                    console.log('postVersicherteAsJSON die Anfrage an' + sourceURL + ' war nicht erfolgreich')
+                });
+
+            }
+
+            getVersicherteAsJSON(){
+                let self = this;
+                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.JSON_VERSICHERTE.path, this.URLS.JSON_VERSICHERTE.port);
+                let myHeaders = new Headers();
+
+                let myInit = {
+                    method: 'GET',
+                    headers: myHeaders,
+                    mode: 'cors',
+                    cache: 'default',
+                    credentials: 'omit'
+                };
+
+                let myRequest = new Request(sourceURL, myInit);
+
+                return fetch(myRequest).then((response) => {
+                    if (response.status && response.status === 204) {
+                        console.log("getVersicherte as JSON status 204")
+                        return Promise.reject("NotFound");
+                    } else {
+                        return response.json();
+                    }
+                })
+                    .then((data) => {
+                        console.log('basicclient versicherte as jason wird gesetzt auf' + JSON.stringify(data))
+                        self.set('versichertejson', data);
+                        console.log('basicclient versicherte as json wurde gesetzt auf' + JSON.stringify(this.versicherungconfig))
+                        return Promise.resolve(data);
+                    })
+                    .catch((err) => {
+                        console.log('getVersicherungconfig die Anfrage an api/versicherte war nicht erfolgreich' + JSON.stringify(error))
+                    });
+
             }
 
 

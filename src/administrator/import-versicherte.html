@@ -1,0 +1,158 @@
+<!--
+Die Versicherten-Seite
+Auf dieser Seite werden nur die Pächter dargestellt die eine Versicherung abgeschlossen haben.
+Diese kann beim KVD oder bei einer externen Versicherungsgesellschaft abgeschlossen sein.
+Ein bisher Versicherter der nicht mehr bezahlt hat, wird zuerst telefonisch, per E-Mail oder per Brief erinnert.
+
+Wenn für diesen Pächter keine Zahlung und keinen Versicherungsnachweis erfasst wurden, OBWOHL für ihn die Erinnerungsversuche
+unternommen wurden, wird dieser:
+
+  - authomatisch vom System nach 14 Tagen nach dem Erinnerungskontakt; 
+  - manuell durch den Versicherungsbeauftragten;
+
+in die Liste der "nicht versicherten" verschoben. Die Verschiebung in die Liste der anzumahnenden Pächter setzt
+zwingend voraus, dass der Versicherungsbeauftragter die Erinnerungsversuche unternommen und protokolliert hat.
+
+Für die nicht - versicherten Pächter wird eine Benachrichtigungs-EMail an den Verein samt einem 
+an der E-Mail angehängten Mahnungs-Anschreiben verschickt. Die E-Mail an den Verein enthält zwingend
+die Informationen über die nicht erfolgreichen Versuche, ihn zur Zahlung zu bewegen.
+Der 14-Tage Frist kann vom Versicherungsbeauftragten auf maximal 1 Monat verlängert werden.
+
+***********************************************
+Entstehung und Änderungen der Versichertenliste
+***********************************************
+Die Versichertenliste entsteht initial durch das Importieren der Versichertenbestand aus der CSV-Datei vom KVD.
+Weiterhin, kann der Benutzer, manuell durch die Bearbeitung der "nicht verischerten" Liste, einzelne "nicht Verischerte"
+in die Versichertenliste verschieben. Dabei musste er die Informationen über den letzten gültigen Zahlungseing erfasst haben
+(eingezahlten Zahlungsbetrag, Datum, Vericherungsoptionen(FED usw)).
+
+Man kann Einträge aus dieser Liste in die Nicht-Versicherten-Liste verschieben oder ganz Löschen.
+Eine Löschung aus der Versichertenliste führt nicht zu einer tatsächlichen Löschung, sondern in die Verschiebung der 
+Daten in einer Versicherten-Passivliste, denn es könnte durchaus sein, dass man uach nach einer Kündigung die 
+Daten über die Versicherung noch braucht. Die Einträge in der Passivliste werden vom System nach 2 Jahren aus der Liste entfernt.
+Ab diesem Zeitpunkt kennt das System keine Informationen mehr über die versicherte Person.
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+1. Versichertendaten initialisieren
+
+a. durch Import aus excell Tabelle der Pächter des Vereins
+
+b. durch Import aus KVD Tabelle -Hier der Fall
+
+c. (das Beste) import und Mergen (Zusammenfügen) der beiden Tabellen aus a. und b.
+mit entsprechenden Meldungen bei Unstimmigkeiten 
+(z.Bsp. KVD-Versicherter existiert und Vereins-Pächter nicht vorhanden, Abweichungen im Namen oder Adresse)
+
+In diesem Fall beide Datenmengen werden zuerst nach der Gartennummer sortiert. Dann werden die einzelnen Gärten-Daten 
+miteinander verglichen. Alles was nicht übereinstimmt wird mit "ungeklärt" markiert. 
+Beim Vorhandensein eines Datensatzes für den entsprechenden Garten in der Versichertendaten, wird auch dieser Datensatz aus 
+den Versicherten in den ungeklärten verschoben. Die ungeklärten Datensätze haben ein Feld "Herkunft", als wo die Daten her stammen, 
+mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
+
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/paper-progress-button/paper-progress-button.html">
+<link rel="import" href="../clients/firstclient.html">
+<link rel="import" href="../shared-styles.html">
+
+<dom-module id="import-versicherte">
+  <template>
+    <style include="shared-styles">
+      :host {
+        /* Stretch this element to fill viewport */
+        height: 85vh;
+
+        /* Make a flex column layout of children */
+        display: flex;
+        flex-direction: column;
+      }
+
+      
+    </style>
+
+    <first-client id="firstclient"></first-client>
+    <div class="toolbar layout horizontal center-justified" flex>
+          <paper-progress-button bottom raised on-click="_importVersichertePressed" loading-label="Nicht so hecktisch ..."
+          loading="[[_loading]]">KVD Daten aus CSV importieren <iron-icon icon="add-circle-outline" slot="item-icon" ></iron-icon></paper-progress-button>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    class ImportVersicherte extends Polymer.Element {
+      static get is() { return 'import-versicherte'; }
+
+      static get properties() {
+        return {
+          
+          _loading: {
+            type: Boolean,
+            value: false
+          },
+
+          mvdata: {
+            type: Array,
+            value: [],
+            notify: true,
+            reflectToAttribute: true
+          },
+          
+        }
+      }
+
+      mapToJSON(resp) {
+        let transformedResult = [];
+        let columns = resp[0];
+        console.log('das sind die columns' + columns.toString())
+        for (let i = 1; i < resp.length; i++) {
+          if (resp[i][0] !== 'Ende der Liste') {
+            let myRowObj = {};
+            for (let j = 0; j < resp[i].length; j++) {
+              let attrName = columns[j].replace(/[\. ,:-]+/g, "");
+              attrName = attrName.replace(/ü/g, 'ue').replace(/ö/g, 'oe');
+              let attrValue = (attrName === "GBV" || attrName === "FED" || attrName === "Beitrag" || attrName === "UV" || attrName === "HoeV") ? (isFinite(resp[i][j]) && !isNaN(resp[i][j]) ? (parseInt(resp[i][j]) || 0) : 0) : resp[i][j];
+              myRowObj[attrName] = attrValue;
+            }
+            transformedResult.push(myRowObj);
+          } else {
+            break;
+          }
+
+        }
+        this.set('columnNames', columns);
+        this.set('mvdata', transformedResult);
+        console.log('transformeddata' + JSON.stringify(this.mvdata))
+      }
+
+      _importVersichertePressed(){
+        this.$.firstclient.getVersicherteCSV().then((resp) => {
+          this.mapToJSON(resp);
+          let dataAndColumns = {data: this.mvdata, columns: this.columnNames}
+          this.saveToDB(dataAndColumns);
+        }).catch((err) => {
+          console.log("Fehler beim importVersicherte fuer versicherte  kam:" + JSON.stringify(err))
+        })
+
+      }
+
+      saveToDB(dataAndColumns){
+        this.$.firstclient.postVersicherteAsJSON(dataAndColumns);
+      }
+
+
+
+      
+
+      _setLoading(val) {
+        this.set('_loading', val);
+      }
+
+      
+    }
+
+    window.customElements.define(ImportVersicherte.is, ImportVersicherte);
+  </script>
+</dom-module>
