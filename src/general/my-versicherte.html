@@ -56,6 +56,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../clients/firstclient.html">
 <link rel="import" href="../shared-styles.html">
 <link rel="import" href="../utils/grt-grid-pagination.html">
+<link rel="import" href="../utils/grt-dialog.html">
 
 
 <dom-module id="my-versicherte">
@@ -80,7 +81,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         } */
 
       .toolbar {
-        height: 40px;
+        /* height: 40px; */
         padding: 5px;
         /*line-height: 32px;*/
         background: #eee;
@@ -111,35 +112,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         flex: 1;
       }
 
-      /* :host {
-        height: 100%;
-        width: 100%;
-        overflow: auto;
-        display: inline-block;
-      } */
-      /* :host {
-        display: block;
+      .btn {
+  
+  border: none; /* Remove borders */
+  
+  
+  border-radius: 10%;
+  cursor: pointer; /* Mouse pointer on hover */
+}
 
-        padding: 10px;
-        height: 100% !important;
-      } */
 
-      /* #mygrid {
-        min-height: calc(100vH - 250px);
-      } */
-
-      /* .page-content {
-
-        margin: 16px;
-        padding: 16px;
-        border-radius: 5px;
-        background-color: #fff;
-        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
-        margin-top: 62px;
-        min-height: calc(100% - 62px);
-        overflow: auto;
-        width: 96%;
-      } */
 
       .demo {
         --paper-progress-active-color: #1875d1;
@@ -183,6 +165,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </style>
 
     <first-client id="firstclient"></first-client>
+    <grt-dialog id="adddialog" cancel-name="Abbrechen" confirmation-name="Speichern" ></grt-dialog>
     <div class="toolbar layout horizontal justified" flex>
       <!-- <vaadin-button raised id="addbtn">Add Item</vaadin-button>
       <vaadin-button raised id="rmbtn">Remove Item</vaadin-button> -->
@@ -192,7 +175,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <grt-grid-pagination  id="pages" datalength="[[mvdata.length]]" page-size="{{pageSize}}" pstart="{{_pageStart}}"
         on-pagechanged="changePage"></grt-grid-pagination>
       <div class="layout horizontal justified" flex="50">
-          <paper-progress-button class="demo" bottom raised on-click="postCats" loading-label="Nicht so hecktisch ..."
+          <paper-progress-button class="demo" bottom raised on-click="addVersicherter" loading-label="Nicht so hecktisch ..."
           loading="[[_loading]]">Antrag erfassen <iron-icon icon="add-circle-outline" slot="item-icon" ></iron-icon></paper-progress-button>
        <paper-progress-button class="demo" bottom raised on-click="postVersicherte" loading-label="Nicht so hecktisch ..."
         loading="[[_loading]]">Speichern</paper-progress-button>
@@ -231,7 +214,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           </template>
         </vaadin-grid-column>
 
-        <vaadin-grid-column path="VORNAME" width="141px" resizable>
+        <vaadin-grid-column path="VORNAME" width="100px" resizable>
           <template class="header">
             <vaadin-grid-sorter path="VORNAME" on-sorter-changed="_sortChange">
               [[columnNames.1]]
@@ -314,9 +297,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <vaadin-grid-column width="100px">
           <template class="header"></template>
           <template>
+            <button id="bt[[item.GaNr]]" on-click="_openDetails" class="endpagebutton"> 
+              <slot>
               <iron-icon id="cr[[item.GaNr]]" icon="create" slot="item-icon" on-click="_openDetails"></iron-icon>
+            </slot>
+            </button>
+            <button id="bt[[item.GaNr]]" on-click="_removeItem" class="endpagebutton" disabled="[[detailsOpened]]"> 
               <iron-icon id="rm[[item.GaNr]]" icon="delete" slot="item-icon" on-click="_removeItem"></iron-icon>
-            <vaadin-checkbox aria-label$="Show Details for [[NAME]]" checked="{{detailsOpened}}">Details</vaadin-checkbox>
+              </button>
+            <!-- <vaadin-checkbox aria-label$="Show Details for [[NAME]]" checked="{{detailsOpened}}">Details</vaadin-checkbox> -->
           </template>
         </vaadin-grid-column>
       </vaadin-grid>
@@ -381,8 +370,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _openDetails(e){
         e.preventDefault();
         e.model.detailsOpened = !e.model.detailsOpened;
-        
-
+        e.stopPropagation();
       }
 
       _removeItem(e){
@@ -397,6 +385,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         if (idx >= 0){
           this.splice('mvdata', idx, 1);
         }
+        e.stopPropagation();
+      }
+
+      addVersicherter(){
+        this.$.adddialog.showDialog()
+
       }
 
       _sortChange(e) {
@@ -480,6 +474,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           console.log("Fehler beim get fuer versicherte  kam:" + JSON.stringify(err))
         })
 
+        // this.$.firstclient.getVersicherteCSV().then((resp) => {
+        //   this.set('pageSize', 10);
+        //   this.mapToJSON(resp);
+         
+        // }).catch((err) => {
+        //   console.log("Fehler beim importVersicherte fuer versicherte  kam:" + JSON.stringify(err))
+        // })
+
 
         this.$.addbtn.addEventListener('click', () => {
           console.log('add gedruckt')
@@ -520,9 +522,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       splitToObjects(resp) {
         let versichertenData = resp.data;
         let columns = resp.columns;
-        
-        this.set('columnNames', columns);
         this.set('mvdata', versichertenData);
+        this.set('columnNames', columns);
+        // this.set('mvdata', versichertenData);
       }
 
       naturalSorter(as, bs) {

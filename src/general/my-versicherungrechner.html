@@ -270,7 +270,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     vconfig: {
                         type: Object,
                         value: null,
-                        notify: true
+                        notify: true, 
+                        observer: '_onconfigChange'
                     },
 
                     vc: {
@@ -409,9 +410,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
             _setVersicherungKonfig(vconfig) {
+                console.log('_setVersicherungKonfig called' + JSON.stringify(vconfig))
 
                 this.set('vc', vconfig);
                 this.set('vcs', JSON.parse(JSON.stringify(vconfig)));
+            }
+
+            _onconfigChange(){
+                this.set('vc', this.vconfig);
+                this.set('vcs', JSON.parse(JSON.stringify(this.vconfig)));
+
             }
 
             getStepForFEDZusatzVS(i) {

@@ -53,13 +53,23 @@
         border-radius: 50%;
       }
 
+      .pagebutton:hover:enabled {
+        background-color: RoyalBlue;
+      }
+
       .endpagebutton {
         background-color: var(--app-secondary-color);
         color: white;
         line-height: 27px;
         border-radius: 20%;
-
       }
+
+      .endpagebutton:hover:enabled {
+        background-color: RoyalBlue;
+      }
+
+      /* .opened {background-color:gray;} */
+
       /* removes ugly dotted lines on clicked button*/
       button::-moz-focus-inner {
         border: 0;
@@ -131,7 +141,7 @@
         margin: 16px;
       }
 
-      
+
 
       paper-button[raised] {
         background-color: var(--app-primary-color);
@@ -168,7 +178,7 @@
       }
 
       paper-progress-button[raised] {
-        
+
         --paper-button-mixin: {
           background-color: var(--app-primary-color);
           color: var(--app-primary-contrast-text-color);
@@ -194,8 +204,6 @@
         --paper-checkbox-checked-color: var(--app-primary-color);
         --paper-checkbox-checked-ink-color: var(--app-primary-color);
       }
-
-      
     </style>
   </template>
 </dom-module>
