@@ -1,0 +1,48 @@
+<!--
+Pagination Element for Vaadin-Grid Tables
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../shared-styles.html">
+
+<dom-module id="close-icon-button">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: inline-block;
+                padding: 3px;
+            }
+
+            button {
+                @apply --mbutton-mixin;
+            }
+        </style>
+
+        <button id="close_btn_icn" class="endpagebutton">
+            <iron-icon id="close_icn" icon="close" slot="item-icon"></iron-icon>
+        </button>
+
+    </template>
+
+    <script>
+        class CloseIconButton extends Polymer.Element {
+            static get is() { return 'close-icon-button'; }
+
+            static get properties() {
+                return {
+
+
+
+                }
+
+
+            }
+
+
+
+        }
+
+        window.customElements.define(CloseIconButton.is, CloseIconButton);
+    </script>
+</dom-module>

@@ -33,222 +33,234 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           display: block;
       }
 
-      .labelgroup{
-        padding-right:20px;
-      }
+      
 
       .inlinecard{
           display: inline-block !important;
       }
 
-      .mcard{
-        margin: 0px !important;
+      .mcard {
+        margin: 0px;
+        padding: 0px;
+        border-radius: 5px;
+        background-color: #fff;
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
       }
+
+      .lastelement{
+         
+        /* border-style: solid;
+        border-width: 0.5px; */
+        border-radius: 2%;
+        padding: 0px 5px;
+        margin: 0px 5px 10px 25px;
+        background-color: var(--app-secondary-light-color);
+        box-shadow: 0px 0px 8px 5px #888888;
+      }
+
       paper-input {padding-right:20px }
     </style>
         <basic-client id="bclient"></basic-client>
-        <div class="layout vertical">
-            <div class="card layout horizontal justified">
-                <!-- <div class="layout vertical inlinecard"> -->
-                        <div class="layout">
-                    <h3>Gebäude-Feuer-Versicherung (GBV)</h3>
-                    <div class="layout vertical card mcard ">
-                        <h4>Grundbeitrag: Feuer, Sturm u. Hagel lt. Merkblatt Punkt 2.2</h4>
-                        <div class="layout horizontal justified">
-                            <div class="layout vertical labelgroup">
-                                <label class="titlelabel">Grundbeitrag (EUR)</label>
-                                <label class="titlelabel contentlabelnr">[[vc.GBV.grundbeitrag.beitrag]]</label>
-                            </div>
-                            <div class="layout vertical labelgroup">
-                                <label class="titlelabel">Versicherungsumme (EUR)</label>
-                                <label class="titlelabel contentlabelnr">[[vc.GBV.grundbeitrag.versicherteSumme]]</label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="layout vertical card mcard">
-                        <h4>Erhöhung der Versicherungsumme: GBV Merkblatt Punkt 3</h4>
-                        <div class="layout horizontal">
-                            <paper-input min="0" always-float-label label="Erhöhung (EURO)" type="number" step="[[vcs.GBV.schritt.versicherteSumme]]"
-                                on-change="_gbvVSChanged" value="[[vc.GBV.schritt.versicherteSumme]]"></paper-input>
-                            <!-- <paper-input always-float-label label="Beitrag (EUR)" type="number" value="[[getGBVSchrittEURO(vc.GBV.schritt.versicherteSumme, vcs.GBV.schritt.beitrag)]]"></paper-input> -->
-                            <paper-input min="0" always-float-label label="Beitrag (EUR)" type="number" on-change="_gbvEuroChanged"
-                                value="[[vc.GBV.schritt.beitrag]]"></paper-input>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="layout vertical inlinecard">
-                    <h3>GBV Gesamtberechnung</h3>
-                    <div class="layout vertical card mcard">
-
-                        <div class="layout horizontal justified">
-                            <div class="layout vertical labelgroup">
-                                <label class="titlelabel">Versicherungsumme (EUR)</label>
-                                <label class="titlelabel contentlabelnr">[[getGesamtGBVVS(vc.GBV.grundbeitrag.versicherteSumme,
-                                    vc.GBV.schritt.versicherteSumme)]]</label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="layout vertical card mcard">
-
-                        <div class="layout horizontal justified">
-                            <div class="layout vertical labelgroup">
-                                <label class="titlelabel">Kosten (EUR)</label>
-                                <label class="titlelabel contentlabelnr">[[getGesamtGBVEUR(vc.GBV.grundbeitrag.beitrag,
-                                    vc.GBV.schritt.beitrag)]]</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="card layout horizontal justified">
-                <div class="layout vertical inlinecard">
-                    <h3>Inventar Grundversicherung (Feuer-Einbruch-Diebstahl FED)</h3>
-                    <div class="layout vertical card mcard">
-                        <h4>Grundbeitrag</h4>
-                        <div class="layout horizontal justified">
-                            <div class="layout vertical labelgroup">
-                                <label class="titlelabel">Grundbeitrag (EUR)</label>
-                                <label class="titlelabel contentlabelnr">[[vc.FED.grundbeitrag.beitrag]]</label>
-                            </div>
-                            <div class="layout vertical labelgroup">
-                                <label class="titlelabel">Versicherungsumme (EUR)</label>
-                                <label class="titlelabel contentlabelnr">[[vc.FED.grundbeitrag.versicherteSumme]]</label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="layout vertical card mcard">
-                        <h4>Höherversicherung: Merkblatt Punkt 6.2</h4>
-                        <div class="layout horizontal">
-                            <paper-input min="0" always-float-label label="Erhöhung (EURO)" type="number" step="[[vcs.FED.schritt.versicherteSumme]]"
-                                on-change="_fedVSChanged" value="[[vc.FED.schritt.versicherteSumme]]"></paper-input>
-                            <paper-input min="0" always-float-label label="Beitrag (EUR)" type="number" step="[[vcs.FED.schritt.beitrag]]"
-                                on-change="_fedEuroChanged" value="[[vc.FED.schritt.beitrag]]"></paper-input>
-                        </div>
-                    </div>
-
-                    <div class="layout vertical card mcard">
-                        <h4>Zusatzversicherungen: Merkblatt Punkt 7</h4>
-                        <template is="dom-repeat" items="{{vc.FED.zusatzversicherungen}}" index-as="i">
-                            <div class="layout vertical">
-                                <label>[[item.bezeichnung]]</label>
-                                <div class="layout horizontal">
-                                    <paper-input min="0" id="vs[[i]]" always-float-label label="Erhöhung (EURO)" type="number"
-                                        step="[[getStepForFEDZusatzVS(i)]]" on-change="_zusVSChanged" value="{{item.schritt.versicherteSumme::change}}"
-                                        max="[[item.maximumVerischerungssumme]]"></paper-input>
-                                    <paper-input min="0" id="eu[[i]]" always-float-label label="Beitrag (EUR)" type="number"
-                                        step="[[getStepForFEDZusatzEU(i)]]" on-change="_zusEuroChanged" value="{{item.schritt.beitrag::change}}"
-                                        max="[[getMaxZusatzEUR(i)]]"></paper-input>
-
+        <div class="mcard layout vertical">
+            <p class="cardtitle">
+                <slot name="title"></slot>
+            </p>
+            <div class="mcard layout vertical">
+                <div class="cardcontent">
+                    <h5>Gebäude-Feuer-Versicherung (GBV)</h5>
+                    <div class="layout horizontal justified">
+                        <div class="layout vertical">
+                            <div class="layout vertical  ">
+                                <h5>Grundbeitrag: Feuer, Sturm u. Hagel lt. Merkblatt Punkt 2.2</h5>
+                                <div class="layout horizontal justified">
+                                    <div class="layout vertical labelgroup">
+                                        <label class="titlelabel">Grundbeitrag</label>
+                                        <label class="titlelabel contentlabelnr">[[vc.GBV.grundbeitrag.beitrag]]</label>
+                                    </div>
+                                    <div class="layout vertical labelgroup">
+                                        <label class="titlelabel">Versicherungsumme</label>
+                                        <label class="titlelabel contentlabelnr">[[vc.GBV.grundbeitrag.versicherteSumme]]</label>
+                                    </div>
                                 </div>
                             </div>
-                        </template>
-                    </div>
-                </div>
-                <div class="layout vertical inlinecard">
-                    <h3>FED Gesamtberechnung</h3>
-                    <div class="layout vertical card mcard">
 
-                        <div class="layout horizontal justified">
-                            <div class="layout vertical labelgroup">
-                                <label class="titlelabel">Versicherungsumme (EUR)</label>
-                                <label class="titlelabel contentlabelnr">[[getGesamtFEDVS(vc.FED.grundbeitrag.versicherteSumme,
-                                    vc.FED.schritt.versicherteSumme, vc.FED.zusatzversicherungen.*)]]</label>
+                            <div class="layout vertical ">
+                                <h5>Erhöhung der Versicherungsumme: GBV Merkblatt Punkt 3</h5>
+                                <div class="layout horizontal justified">
+                                    <paper-input class="labelgroup" min="0" always-float-label label="Erhöhung (EURO)"
+                                        type="number" step="[[vcs.GBV.schritt.versicherteSumme]]" on-change="_gbvVSChanged"
+                                        value="[[vc.GBV.schritt.versicherteSumme]]"></paper-input>
+                                    <!-- <paper-input always-float-label label="Beitrag" type="number" value="[[getGBVSchrittEURO(vc.GBV.schritt.versicherteSumme, vcs.GBV.schritt.beitrag)]]"></paper-input> -->
+                                    <paper-input class="labelgroup" min="0" always-float-label label="Beitrag" type="number"
+                                        on-change="_gbvEuroChanged" value="[[vc.GBV.schritt.beitrag]]"></paper-input>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="layout vertical card mcard">
-                        <div class="layout horizontal justified">
-                            <div class="layout vertical labelgroup">
-                                <label class="titlelabel">Kosten (EUR)</label>
-                                <label class="titlelabel contentlabelnr">[[getGesamtFEDEUR(vc.FED.grundbeitrag.beitrag,
-                                    vc.FED.schritt.beitrag, vc.FED.zusatzversicherungen.*)]]</label>
+
+                        <div class="layout vertical lastelement">
+                            <h5>GBV gesamt</h5>
+                            <div class="layout vertical ">
+
+                                <div class="layout horizontal justified">
+                                    <div class="layout vertical labelgroup">
+                                        <label class="titlelabel">Versicherungsumme</label>
+                                        <label class="titlelabel contentlabelnr">[[getGesamtGBVVS(vc.GBV.grundbeitrag.versicherteSumme,
+                                            vc.GBV.schritt.versicherteSumme)]]</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="layout vertical">
+
+                                <div class="layout horizontal justified">
+                                    <div class="layout vertical labelgroup">
+                                        <label class="titlelabel">Kosten</label>
+                                        <label class="titlelabel contentlabelnr">[[getGesamtGBVEUR(vc.GBV.grundbeitrag.beitrag,
+                                            vc.GBV.schritt.beitrag)]]</label>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="card layout horizontal justified">
-                <div class="layout vertical inlinecard">
-                    <h3>Familien-Unfallversicherung (UV) - optional</h3>
-                    <div class="layout vertical card mcard">
-                        <h4>Versicherungsbeitrag</h4>
+            <div class="mcard layout vertical">
+                <div class="cardcontent">
+                    <h5>Inventar Grundversicherung (Feuer-Einbruch-Diebstahl FED)</h5>
+                    <div class="layout horizontal justified">
+                        <div class="layout vertical">
+                            <div class="layout vertical ">
+                                <h5>Grundbeitrag</h5>
+                                <div class="layout horizontal justified">
+                                    <div class="layout vertical labelgroup">
+                                        <label class="titlelabel">Grundbeitrag</label>
+                                        <label class="titlelabel contentlabelnr">[[vc.FED.grundbeitrag.beitrag]]</label>
+                                    </div>
+                                    <div class="layout vertical labelgroup">
+                                        <label class="titlelabel">Versicherungsumme</label>
+                                        <label class="titlelabel contentlabelnr">[[vc.FED.grundbeitrag.versicherteSumme]]</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="layout vertical ">
+                                <h5>Höherversicherung: Merkblatt Punkt 6.2</h5>
+                                <div class="layout horizontal">
+                                    <paper-input class="labelgroup" min="0" always-float-label label="Erhöhung (EURO)"
+                                        type="number" step="[[vcs.FED.schritt.versicherteSumme]]" on-change="_fedVSChanged"
+                                        value="[[vc.FED.schritt.versicherteSumme]]"></paper-input>
+                                    <paper-input class="labelgroup" min="0" always-float-label label="Beitrag" type="number"
+                                        step="[[vcs.FED.schritt.beitrag]]" on-change="_fedEuroChanged" value="[[vc.FED.schritt.beitrag]]"></paper-input>
+                                </div>
+                            </div>
+
+                            <div class="layout vertical ">
+                                <h5>Zusatzversicherungen: Merkblatt Punkt 7</h5>
+                                <template is="dom-repeat" items="{{vc.FED.zusatzversicherungen}}" index-as="i">
+                                    <div class="layout vertical">
+                                        <label>[[item.bezeichnung]]</label>
+                                        <div class="layout horizontal">
+                                            <paper-input class="labelgroup" min="0" id="vs[[i]]" always-float-label
+                                                label="Erhöhung (EURO)" type="number" step="[[getStepForFEDZusatzVS(i)]]"
+                                                on-change="_zusVSChanged" value="{{item.schritt.versicherteSumme::change}}"
+                                                max="[[item.maximumVersicherungssumme]]"></paper-input>
+                                            <paper-input class="labelgroup" min="0" id="eu[[i]]" always-float-label
+                                                label="Beitrag" type="number" step="[[getStepForFEDZusatzEU(i)]]"
+                                                on-change="_zusEuroChanged" value="{{item.schritt.beitrag::change}}"
+                                                max="[[getMaxZusatzEUR(i)]]"></paper-input>
+
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                        <div class="layout vertical lastelement">
+                            <h5>FED gesamt</h5>
+                            <div class="layout vertical ">
+
+                                <div class="layout horizontal justified">
+                                    <div class="layout vertical labelgroup">
+                                        <label class="titlelabel">Versicherungsumme</label>
+                                        <label class="titlelabel contentlabelnr">[[getGesamtFEDVS(vc.FED.grundbeitrag.versicherteSumme,
+                                            vc.FED.schritt.versicherteSumme, vc.FED.zusatzversicherungen.*)]]</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="layout vertical ">
+                                <div class="layout horizontal justified">
+                                    <div class="layout vertical labelgroup">
+                                        <label class="titlelabel ">Kosten</label>
+                                        <label class="titlelabel contentlabelnr ">[[getGesamtFEDEUR(vc.FED.grundbeitrag.beitrag,
+                                            vc.FED.schritt.beitrag, vc.FED.zusatzversicherungen.*)]]</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mcard layout vertical">
+                <div class="cardcontent">
+                    <h5>Familien-Unfallversicherung (UV) - optional</h5>
+                    <div class="layout vertical">
+
+                        <h5>Versicherungsbeitrag</h5>
                         <div class="layout horizontal">
-                            <paper-input min="0" always-float-label label="Beitrag (EUR)" type="number" step="[[vcs.UV.grundbeitrag.beitrag]]"
-                                max="[[vcs.UV.grundbeitrag.beitrag]]" value="{{vc.UV.grundbeitrag.beitrag::change}}"></paper-input>
+                            <paper-input class="labelgroup" min="0" always-float-label label="Beitrag" type="number"
+                                step="[[vcs.UV.grundbeitrag.beitrag]]" max="[[vcs.UV.grundbeitrag.beitrag]]" value="{{vc.UV.grundbeitrag.beitrag::change}}"></paper-input>
                         </div>
+
                     </div>
                 </div>
             </div>
-            <div class="card layout horizontal justified">
-                <div class="layout vertical inlinecard">
-                    <div class="layout vertical card mcard">
-                        <h4>GBV</h4>
-                        <div class="layout horizontal justified">
+            <div class="mcard">
+                <div class="cardcontent layout horizontal justified">
+                    <div class="layout vertical">
+                        <div class="layout vertical">
+                            <h5>GBV</h5>
                             <div class="layout vertical labelgroup">
-                                <label class="titlelabel">Kosten (EUR)</label>
+                                <label class="titlelabel">Kosten</label>
                                 <label class="titlelabel contentlabelnr">[[gesamtGBVEUR]]</label>
                             </div>
                         </div>
-                    </div>
-                    <div class="layout vertical card mcard">
-                        <div class="layout horizontal justified">
-                            <div class="layout vertical labelgroup">
-                                <label class="titlelabel">Versicherungsumme (EUR)</label>
-                                <label class="titlelabel contentlabelnr">[[gesamtGBVVS]]</label>
-                            </div>
+                        <div class="layout vertical labelgroup">
+                            <label class="titlelabel">Versicherungsumme</label>
+                            <label class="titlelabel contentlabelnr">[[gesamtGBVVS]]</label>
                         </div>
                     </div>
-                </div>
-
-                <div class="layout vertical inlinecard">
-                    <div class="layout vertical card mcard">
-                        <h4>FED</h4>
-                        <div class="layout horizontal justified">
+                    <div class="layout vertical">
+                        <div class="layout vertical">
+                            <h5>FED</h5>
                             <div class="layout vertical labelgroup">
-                                <label class="titlelabel">Kosten (EUR)</label>
+                                <label class="titlelabel">Kosten</label>
                                 <label class="titlelabel contentlabelnr">[[gesamtFEDEUR]]</label>
                             </div>
                         </div>
-                    </div>
-                    <div class="layout vertical card mcard">
-                        <div class="layout horizontal justified">
-                            <div class="layout vertical labelgroup">
-                                <label class="titlelabel">Versicherungsumme (EUR)</label>
-                                <label class="titlelabel contentlabelnr">[[gesamtFEDVS]]</label>
-                            </div>
+                        <div class="layout vertical labelgroup">
+                            <label class="titlelabel">Versicherungsumme</label>
+                            <label class="titlelabel contentlabelnr">[[gesamtFEDVS]]</label>
                         </div>
                     </div>
-                </div>
 
-                <div class="layout vertical inlinecard">
-                    <div class="layout vertical card mcard">
-                        <h4>Unfallversicherung</h4>
-                        <div class="layout horizontal justified">
-                            <div class="layout vertical labelgroup">
-                                <label class="titlelabel">Kosten (EUR)</label>
-                                <label class="titlelabel contentlabelnr">[[vc.UV.grundbeitrag.beitrag]]</label>
-                            </div>
+                    <div class="layout vertical">
+                        <h5>UV</h5>
+                        <div class="layout vertical labelgroup">
+                            <label class="titlelabel">Kosten</label>
+                            <label class="titlelabel contentlabelnr">[[vc.UV.grundbeitrag.beitrag]]</label>
                         </div>
                     </div>
-                </div>
-                <div class="layout vertical inlinecard">
-                    <div class="layout vertical card mcard">
-                        <h4>Zusammen</h4>
-                        <div class="layout horizontal justified">
+
+                    <div class="layout vertical lastelement">
+                        <div class="layout vertical">
+                            <h5>Zusammen</h5>
                             <div class="layout vertical labelgroup">
-                                <label class="titlelabel">Kosten (EUR)</label>
+                                <label class="titlelabel">Kosten</label>
                                 <label class="titlelabel contentlabelnr">[[getGesamtKOSTEN(gesamtGBVEUR,
                                     gesamtFEDEUR, vc.UV.grundbeitrag.beitrag)]]</label>
                             </div>
                         </div>
-                    </div>
-                    <div class="layout vertical card mcard">
-                        <div class="layout horizontal justified">
+                        <div class="layout vertical">
                             <div class="layout vertical labelgroup">
-                                <label class="titlelabel">Versicherungsumme (EUR)</label>
+                                <label class="titlelabel">Versicherungsumme</label>
                                 <label class="titlelabel contentlabelnr">[[getGesamtVS(gesamtGBVVS,
                                     gesamtFEDVS)]]</label>
                             </div>
@@ -270,7 +282,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     vconfig: {
                         type: Object,
                         value: null,
-                        notify: true, 
+                        notify: true,
                         observer: '_onconfigChange'
                     },
 
@@ -289,10 +301,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         value: "aaa"
                     },
                     semaphore: Boolean
-
                 }
             }
-
+            getstritem(item){
+                return JSON.stringify(item)
+            }
 
             ready() {
                 super.ready();
@@ -411,14 +424,33 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             _setVersicherungKonfig(vconfig) {
                 console.log('_setVersicherungKonfig called' + JSON.stringify(vconfig))
+                let berechnungVC = JSON.parse(JSON.stringify(vconfig));
+                // berechnungVC.GBV.schritt.beitrag = 0;
+                // berechnungVC.FED.schritt.beitrag = 0;
+                // berechnungVC.FED.zusatzversicherungen[0].schritt.beitrag = 0;
+                // berechnungVC.FED.zusatzversicherungen[1].schritt.beitrag = 0;
+                // berechnungVC.FED.zusatzversicherungen[2].schritt.beitrag = 0;
+                // berechnungVC.UV.grundbeitrag.beitrag = 0;
 
-                this.set('vc', vconfig);
+                this.set('vc', berechnungVC);
+                this.set('vc.GBV.schritt.beitrag', 0);
+                this.set('vc.GBV.schritt.versicherteSumme', 0);
+                this.set('vc.FED.schritt.beitrag', 0);
+                this.set('vc.FED.schritt.versicherteSumme', 0);
+                this.set('vc.FED.zusatzversicherungen.0.schritt.beitrag', 0);
+                this.set('vc.FED.zusatzversicherungen.0.schritt.versicherteSumme', 0);
+                this.set('vc.FED.zusatzversicherungen.1.schritt.beitrag', 0);
+                this.set('vc.FED.zusatzversicherungen.1.schritt.versicherteSumme', 0);
+                this.set('vc.FED.zusatzversicherungen.2.schritt.beitrag', 0);
+                this.set('vc.FED.zusatzversicherungen.2.schritt.versicherteSumme', 0);
+                this.set('vc.UV.grundbeitrag.beitrag', 0);
                 this.set('vcs', JSON.parse(JSON.stringify(vconfig)));
             }
 
-            _onconfigChange(){
-                this.set('vc', this.vconfig);
-                this.set('vcs', JSON.parse(JSON.stringify(this.vconfig)));
+            _onconfigChange() {
+                this._setVersicherungKonfig(this.vconfig);
+                // this.set('vc', this.vconfig);
+                // this.set('vcs', JSON.parse(JSON.stringify(this.vconfig)));
 
             }
 
@@ -431,8 +463,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             getMaxZusatzEUR(i) {
-                if (this.vcs.FED.zusatzversicherungen[i].maximumVerischerungssumme) {
-                    let maxBeitrag = Math.floor(parseInt(this.vcs.FED.zusatzversicherungen[i].maximumVerischerungssumme) / parseInt(this.vcs.FED.zusatzversicherungen[i].schritt.versicherteSumme)) * parseInt(this.vcs.FED.zusatzversicherungen[i].schritt.beitrag);
+                if (this.vcs.FED.zusatzversicherungen[i].maximumVersicherungssumme) {
+                    let maxBeitrag = Math.floor(parseInt(this.vcs.FED.zusatzversicherungen[i].maximumVersicherungssumme) / parseInt(this.vcs.FED.zusatzversicherungen[i].schritt.versicherteSumme)) * parseInt(this.vcs.FED.zusatzversicherungen[i].schritt.beitrag);
                     return maxBeitrag;
                 }
             }
@@ -441,6 +473,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 if (this.vc) {
                     let res = parseInt(a) + parseInt(b);
                     this.set('gesamtGBVVS', res);
+
                     return res;
                 }
 
@@ -485,7 +518,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             getGesamtKOSTEN(gesamtGBVEUR, gesamtFEDEUR, uvBeitrag) {
-                return parseInt(gesamtGBVEUR) + parseInt(gesamtFEDEUR) + parseInt(uvBeitrag);
+                if(this.vc){
+                    let gbeitrag = parseInt(this.gesamtGBVEUR) + parseInt(this.gesamtFEDEUR) + parseInt(this.vc.UV.grundbeitrag.beitrag);
+                return gbeitrag;
+                } 
+                
             }
 
             //   _saveVersicherungKonfiguration(){

@@ -21,27 +21,43 @@ Pagination Element for Vaadin-Grid Tables
                 max-width: 50%;
             }
 
-            paper-input {
-                padding-right: 20px
+            .flex-container {
+                /* We first create a flex layout context */
+                display: flex;
+
+                /* Then we define the flow direction 
+     and if we allow the items to wrap 
+   * Remember this is the same as:
+   * flex-direction: row;
+   * flex-wrap: wrap;
+   */
+                flex-flow: row wrap;
+
+                /* Then we define how is distributed the remaining space */
+                justify-content: space-between;
             }
         </style>
 
-        <div class="card layout vertical justified">
-            <h3>Daten zur Person</h3>
-            <div class="layout horizontal justified">
-                <paper-input always-float-label label="Gartennummer" value="{{gnr::input}}"></paper-input>
-                <paper-input always-float-label label="Vorname" value="{{vorname::input}}"></paper-input>
-                <paper-input always-float-label label="Name" value="{{name::input}}"></paper-input>
-            </div>
-            <div layout vertical>
-                <label>Anschrift</label>
-                <div class="layout horizontal ">
-                    <paper-input always-float-label label="Strasse" value="{{anschrift.strasse}}"></paper-input>
-                    <paper-input always-float-label label="Hausnummer" value="{{anschrift.hausnr}}"></paper-input>
+        <div class="mcard layout vertical justified">
+
+            <p class="cardtitle">
+                <slot name="title"></slot>
+            </p>
+            <div class="cardcontent">
+                <div class="flex-container ">
+                    <paper-input class="labelgroup" always-float-label label="Gartennummer" value="{{gnr::input}}"></paper-input>
+                    <paper-input class="labelgroup" always-float-label label="Vorname" value="{{vorname::input}}"></paper-input>
+                    <paper-input class="labelgroup" always-float-label label="Name" value="{{name::input}}"></paper-input>
                 </div>
-                <div class="layout horizontal ">
-                    <paper-input always-float-label label="PLZ" value="{{anschrift.plz}}"></paper-input>
-                    <paper-input always-float-label label="Ort" value="{{anschrift.ort}}"></paper-input>
+                <div class="layout vertical justified">
+                    <div class="flex-container ">
+                        <paper-input class="labelgroup" always-float-label label="Strasse" value="{{strasse}}"></paper-input>
+                        <paper-input class="labelgroup" always-float-label label="Hausnummer" value="{{hausnr}}"></paper-input>
+                    </div>
+                    <div class="flex-container ">
+                        <paper-input class="labelgroup" always-float-label label="PLZ" value="{{plz}}"></paper-input>
+                        <paper-input class="labelgroup" always-float-label label="Ort" value="{{ort}}"></paper-input>
+                    </div>
                 </div>
             </div>
         </div>
@@ -57,22 +73,45 @@ Pagination Element for Vaadin-Grid Tables
 
                     gnr: {
                         type: String,
-                        value: null
+                        value: null,
+                        notify: true
                     },
 
                     name: {
                         type: String,
-                        value: null
+                        value: null,
+                        notify: true
                     },
 
                     vorname: {
                         type: String,
-                        value: null
+                        value: null,
+                        notify: true
+                        
                     },
 
-                    anschrift: {
-                        type: Object,
-                        value: null
+                    strasse: {
+                        type: String,
+                        value: null,
+                        notify: true
+                    },
+
+                    hausnr: {
+                        type: String,
+                        value: null,
+                        notify: true
+                    },
+
+                    plz: {
+                        type: String,
+                        value: null,
+                        notify: true
+                    },
+
+                    ort: {
+                        type: String,
+                        value: null,
+                        notify: true
                     }
 
                 }

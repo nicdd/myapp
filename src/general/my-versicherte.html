@@ -52,11 +52,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
 <link rel="import" href="../../bower_components/vaadin-grid/theme/material/all-imports.html">
-<link rel="import" href="../../bower_components/vaadin-button/vaadin-button.html">
 <link rel="import" href="../clients/firstclient.html">
 <link rel="import" href="../shared-styles.html">
 <link rel="import" href="../utils/grt-grid-pagination.html">
-<link rel="import" href="../utils/grt-dialog.html">
+<link rel="import" href="../utils/create-versicherter-antrag.html">
 
 
 <dom-module id="my-versicherte">
@@ -148,10 +147,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         max-width: 10px !important;
       }
 
-      vaadin-button {
-        margin-bottom: 20px;
-      }
-
       .vaadin-demo-input {
         font: inherit;
         width: 100%;
@@ -165,13 +160,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </style>
 
     <first-client id="firstclient"></first-client>
-    <grt-dialog id="adddialog" cancel-name="Abbrechen" confirmation-name="Speichern" ></grt-dialog>
+    <create-versicherter-antrag id="adddialog" cancel-name="Abbrechen" confirmation-name="Hinzufügen" >
+      
+    </create-versicherter-antrag>
     <div class="toolbar layout horizontal justified" flex>
-      <!-- <vaadin-button raised id="addbtn">Add Item</vaadin-button>
-      <vaadin-button raised id="rmbtn">Remove Item</vaadin-button> -->
-      <!-- <paper-progress-button class="demo" bottom raised on-click="postCats" loading-label="Nicht so hecktisch ..."
-        loading="[[_loading]]">Speichern</paper-progress-button> -->
-        
       <grt-grid-pagination  id="pages" datalength="[[mvdata.length]]" page-size="{{pageSize}}" pstart="{{_pageStart}}"
         on-pagechanged="changePage"></grt-grid-pagination>
       <div class="layout horizontal justified" flex="50">
@@ -179,6 +171,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           loading="[[_loading]]">Antrag erfassen <iron-icon icon="add-circle-outline" slot="item-icon" ></iron-icon></paper-progress-button>
        <paper-progress-button class="demo" bottom raised on-click="postVersicherte" loading-label="Nicht so hecktisch ..."
         loading="[[_loading]]">Speichern</paper-progress-button>
+        <paper-progress-button class="demo" disabled="[[!mvdata]]" bottom raised on-click="exportVersicherte" loading-label="Nicht so hecktisch ..."
+        loading="[[_loading]]">Exportieren</paper-progress-button>
       </div>
     </div>
 
@@ -221,46 +215,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             </vaadin-grid-sorter>
           </template>
         </vaadin-grid-column>
-        <!-- </vaadin-grid-column-group> -->
-        <vaadin-grid-column path="SA" width="60px" resizable>
-          <template class="header">
-            <vaadin-grid-sorter path="SA" on-sorter-changed="_sortChange">
-              [[columnNames.6]]
-            </vaadin-grid-sorter>
-          </template>
-        </vaadin-grid-column>
-
-        <vaadin-grid-column path="UV" width="60px" resizable text-align="end">
-          <template class="header">
-            <vaadin-grid-sorter path="UV" on-sorter-changed="_sortChange">
-              [[columnNames.7]]
-            </vaadin-grid-sorter>
-          </template>
-        </vaadin-grid-column>
-
-        <vaadin-grid-column path="Beitrag" width="90px" resizable text-align="end">
-          <template class="header">
-            <vaadin-grid-sorter path="Beitrag" on-sorter-changed="_sortChange">
-              [[columnNames.8]]
-            </vaadin-grid-sorter>
-          </template>
-        </vaadin-grid-column>
-
-        <vaadin-grid-column path="A73" width="80px" resizable text-align="end">
-          <template class="header">
-            <vaadin-grid-sorter path="A73" on-sorter-changed="_sortChange">
-              [[columnNames.9]]
-            </vaadin-grid-sorter>
-          </template>
-        </vaadin-grid-column>
-
-        <vaadin-grid-column path="Solar" width="80px" resizable text-align="end">
-          <template class="header">
-            <vaadin-grid-sorter path="Solar" on-sorter-changed="_sortChange">
-              [[columnNames.10]]
-            </vaadin-grid-sorter>
-          </template>
-        </vaadin-grid-column>
 
         <vaadin-grid-column path="GBV" width="80px" resizable text-align="end">
           <template class="header">
@@ -282,6 +236,46 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <template class="header">
             <vaadin-grid-sorter path="HoeV" on-sorter-changed="_sortChange">
               [[columnNames.13]]
+            </vaadin-grid-sorter>
+          </template>
+        </vaadin-grid-column>
+        <!-- </vaadin-grid-column-group> -->
+        <vaadin-grid-column path="SA" width="60px" resizable>
+          <template class="header">
+            <vaadin-grid-sorter path="SA" on-sorter-changed="_sortChange">
+              [[columnNames.6]]
+            </vaadin-grid-sorter>
+          </template>
+        </vaadin-grid-column>
+
+        <vaadin-grid-column path="A73" width="80px" resizable text-align="end">
+          <template class="header">
+            <vaadin-grid-sorter path="A73" on-sorter-changed="_sortChange">
+              [[columnNames.9]]
+            </vaadin-grid-sorter>
+          </template>
+        </vaadin-grid-column>
+
+        <vaadin-grid-column path="Solar" width="80px" resizable text-align="end">
+          <template class="header">
+            <vaadin-grid-sorter path="Solar" on-sorter-changed="_sortChange">
+              [[columnNames.10]]
+            </vaadin-grid-sorter>
+          </template>
+        </vaadin-grid-column>
+
+        <vaadin-grid-column path="UV" width="60px" resizable text-align="end">
+          <template class="header">
+            <vaadin-grid-sorter path="UV" on-sorter-changed="_sortChange">
+              [[columnNames.7]]
+            </vaadin-grid-sorter>
+          </template>
+        </vaadin-grid-column>
+
+        <vaadin-grid-column path="Beitrag" width="90px" resizable text-align="end">
+          <template class="header">
+            <vaadin-grid-sorter path="Beitrag" on-sorter-changed="_sortChange">
+              [[columnNames.8]]
             </vaadin-grid-sorter>
           </template>
         </vaadin-grid-column>
@@ -389,8 +383,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       addVersicherter(){
-        this.$.adddialog.showDialog()
-
+        this.$.adddialog.showDialog();
       }
 
       _sortChange(e) {
@@ -483,9 +476,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         // })
 
 
-        this.$.addbtn.addEventListener('click', () => {
-          console.log('add gedruckt')
-          this.push('mvdata', { firstName: "Psuhido", lastName: "Fake", alter: 222, street: "pushtest 22", city: "test" });
+        this.$.adddialog.addEventListener('addversicherter', (e) => {
+          console.log('adddialog gedruckt' + JSON.stringify(e.detail))
+          this.splice('mvdata', this._pageStart, 0, e.detail);
+          //this.push('mvdata', e.detail);
         });
 
         this.$.rmbtn.addEventListener('click', () => {
@@ -571,6 +565,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       postVersicherte(){
         let dataAndColumns = {data: this.mvdata, columns: this.columnNames}
         this.$.firstclient.postVersicherteAsJSON(dataAndColumns);
+      }
+
+      exportVersicherte(){
+        let dataAndColumns = {data: this.mvdata, columns: this.columnNames}
+        this.$.firstclient.exportVersicherteAsCSV(dataAndColumns);
       }
     }
 

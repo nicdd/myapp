@@ -105,7 +105,7 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
 
       mapToJSON(resp) {
         let transformedResult = [];
-        let columns = resp[0];
+        let columns = resp[0];//.filter((elem) => elem.length > 0);
         console.log('das sind die columns' + columns.toString())
         for (let i = 1; i < resp.length; i++) {
           if (resp[i][0] !== 'Ende der Liste') {

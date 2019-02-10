@@ -1,0 +1,269 @@
+<!--
+Pagination Element for Vaadin-Grid Tables
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/vaadin-dialog/vaadin-dialog.html">
+<link rel="import" href="../../bower_components/paper-progress-button/paper-progress-button.html">
+<link rel="import" href="../general/my-versicherungrechner.html">
+<link rel="import" href="../utils/grt-gartler.html">
+<link rel="import" href="../utils/close-icon-button.html">
+
+
+<link rel="import" href="../clients/basicclient.html">
+<dom-module id="create-versicherter-antrag">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: inline-block;
+
+                padding: 3px;
+            }
+
+            .circlebutton {
+                --mbutton-mixin: {
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50% !important;
+                }
+            }
+
+            .flexcontainer {
+                position: relative;
+                padding: 0;
+                margin-bottom: 1rem;
+                display: flex;
+                flex-direction: row;
+                justify-content: center;
+                align-items: center;
+                width: 100%;
+                /* new */
+
+
+            }
+
+            .itemcenter {
+                display: flex;
+                margin: 1px;
+                padding: 5px;
+            }
+
+            .itemright {
+                top: 0;
+                right: 0;
+                position: absolute;
+            }
+
+            .mdialog {
+                display: flex;
+                min-width: 1000px !important;
+            }
+
+            .cbutton {
+                --paper-progress-active-color: #1875d1;
+                --paper-progress-container-icolor: #00000000;
+
+                --paper-button-mixin: {
+                    padding: 0.2em 0.5em 0.2em 0.5em !important;
+                    background-color: #1976d2;
+                    color: white;
+                }
+
+                --paper-button-disabled-mixin: {
+                    background: #efefef;
+                    color: black;
+                }
+            }
+        </style>
+        <basic-client id="bclient"></basic-client>
+        <vaadin-dialog id="pdialog" class="mdialog">
+
+            <template>
+                <div class="layout vertical center">
+                    <div class="flexcontainer">
+                        <h3 class="itemcenter">Neuen Versicherten hinzufügen</h3>
+                        <close-icon-button class="itemright circlebutton" on-click="_closeDialog"></close-icon-button>
+                    </div>
+                    <grt-gartler id="grtl" gnr="{{nv.GaNr}}" name="{{nv.NAME}}" vorname="{{nv.VORNAME}}" strasse="{{nv.STRASSE}}"
+                        hausnr="{{nv.HAUSNR}}" plz="{{nv.PLZ}}" ort="{{nv.ORT}}">
+                        <h4 slot="title">Versicherungsnehmer</h4>
+                    </grt-gartler>
+                    <my-versicherungrechner id="versicherungrechner" vconfig="[[vconfig]]" vc="{{vdata}}">
+                        <h4 slot="title">Daten zur Versicherung</h4>
+                    </my-versicherungrechner>
+                </div>
+                <div class="layout horizontal justified buttons">
+                    <paper-progress-button on-click="_closeDialog">[[getCancelName(cancelName)]]</paper-progress-button>
+                    <paper-progress-button on-click="_doAdd" class="cbutton">[[getConfirmationName(confirmationName)]]</paper-progress-button>
+                </div>
+            </template>
+
+        </vaadin-dialog>
+
+
+    </template>
+
+    <script>
+        class CreateVerischerterAntrag extends Polymer.Element {
+            static get is() { return 'create-versicherter-antrag'; }
+
+            static get properties() {
+                return {
+
+                    vconfig: {
+                        type: Object,
+                        notify: true
+                    },
+
+                    defaultConfirmName: {
+                        type: String,
+                        value: 'Ok'
+                    },
+
+                    defaultCancelName: {
+                        type: String,
+                        value: 'Cancel'
+                    },
+
+                    dialogType: String,
+
+                    cancelName: {
+                        type: String,
+                        value: null,
+                        notify: true
+                    },
+
+                    confirmationName: String,
+
+                    vdata: {
+                        type: Object,
+                        value: null
+                    },
+
+                    nv: {
+                        type: Object,
+                        value: {}
+                    }
+
+                }
+
+
+            }
+
+            static get observers() {
+                return [
+                    '_vdataChanged(vdata.*)'
+                ]
+            }
+
+            _vdataChanged(changed) {
+                console.log('versicherungrechner vdata changed:' + JSON.stringify(changed))
+                if (this.vdata) {
+                    let gesamtBeitrag = this.getGesamtGBVEUR() + this.getGesamtFEDEUR() + parseInt(this.vdata.UV.grundbeitrag.beitrag)
+                    this.set('nv.Beitrag', gesamtBeitrag);
+                    this.set('nv.UV', this.vdata.UV.grundbeitrag.beitrag);
+                    let versichertGBV = this.getGesamtGBVVS();
+                    this.set('nv.GBV', versichertGBV);
+                    this.set('nv.FED', this.vdata.FED.grundbeitrag.versicherteSumme);
+                    this.set('nv.HoeV', this.vdata.FED.schritt.versicherteSumme);
+                    let fedZusatzSolar = this.vdata.FED.zusatzversicherungen.find((zus) => zus.bezeichnung === "Solaranlage");
+                    this.set('nv.Solar', fedZusatzSolar.schritt.versicherteSumme);
+                    let fedZusatzA73 = this.vdata.FED.zusatzversicherungen.find((zus) => zus.bezeichnung === "Strommaggregate");
+                    this.set('nv.A73', fedZusatzA73.schritt.versicherteSumme);
+                    let fedZusatzSA = this.vdata.FED.zusatzversicherungen.find((zus) => zus.bezeichnung === "Geräteschuppen");
+                    this.set('nv.SA', fedZusatzSA.schritt.versicherteSumme);
+                }
+            }
+
+            getGesamtGBVEUR() {
+                if (this.vdata) {
+                    let res = parseInt(this.vdata.GBV.grundbeitrag.beitrag) + parseInt(this.vdata.GBV.schritt.beitrag);
+                    return res;
+                }
+            }
+
+            getGesamtFEDEUR() {
+                let sum = 0;
+                if (this.vdata) {
+                    let a = this.vdata.FED.grundbeitrag.beitrag;
+                    let b = this.vdata.FED.schritt.beitrag;
+                    let changed = this.vdata.FED.zusatzversicherungen;
+                    sum += parseInt(a) + parseInt(b);
+                    if (changed) {
+                        changed.forEach((zusatz) => {
+                            sum += parseInt(zusatz.schritt.beitrag);
+                        })
+                    }
+                }
+                return sum;
+            }
+
+            getGesamtGBVVS() {
+                if (this.vdata) {
+                    let res = parseInt(this.vdata.GBV.grundbeitrag.versicherteSumme) + parseInt(this.vdata.GBV.schritt.versicherteSumme);
+                    return res;
+                }
+            }
+
+            showDialog(versicherter) {
+                this.$.bclient.getVersicherungconfig().then((vconf) => {
+                    this.set('vconfig', vconf)
+                }).finally(() => {
+                    let newVersicherter = versicherter;
+                    if (!versicherter) {
+                        newVersicherter = {
+                            "NAME": null,
+                            "VORNAME": null,
+                            "GaNr": null,
+                            "STRASSE": null,
+                            "PLZ": null,
+                            "ORT": null,
+                            "SA": null,// ToDo KLären ob das wirklich Geräteschuppen ist
+                            "UV": null,//
+                            "Beitrag": null,//
+                            "A73": null,//
+                            "Solar": null,//
+                            "GBV": null,//
+                            "FED": null,//
+                            "HoeV": null,//
+                            "": "",
+                            "Bemerkung": null,
+                        }
+                    }
+                    this.set('nv', newVersicherter)
+                    this.$.pdialog.opened = true;
+                })
+            }
+
+            _closeDialog() {
+                this.$.pdialog.opened = false;
+            }
+
+            _doAdd() {
+                this.dispatchEvent(new CustomEvent('addversicherter', { detail: this.mergeStrasseWithHausnr(this.nv) }));
+                this._closeDialog();
+            }
+
+            mergeStrasseWithHausnr(nv){
+                nv.STRASSE = nv.STRASSE + " " + nv.HAUSNR;
+                delete nv['HAUSNR'];
+                return nv;
+            }
+
+            getCancelName(cancelName) {
+                if (!this.cancelName) {
+                    return this.defaultCancelName;
+                } else return this.cancelName;
+            }
+
+            getConfirmationName(confirmationName) {
+                if (!this.confirmationName) {
+                    return this.defaultConfirmName;
+                } else return this.confirmationName;
+            }
+
+        }
+
+        window.customElements.define(CreateVerischerterAntrag.is, CreateVerischerterAntrag);
+    </script>
+</dom-module>

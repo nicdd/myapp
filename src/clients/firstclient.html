@@ -37,7 +37,7 @@
                                 path: '/loadCSV/versicherte',
                                 port: '8000'
                             },
-                            JSON_VERSICHERTE:{
+                            JSON_VERSICHERTE: {
                                 path: '/api/versicherte',
                                 port: '8000'
                             }
@@ -64,7 +64,7 @@
             getCats() {
                 let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.CATS_BASIC.path, this.URLS.CATS_BASIC.port);
                 let myHeaders = new Headers();
-                
+
                 let myInit = {
                     method: 'GET',
                     headers: myHeaders,
@@ -115,7 +115,7 @@
             getCSV() {
                 let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.CSV_BASIC.path, this.URLS.CSV_BASIC.port);
                 let myHeaders = new Headers();
-                
+
                 let myInit = {
                     method: 'GET',
                     headers: myHeaders,
@@ -129,17 +129,17 @@
                 return fetch(myRequest).then((response) => {
                     console.log("getCSVs aaaaaaaantwort" + JSON.stringify(response));
                     if (response.status === 204) {
-                        return  [['firstName','lastName','street','city'],[,,,]] 
+                        return [['firstName', 'lastName', 'street', 'city'], [, , ,]]
                     } else return response.json();
                 }).catch(() => {
                     console.log('getCSV die Anfrage an /loadCSV/test war nicht erfolgreich')
                 });
             }
 
-            getGaertlerCSV(){
+            getGaertlerCSV() {
                 let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.CSV_GAERTLER.path, this.URLS.CSV_GAERTLER.port);
                 let myHeaders = new Headers();
-                
+
                 let myInit = {
                     method: 'GET',
                     headers: myHeaders,
@@ -153,7 +153,7 @@
                 return fetch(myRequest).then((response) => {
                     console.log("getCSVs aaaaaaaantwort" + JSON.stringify(response));
                     if (response.status === 204) {
-                        return  [['firstName','lastName','street','city'],[,,,]] 
+                        return [['firstName', 'lastName', 'street', 'city'], [, , ,]]
                     } else return response.json();
                 }).catch((err) => {
                     console.log('getGaertlerCSV die Anfrage an /loadCSV/gaertler war nicht erfolgreich')
@@ -161,10 +161,10 @@
                 });
             }
 
-            getVersicherteCSV(){
+            getVersicherteCSV() {
                 let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.CSV_VERSICHERTE.path, this.URLS.CSV_VERSICHERTE.port);
                 let myHeaders = new Headers();
-                
+
                 let myInit = {
                     method: 'GET',
                     headers: myHeaders,
@@ -178,7 +178,7 @@
                 return fetch(myRequest).then((response) => {
                     console.log("getCSVs aaaaaaaantwort" + JSON.stringify(response));
                     if (response.status === 204) {
-                        return  [['firstName','lastName','street','city'],[,,,]] 
+                        return [['firstName', 'lastName', 'street', 'city'], [, , ,]]
                     } else return response.json();
                 }).catch((err) => {
                     console.log('getGaertlerCSV die Anfrage an /loadCSV/gaertler war nicht erfolgreich')
@@ -186,13 +186,13 @@
                 });
             }
 
-            postVersicherteAsJSON(versicherte){
+            postVersicherteAsJSON(versicherte) {
                 console.log('topost' + JSON.stringify(versicherte))
                 let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.JSON_VERSICHERTE.path, this.URLS.JSON_VERSICHERTE.port);
                 let myHeaders = new Headers();
                 myHeaders.set("Content-Type", "application/json");
 
-                let tosend=JSON.stringify(versicherte);
+                let tosend = JSON.stringify(versicherte);
 
                 let myInit = {
                     method: 'POST',
@@ -207,18 +207,18 @@
 
                 return fetch(myRequest).then((response) => {
                     console.log("postVersicherteAsJSON antwort" + JSON.stringify(response));
-                    if(response && response.ok){
+                    if (response && response.ok) {
                         return response.json();
                     } else return undefined;
-                    
-                    
+
+
                 }).catch(() => {
                     console.log('postVersicherteAsJSON die Anfrage an' + sourceURL + ' war nicht erfolgreich')
                 });
 
             }
 
-            getVersicherteAsJSON(){
+            getVersicherteAsJSON() {
                 let self = this;
                 let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.JSON_VERSICHERTE.path, this.URLS.JSON_VERSICHERTE.port);
                 let myHeaders = new Headers();
@@ -253,6 +253,61 @@
 
             }
 
+            exportVersicherteAsCSV(versicherte) {
+                let asCSV = this.mapToCSV(versicherte);
+                console.log('topost' + JSON.stringify(versicherte))
+                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.CSV_VERSICHERTE.path, this.URLS.CSV_VERSICHERTE.port);
+                let myHeaders = new Headers();
+                myHeaders.set("Content-Type", "text/plain");
+
+                let myInit = {
+                    method: 'POST',
+                    headers: myHeaders,
+                    mode: 'cors',
+                    cache: 'default',
+                    credentials: 'omit',
+                    body: asCSV
+                };
+
+                let myRequest = new Request(sourceURL, myInit);
+                return fetch(myRequest).then((response) => {
+                    //console.log("postVersicherteAscsv antwort" + JSON.stringify(response));
+                    if (response && response.ok) {
+                        return response.json();
+                    } else return undefined;
+
+
+                }).catch(() => {
+                    console.log('postVersicherteAscsv die Anfrage an' + sourceURL + ' war nicht erfolgreich')
+                });
+            }
+
+            mapToCSV(versicherte) {
+                let myForCSVArray = [];
+                myForCSVArray.push(versicherte.columns);
+                versicherte.data.forEach((v) => {
+                    let myVerArray = [];
+                    for (var key in v) {
+                        if (v.hasOwnProperty(key)) {
+                            myVerArray.push(String(v[key]));
+
+                        }
+                    }
+                    myForCSVArray.push(myVerArray);
+                })
+
+                let paL = myForCSVArray;
+                let toSave = '';
+                paL.forEach((rowArr, idx) => {
+                    if (idx !== 0) {
+                        toSave += '\n';
+                    }
+                    let strRow = rowArr.join(',');
+                    toSave += strRow;
+
+                })
+                return toSave;
+            }
 
         }
 
