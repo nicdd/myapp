@@ -157,7 +157,6 @@ Pagination Element for Vaadin-Grid Tables
             }
 
             _vdataChanged(changed) {
-                console.log('versicherungrechner vdata changed:' + JSON.stringify(changed))
                 if (this.vdata) {
                     let gesamtBeitrag = this.getGesamtGBVEUR() + this.getGesamtFEDEUR() + parseInt(this.vdata.UV.grundbeitrag.beitrag)
                     this.set('nv.Beitrag', gesamtBeitrag);
@@ -240,11 +239,12 @@ Pagination Element for Vaadin-Grid Tables
             }
 
             _doAdd() {
+                this._vdataChanged();
                 this.dispatchEvent(new CustomEvent('addversicherter', { detail: this.mergeStrasseWithHausnr(this.nv) }));
                 this._closeDialog();
             }
 
-            mergeStrasseWithHausnr(nv){
+            mergeStrasseWithHausnr(nv) {
                 nv.STRASSE = nv.STRASSE + " " + nv.HAUSNR;
                 delete nv['HAUSNR'];
                 return nv;
