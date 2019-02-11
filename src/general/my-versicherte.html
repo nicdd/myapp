@@ -56,6 +56,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../shared-styles.html">
 <link rel="import" href="../utils/grt-grid-pagination.html">
 <link rel="import" href="../utils/create-versicherter-antrag.html">
+<link rel="import" href="../utils/export-chooser.html">
+<link rel="import" href="../utils/grt-dialog.html">
 
 
 <dom-module id="my-versicherte">
@@ -112,13 +114,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       .btn {
-  
-  border: none; /* Remove borders */
-  
-  
-  border-radius: 10%;
-  cursor: pointer; /* Mouse pointer on hover */
-}
+
+        border: none;
+        /* Remove borders */
+
+
+        border-radius: 10%;
+        cursor: pointer;
+        /* Mouse pointer on hover */
+      }
 
 
 
@@ -160,19 +164,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </style>
 
     <first-client id="firstclient"></first-client>
-    <create-versicherter-antrag id="adddialog" cancel-name="Abbrechen" confirmation-name="Hinzufügen" >
-      
+    <create-versicherter-antrag id="adddialog" cancel-name="Abbrechen" confirmation-name="Hinzufügen">
+      <grt-dialog id="grtinfodialog" dialog-type="info"></grt-dialog>
+
+      <export-chooser id="exportdialog" dialog-type="info" confirmation-name="Schließen" on-export-versicherte="exportVersicherte"></export-chooser>
+
+
     </create-versicherter-antrag>
     <div class="toolbar layout horizontal justified" flex>
-      <grt-grid-pagination  id="pages" datalength="[[mvdata.length]]" page-size="{{pageSize}}" pstart="{{_pageStart}}"
+      <grt-grid-pagination id="pages" datalength="[[mvdata.length]]" page-size="{{pageSize}}" pstart="{{_pageStart}}"
         on-pagechanged="changePage"></grt-grid-pagination>
       <div class="layout horizontal justified" flex="50">
-          <paper-progress-button class="demo" bottom raised on-click="addVersicherter" loading-label="Nicht so hecktisch ..."
-          loading="[[_loading]]">Antrag erfassen <iron-icon icon="add-circle-outline" slot="item-icon" ></iron-icon></paper-progress-button>
-       <paper-progress-button class="demo" bottom raised on-click="postVersicherte" loading-label="Nicht so hecktisch ..."
-        loading="[[_loading]]">Speichern</paper-progress-button>
-        <paper-progress-button class="demo" disabled="[[!mvdata]]" bottom raised on-click="exportVersicherte" loading-label="Nicht so hecktisch ..."
-        loading="[[_loading]]">Exportieren</paper-progress-button>
+        <paper-progress-button class="demo" bottom raised on-click="addVersicherter" loading-label="Nicht so hecktisch ..."
+          loading="[[_loading]]">Antrag erfassen <iron-icon icon="add-circle-outline" slot="item-icon"></iron-icon>
+        </paper-progress-button>
+        <paper-progress-button class="demo" bottom raised on-click="postVersicherte" loading-label="Nicht so hecktisch ..."
+          loading="[[_loading]]">Speichern</paper-progress-button>
+        <paper-progress-button class="demo" disabled="[[!mvdata]]" bottom raised on-click="_showExportDialog"
+          loading-label="Nicht so hecktisch ..." loading="[[_loading]]">Exportieren</paper-progress-button>
       </div>
     </div>
 
@@ -291,14 +300,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <vaadin-grid-column width="100px">
           <template class="header"></template>
           <template>
-            <button id="bt[[item.GaNr]]" on-click="_openDetails" class="endpagebutton"> 
+            <button id="bt[[item.GaNr]]" on-click="_openDetails" class="endpagebutton">
               <slot>
-              <iron-icon id="cr[[item.GaNr]]" icon="create" slot="item-icon" on-click="_openDetails"></iron-icon>
-            </slot>
+                <iron-icon id="cr[[item.GaNr]]" icon="create" slot="item-icon" on-click="_openDetails"></iron-icon>
+              </slot>
             </button>
-            <button id="bt[[item.GaNr]]" on-click="_removeItem" class="endpagebutton" disabled="[[detailsOpened]]"> 
+            <button id="bt[[item.GaNr]]" on-click="_removeItem" class="endpagebutton" disabled="[[detailsOpened]]">
               <iron-icon id="rm[[item.GaNr]]" icon="delete" slot="item-icon" on-click="_removeItem"></iron-icon>
-              </button>
+            </button>
             <!-- <vaadin-checkbox aria-label$="Show Details for [[NAME]]" checked="{{detailsOpened}}">Details</vaadin-checkbox> -->
           </template>
         </vaadin-grid-column>
@@ -361,28 +370,30 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       }
 
-      _openDetails(e){
+      _openDetails(e) {
         e.preventDefault();
         e.model.detailsOpened = !e.model.detailsOpened;
         e.stopPropagation();
       }
 
-      _removeItem(e){
+      _removeItem(e) {
         e.preventDefault();
         let id = e.target.id.substring(2);
         console.log('id ist' + id);
-        let elem = this.mvdata.find((v) => { 
-          return v.GaNr === id });
+        let elem = this.mvdata.find((v) => {
+          return v.GaNr === id
+        });
         console.log('elem ist' + JSON.stringify(elem));
         let idx = this.mvdata.indexOf(elem);
         console.log('index ist' + idx);
-        if (idx >= 0){
+        if (idx >= 0) {
           this.splice('mvdata', idx, 1);
         }
         e.stopPropagation();
+
       }
 
-      addVersicherter(){
+      addVersicherter() {
         this.$.adddialog.showDialog();
       }
 
@@ -405,7 +416,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             // For Number-like Strings containing alphanummerical chars
             records = records.sort(function (o1, o2) {
               let result = self.naturalSorter(o1.GaNr, o2.GaNr);
-              if (direction === 'asc'){
+              if (direction === 'asc') {
                 return (result < 0) ? -1 : 1;
               } else {
                 return (result < 0) ? 1 : -1;
@@ -451,7 +462,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         if (this._pageStart || this._pageStart === 0) {
           let end = parseInt(this._pageStart) + parseInt(this.pageSize);
           let newItems = this.mvdata.slice(this._pageStart, end);
-         this.$.mygrid.items = newItems;
+          this.$.mygrid.items = newItems;
         }
 
       }
@@ -470,7 +481,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         // this.$.firstclient.getVersicherteCSV().then((resp) => {
         //   this.set('pageSize', 10);
         //   this.mapToJSON(resp);
-         
+
         // }).catch((err) => {
         //   console.log("Fehler beim importVersicherte fuer versicherte  kam:" + JSON.stringify(err))
         // })
@@ -535,8 +546,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             b1 = b[i++];
           if (a1 !== b1) {
             n = a1 - b1;
-            if (!isNaN(n)){
-              console.log('path returned wird' + n + ' for as' + as + 'bs' + bs + 'a1' + a1 + 'b1' + b1); 
+            if (!isNaN(n)) {
+              console.log('path returned wird' + n + ' for as' + as + 'bs' + bs + 'a1' + a1 + 'b1' + b1);
               return n;
             } else {
               console.log('path else')
@@ -555,21 +566,48 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         console.log('selected changed newV:' + newV + " oldV:" + oldV)
         if (newV) {
           this.$.firstclient.getVersicherteAsJSON().then((resp) => {
-          this.set('pageSize', 10);
-          this.splitToObjects(resp);
-          this.changePage();
-        })
+            this.set('pageSize', 10);
+            this.splitToObjects(resp);
+            this.changePage();
+          })
         }
       }
 
-      postVersicherte(){
-        let dataAndColumns = {data: this.mvdata, columns: this.columnNames}
-        this.$.firstclient.postVersicherteAsJSON(dataAndColumns);
+      postVersicherte() {
+        let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
+
+        this.$.firstclient.postVersicherteAsJSON(dataAndColumns).then(() => {
+          console.log('versicherte gespeichert')
+          showToast(this, 'Die Verischerten wurden erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
+        }).catch(() => {
+          showToast(this, 'Fehler beim Speichern der Versichertendaten', TOAST_TYPE.ERROR);
+        });
       }
 
-      exportVersicherte(){
-        let dataAndColumns = {data: this.mvdata, columns: this.columnNames}
-        this.$.firstclient.exportVersicherteAsCSV(dataAndColumns);
+      _showExportDialog() {
+        this.$.exportdialog.showDialog(
+          {
+            "title": "Speicherort Auswahl",
+            "message": "Bitte wählen Sie ob eine lokale Speicherung erwünscht ist oder eine Speicherung auf dem Server"
+          })
+      }
+
+      exportVersicherte(e) {
+        let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
+
+        this.$.firstclient.exportVersicherteAsCSV(dataAndColumns, e.detail).then((savePath) => {
+          console.log('die antwort ist' + JSON.stringify(savePath))
+          this.$.grtinfodialog.showDialog(
+            {
+              "title": "Daten als CSV - exportieren",
+              "message": "Die Daten der Versicheten wurden erfolgreich unter " + savePath.path + " gespeichert."
+            })
+        }).catch(() => {
+          showToast(this, 'Der Datenexport ist fehlgeschlagen', TOAST_TYPE.ERROR);
+        });
+
+
+
       }
     }
 

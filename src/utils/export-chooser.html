@@ -1,0 +1,208 @@
+<!--
+Pagination Element for Vaadin-Grid Tables
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<!-- <link rel="import" href="../../bower_components/paper-input/paper-input.html"> -->
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-item/paper-icon-item.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item-body.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/social-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/hardware-icons.html">
+<link rel="import" href="../../bower_components/vaadin-dialog/vaadin-dialog.html">
+<link rel="import" href="../../bower_components/paper-progress-button/paper-progress-button.html">
+<link rel="import" href="../shared-styles.html">
+
+<dom-module id="export-chooser">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: inline-block;
+                padding: 3px;
+            }
+
+            iron-icon {
+                color: inherit;
+                padding-right: 6px;
+            }
+
+            paper-icon-item.child {
+                padding: 0px;
+                padding-left: 16px;
+                --paper-item-icon-width: 32px;
+            }
+
+            .nav {
+                padding-top: 16px;
+            }
+
+            .nav-item.child:hover {
+                transform: scale(1.02);
+                color: var(--paper-light-blue-500);
+            }
+
+            .nav-item {
+                transition: all 0.2s ease-in-out;
+                cursor: pointer;
+                font-family: productsans, 'Roboto', sans-serif;
+                --paper-font-body1_-_font-family: productsans, 'Roboto', sans-serif;
+
+                --paper-item-focused-before: {
+                    opacity: 0;
+                }
+            }
+
+            .mdialog {
+                display: flex;
+                min-width: 1000px !important;
+            }
+
+            .cbutton {
+                --paper-progress-active-color: #1875d1;
+                --paper-progress-container-icolor: #00000000;
+
+                --paper-button-mixin: {
+                    padding: 0.2em 0.5em 0.2em 0.5em !important;
+                    background-color: #1976d2;
+                    color: white;
+                }
+
+                --paper-button-disabled-mixin: {
+                    background: #efefef;
+                    color: black;
+                }
+            }
+
+            .buttons {
+                margin-top: 10px;
+                display: flex;
+                flex-flow: row wrap;
+                justify-content: space-evenly;
+            }
+        </style>
+
+        <vaadin-dialog id="vdialog" class="mdialog" no-close-on-outside-click no-close-on-esc>
+            <template>
+                <div class="layout vertical">
+                    <h3>[[title]]</h3>
+                    <div>
+                        [[message]]
+                    </div>
+                    <div class="layout vertical justified-center">
+                        <paper-icon-item on-click="_saveEvent" name="lokal" class="nav-item child">
+                            <iron-icon icon="save" slot="item-icon"></iron-icon>
+                            <paper-item-body two-line>
+                                <div>Lokales Export</div>
+                                <div secondary>Klicken Sie hier, um die Daten als CSV-Datei auf Ihrem Rechner zu
+                                    speichern</div>
+                            </paper-item-body>
+                        </paper-icon-item>
+                        <paper-icon-item on-click="_saveEvent" name="server" class="nav-item child">
+                            <iron-icon icon="cloud-upload" slot="item-icon"></iron-icon>
+                            <paper-item-body two-line>
+                                <div>Zentrales Export</div>
+                                <div secondary>Klicken Sie hier, um die Daten als CSV-Datei auf dem Applikationsserver
+                                    zu speichern</div>
+                            </paper-item-body>
+                        </paper-icon-item>
+                    </div>
+                </div>
+                <div class="buttons">
+                    <template is="dom-if" if="[[!_isInfoType(dialogType)]]">
+                        <paper-progress-button on-click="_closeDialog">[[getCancelName(cancelName)]]</paper-progress-button>
+                    </template>
+                    <paper-progress-button on-click="_confirm" class="cbutton">[[getConfirmationName(confirmationName,
+                        dialogType)]]</paper-progress-button>
+                </div>
+            </template>
+        </vaadin-dialog>
+
+    </template>
+
+    <script>
+        class ExportChooser extends Polymer.Element {
+            static get is() { return 'export-chooser'; }
+
+            static get properties() {
+                return {
+
+                    title: {
+                        type: String,
+                        value: null
+                    },
+
+                    message: {
+                        type: String,
+                        value: null
+                    },
+
+                    defaultConfirmName: {
+                        type: String,
+                        value: 'Ok'
+                    },
+
+                    defaultCancelName: {
+                        type: String,
+                        value: 'Cancel'
+                    },
+
+                    dialogType: String,
+
+                    cancelName: {
+                        type: String,
+                        value: null,
+                        notify: true
+                    },
+
+                    confirmationName: String,
+
+                }
+
+            }
+
+            showDialog(textsObjekt) {
+                this.set('title', textsObjekt.title);
+                this.set('message', textsObjekt.message);
+                this.$.vdialog.opened = true;
+            }
+
+            _closeDialog() {
+                //this.dispatchEvent(new CustomEvent('exp-cancel'));
+                this.$.vdialog.opened = false;
+            }
+
+            _confirm() {
+                //this.dispatchEvent(new CustomEvent('exp-confirm'));
+                this._closeDialog();
+            }
+
+            _saveEvent(e) {
+                let exportType = e.currentTarget.getAttribute('name');
+                this.dispatchEvent(new CustomEvent('export-versicherte', { detail: exportType }));
+            }
+
+            getCancelName(cancelName) {
+                if (!this.cancelName) {
+                    return this.defaultCancelName;
+                } else return this.cancelName;
+            }
+
+            getConfirmationName(confirmationName) {
+                if (!this.confirmationName) {
+                    return this.defaultConfirmName;
+                } else return this.confirmationName;
+            }
+
+            _isInfoType(dialogType) {
+                return this.dialogType === "info";
+            }
+
+
+
+        }
+
+        window.customElements.define(ExportChooser.is, ExportChooser);
+    </script>
+</dom-module>

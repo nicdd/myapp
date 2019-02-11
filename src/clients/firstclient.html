@@ -1,5 +1,6 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<script src="../../bower_components/file-saver/dist/FileSaver.min.js"></script>
 
 <dom-module id="first-client">
     <template></template>
@@ -253,9 +254,20 @@
 
             }
 
-            exportVersicherteAsCSV(versicherte) {
+            exportVersicherteAsCSV(versicherte, destination) {
                 let asCSV = this.mapToCSV(versicherte);
                 console.log('topost' + JSON.stringify(versicherte))
+                if (destination === "server") {
+                    return this._exportRemote(asCSV);
+                } else if (destination === "lokal") {
+                    return this._saveLokalAsCSV(asCSV);
+                } else {
+                    return this._exportRemote(asCSV);
+                }
+
+            }
+
+            _exportRemote(asCSV) {
                 let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.CSV_VERSICHERTE.path, this.URLS.CSV_VERSICHERTE.port);
                 let myHeaders = new Headers();
                 myHeaders.set("Content-Type", "text/plain");
@@ -271,15 +283,23 @@
 
                 let myRequest = new Request(sourceURL, myInit);
                 return fetch(myRequest).then((response) => {
-                    //console.log("postVersicherteAscsv antwort" + JSON.stringify(response));
+                    console.log("postVersicherteAscsv antwort" + response);
                     if (response && response.ok) {
+                        //debugger;
+                        console.log("postVersicherteAscsv antwort1");
                         return response.json();
-                    } else return undefined;
+                    } else { console.log("postVersicherteAscsv antwort2"); return undefined; }
 
 
                 }).catch(() => {
                     console.log('postVersicherteAscsv die Anfrage an' + sourceURL + ' war nicht erfolgreich')
                 });
+            }
+
+            _saveLokalAsCSV(asCSV) {
+                let nowMoment = moment().format('YYYYMMDD_HHmm')
+                var blob = new Blob([asCSV], { type: "text/csv;charset=utf-8" });
+                saveAs(blob, "versicherte_" + nowMoment + ".csv");
             }
 
             mapToCSV(versicherte) {

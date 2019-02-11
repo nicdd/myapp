@@ -134,10 +134,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _saveVersicherungKonfiguration(){
         this.$.bclient.postVersicherungconfig(this.vc).then(()=>{
-          this.showToast(this, 'Versicherungskonfiguration erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
+          showToast(this, 'Versicherungskonfiguration erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
         }).catch(()=>{
-          this.showToast(this, 'Fehler beim Speichern der Versicherungskonfiguration', TOAST_TYPE.ERROR);
-        })
+          showToast(this, 'Fehler beim Speichern der Versicherungskonfiguration', TOAST_TYPE.ERROR);
+        });
 
       }
 

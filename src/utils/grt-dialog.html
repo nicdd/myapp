@@ -1,0 +1,138 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/vaadin-dialog/vaadin-dialog.html">
+<link rel="import" href="../../bower_components/paper-progress-button/paper-progress-button.html">
+
+<dom-module id="grt-dialog">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: inline-block;
+                padding: 3px;
+            }
+
+            .mdialog {
+                display: flex;
+                min-width: 1000px !important;
+            }
+
+            .cbutton {
+                --paper-progress-active-color: #1875d1;
+                --paper-progress-container-icolor: #00000000;
+
+                --paper-button-mixin: {
+                    padding: 0.2em 0.5em 0.2em 0.5em !important;
+                    background-color: #1976d2;
+                    color: white;
+                }
+
+                --paper-button-disabled-mixin: {
+                    background: #efefef;
+                    color: black;
+                }
+            }
+
+            .buttons {
+                margin-top: 10px;
+                display: flex;
+                flex-flow: row wrap;
+                justify-content: space-evenly;
+            }
+        </style>
+
+        <vaadin-dialog id="vdialog" class="mdialog" no-close-on-outside-click no-close-on-esc>
+
+            <template>
+                <div class="layout vertical">
+                    <h3>[[title]]</h3>
+                    <div>
+                        [[message]]
+                    </div>
+                </div>
+                <div class="buttons">
+                    <template is="dom-if" if="[[!_isInfoType(dialogType)]]">
+                        <paper-progress-button on-click="_closeDialog">[[getCancelName(cancelName)]]</paper-progress-button>
+                    </template>
+                    <paper-progress-button on-click="_confirm" class="cbutton">[[getConfirmationName(confirmationName,
+                        dialogType)]]</paper-progress-button>
+                </div>
+            </template>
+        </vaadin-dialog>
+    </template>
+
+    <script>
+        class GrtDialog extends Polymer.Element {
+            static get is() { return 'grt-dialog'; }
+
+            static get properties() {
+                return {
+
+                    title: {
+                        type: String,
+                        value: null
+                    },
+
+                    message: {
+                        type: String,
+                        value: null
+                    },
+
+                    defaultConfirmName: {
+                        type: String,
+                        value: 'Ok'
+                    },
+
+                    defaultCancelName: {
+                        type: String,
+                        value: 'Cancel'
+                    },
+
+                    dialogType: String,
+
+                    cancelName: {
+                        type: String,
+                        value: null,
+                        notify: true
+                    },
+
+                    confirmationName: String,
+                }
+
+            }
+
+            showDialog(textsObjekt) {
+                this.set('title', textsObjekt.title);
+                this.set('message', textsObjekt.message);
+                this.$.vdialog.opened = true;
+            }
+
+            _closeDialog() {
+                this.dispatchEvent(new CustomEvent('grt-cancel'));
+                this.$.vdialog.opened = false;
+            }
+
+            _confirm() {
+                this.dispatchEvent(new CustomEvent('grt-confirm'));
+                this._closeDialog();
+            }
+
+            getCancelName(cancelName) {
+                if (!this.cancelName) {
+                    return this.defaultCancelName;
+                } else return this.cancelName;
+            }
+
+            getConfirmationName(confirmationName) {
+                if (!this.confirmationName) {
+                    return this.defaultConfirmName;
+                } else return this.confirmationName;
+            }
+
+            _isInfoType(dialogType) {
+                return this.dialogType === "info";
+            }
+
+        }
+
+        window.customElements.define(GrtDialog.is, GrtDialog);
+    </script>
+</dom-module>

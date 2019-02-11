@@ -48,8 +48,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
 <dom-module id="my-app">
-    <link rel="import" type="css" href="utils/number-polyfill.css">
-    <script src="utils/number-polyfill.js"></script>
+  <link rel="import" type="css" href="utils/number-polyfill.css">
+  <script src="utils/number-polyfill.js"></script>
   <template>
     <style include="shared-styles">
       :host {
@@ -243,8 +243,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this.loadBaseConfig();
       }
 
-      loadBaseConfig(){
-        this.$.basicclient.getVersicherungconfig().catch(()=>{
+      loadBaseConfig() {
+        this.$.basicclient.getVersicherungconfig().catch(() => {
           this.showToast(this, "Die Versicherung-configuration konnte nicht geladen werden, Sie werden ausgeloggt!", TOAST_TYPE.ERROR)
           this.logout();
         })
@@ -313,7 +313,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       }
 
-      
+
     }
 
     window.customElements.define(MyApp.is, MyApp);
