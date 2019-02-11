@@ -74,7 +74,7 @@
                 return fetch(myRequest).then((response) => {
                     if (response.status && response.status === 204) {
                         console.log("getVersicherungconfig status 204")
-                        return Promise.reject("NotFound");
+                        return undefined;
                     } else {
                         return response.json();
                     }

@@ -164,16 +164,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </style>
 
     <first-client id="firstclient"></first-client>
-    <create-versicherter-antrag id="adddialog" cancel-name="Abbrechen" confirmation-name="Hinzufügen">
-      <grt-dialog id="grtinfodialog" dialog-type="info"></grt-dialog>
+    <create-versicherter-antrag id="adddialog" cancel-name="Abbrechen" confirmation-name="Hinzufügen"></create-versicherter-antrag>
+    <grt-dialog id="grtinfodialog" dialog-type="info"></grt-dialog>
+    <export-chooser id="exportdialog" dialog-type="info" confirmation-name="Schließen" on-export-versicherte="exportVersicherte"></export-chooser>
 
-      <export-chooser id="exportdialog" dialog-type="info" confirmation-name="Schließen" on-export-versicherte="exportVersicherte"></export-chooser>
-
-
-    </create-versicherter-antrag>
     <div class="toolbar layout horizontal justified" flex>
-      <grt-grid-pagination id="pages" datalength="[[mvdata.length]]" page-size="{{pageSize}}" pstart="{{_pageStart}}"
-        on-pagechanged="changePage"></grt-grid-pagination>
+      <template is="dom-if" if="[[columnNames.length]]">
+        <grt-grid-pagination id="pages" datalength="[[mvdata.length]]" page-size="{{pageSize}}" pstart="{{_pageStart}}"
+          on-pagechanged="changePage"></grt-grid-pagination>
+      </template>
       <div class="layout horizontal justified" flex="50">
         <paper-progress-button class="demo" bottom raised on-click="addVersicherter" loading-label="Nicht so hecktisch ..."
           loading="[[_loading]]">Antrag erfassen <iron-icon icon="add-circle-outline" slot="item-icon"></iron-icon>
@@ -366,6 +365,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             type: Boolean,
             value: false,
             observer: '_activeChanged',
+          },
+
+          columnNames: {
+            type: Array,
+            value: []
           }
         }
       }
@@ -472,8 +476,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       ready() {
         super.ready();
         this.$.firstclient.getVersicherteAsJSON().then((resp) => {
-          this.set('pageSize', 10);
-          this.splitToObjects(resp);
+          if (resp) {
+            this.set('pageSize', 10);
+            this.splitToObjects(resp);
+          } else {
+            showToast(this, 'Bei der Initialisierung der Seite wurden keine Versichertendaten gefunden', TOAST_TYPE.ERROR);
+          }
         }).catch((err) => {
           console.log("Fehler beim get fuer versicherte  kam:" + JSON.stringify(err))
         })
@@ -491,11 +499,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           console.log('adddialog gedruckt' + JSON.stringify(e.detail))
           this.splice('mvdata', this._pageStart, 0, e.detail);
           //this.push('mvdata', e.detail);
-        });
-
-        this.$.rmbtn.addEventListener('click', () => {
-          console.log('remove gedruckt')
-          this.pop('mvdata');
         });
 
         this.$.mygrid.addEventListener('selected-items-changed', (e) => {
@@ -527,8 +530,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       splitToObjects(resp) {
         let versichertenData = resp.data;
         let columns = resp.columns;
-        this.set('mvdata', versichertenData);
         this.set('columnNames', columns);
+        this.set('mvdata', versichertenData);
         // this.set('mvdata', versichertenData);
       }
 
@@ -566,9 +569,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         console.log('selected changed newV:' + newV + " oldV:" + oldV)
         if (newV) {
           this.$.firstclient.getVersicherteAsJSON().then((resp) => {
-            this.set('pageSize', 10);
-            this.splitToObjects(resp);
-            this.changePage();
+            if (resp) {
+              this.set('pageSize', 10);
+              this.splitToObjects(resp);
+              this.changePage();
+            } else {
+              showToast(this, 'Bei der erneuten Initialisierung der Seite wurden keine Versichertendaten gefunden', TOAST_TYPE.ERROR);
+            }
           })
         }
       }
@@ -585,17 +592,27 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       _showExportDialog() {
-        this.$.exportdialog.showDialog(
-          {
-            "title": "Speicherort Auswahl",
-            "message": "Bitte wählen Sie ob eine lokale Speicherung erwünscht ist oder eine Speicherung auf dem Server"
-          })
+
+        if (!this.mvdata || !this.mvdata.length) {
+          this.$.grtinfodialog.showDialog(
+            {
+              "title": "Keine Daten",
+              "message": "Es gibt keine Versichertendaten, die man exportieren könnte."
+            })
+
+        } else {
+          this.$.exportdialog.showDialog(
+            {
+              "title": "Speicherort Auswahl",
+              "message": "Bitte wählen Sie ob eine lokale Speicherung erwünscht ist oder eine Speicherung auf dem Server."
+            })
+        }
       }
 
       exportVersicherte(e) {
         let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
-
         this.$.firstclient.exportVersicherteAsCSV(dataAndColumns, e.detail).then((savePath) => {
+          
           console.log('die antwort ist' + JSON.stringify(savePath))
           this.$.grtinfodialog.showDialog(
             {
@@ -603,7 +620,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               "message": "Die Daten der Versicheten wurden erfolgreich unter " + savePath.path + " gespeichert."
             })
         }).catch(() => {
-          showToast(this, 'Der Datenexport ist fehlgeschlagen', TOAST_TYPE.ERROR);
+          showToast(this, 'Der Datenexport der Versicherten ist fehlgeschlagen', TOAST_TYPE.ERROR);
         });
 
 

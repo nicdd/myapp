@@ -1,0 +1,637 @@
+<!--
+Die Versicherten-Seite
+Auf dieser Seite werden nur die Pächter dargestellt die eine Versicherung abgeschlossen haben.
+Diese kann beim KVD oder bei einer externen Versicherungsgesellschaft abgeschlossen sein.
+Ein bisher Versicherter der nicht mehr bezahlt hat, wird zuerst telefonisch, per E-Mail oder per Brief erinnert.
+
+Wenn für diesen Pächter keine Zahlung und keinen Versicherungsnachweis erfasst wurden, OBWOHL für ihn die Erinnerungsversuche
+unternommen wurden, wird dieser:
+
+  - authomatisch vom System nach 14 Tagen nach dem Erinnerungskontakt; 
+  - manuell durch den Versicherungsbeauftragten;
+
+in die Liste der "nicht versicherten" verschoben. Die Verschiebung in die Liste der anzumahnenden Pächter setzt
+zwingend voraus, dass der Versicherungsbeauftragter die Erinnerungsversuche unternommen und protokolliert hat.
+
+Für die nicht - versicherten Pächter wird eine Benachrichtigungs-EMail an den Verein samt einem 
+an der E-Mail angehängten Mahnungs-Anschreiben verschickt. Die E-Mail an den Verein enthält zwingend
+die Informationen über die nicht erfolgreichen Versuche, ihn zur Zahlung zu bewegen.
+Der 14-Tage Frist kann vom Versicherungsbeauftragten auf maximal 1 Monat verlängert werden.
+
+***********************************************
+Entstehung und Änderungen der Versichertenliste
+***********************************************
+Die Versichertenliste entsteht initial durch das Importieren der Versichertenbestand aus der CSV-Datei vom KVD.
+Weiterhin, kann der Benutzer, manuell durch die Bearbeitung der "nicht verischerten" Liste, einzelne "nicht Verischerte"
+in die Versichertenliste verschieben. Dabei musste er die Informationen über den letzten gültigen Zahlungseing erfasst haben
+(eingezahlten Zahlungsbetrag, Datum, Vericherungsoptionen(FED usw)).
+
+Man kann Einträge aus dieser Liste in die Nicht-Versicherten-Liste verschieben oder ganz Löschen.
+Eine Löschung aus der Versichertenliste führt nicht zu einer tatsächlichen Löschung, sondern in die Verschiebung der 
+Daten in einer Versicherten-Passivliste, denn es könnte durchaus sein, dass man uach nach einer Kündigung die 
+Daten über die Versicherung noch braucht. Die Einträge in der Passivliste werden vom System nach 2 Jahren aus der Liste entfernt.
+Ab diesem Zeitpunkt kennt das System keine Informationen mehr über die versicherte Person.
+
+
+-->
+
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/paper-progress-button/paper-progress-button.html">
+<!-- <link rel="import" href="../../bower_components/papa-parse/papa-parse.html">
+<link rel="import" href="../../bower_components/papa-parse/papa-unparse.html"> -->
+
+
+<link rel="import" href="../../bower_components/vaadin-grid/theme/material/all-imports.html">
+<link rel="import" href="../clients/firstclient.html">
+<link rel="import" href="../shared-styles.html">
+<link rel="import" href="../utils/grt-grid-pagination.html">
+<link rel="import" href="../utils/member-select-dialog.html">
+<link rel="import" href="../utils/export-chooser.html">
+<link rel="import" href="../utils/grt-dialog.html">
+
+
+<dom-module id="my-paechter">
+    <template>
+        <style include="shared-styles">
+            :host {
+                /* Stretch this element to fill viewport */
+                height: 85vh;
+
+                /* Make a flex column layout of children */
+                display: flex;
+                flex-direction: column;
+            }
+
+            /* iron-pages { */
+            /* Stretch this element in the parent flex */
+            /* flex: 1;  */
+
+            /* Make a flex column layout of children */
+            /* display: flex;
+          flex-direction: column;
+        } */
+
+            .toolbar {
+                /* height: 40px; */
+                padding: 5px;
+                /*line-height: 32px;*/
+                background: #eee;
+            }
+
+            .page {
+                /* Stretch this element in the parent flex */
+                flex: 1;
+
+                /* Make a flex column layout of children */
+                display: flex;
+                flex-direction: column;
+
+                /*
+            Let the page contents scroll. Unnecessary for <vaadin-grid>,
+            but could be useful for other pages.
+          */
+                overflow: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            /* .content {
+          padding: 8px;
+        } */
+
+            vaadin-grid {
+                /* Stretch this element in the parent flex */
+                flex: 1;
+            }
+
+            .btn {
+
+                border: none;
+                /* Remove borders */
+
+
+                border-radius: 10%;
+                cursor: pointer;
+                /* Mouse pointer on hover */
+            }
+
+
+
+            .demo {
+                --paper-progress-active-color: #1875d1;
+                --paper-progress-container-icolor: #00000000;
+
+                --paper-button-mixin: {
+                    padding: 0.2em 0.5em 0.2em 0.5em !important;
+                    background-color: #1976d2;
+                    color: white;
+                }
+
+                --paper-button-disabled-mixin: {
+                    background: #efefef;
+                    color: black;
+                }
+            }
+
+            .vaadin-demo-input[readonly] {
+                border: 2px solid transparent;
+                pointer-events: none;
+            }
+
+            input[vaadin-demo-input] {
+                max-width: 10px !important;
+            }
+
+            .vaadin-demo-input {
+                font: inherit;
+                width: 100%;
+                max-width: 50%;
+            }
+
+
+            /* .header {
+          max-height: 5px !important;
+        } */
+        </style>
+
+        <first-client id="firstclient"></first-client>
+        <member-select-dialog id="adddialog" cancel-name="Abbrechen" confirmation-name="Hinzufügen"></member-select-dialog>
+        <grt-dialog id="grtinfodialog" dialog-type="info"></grt-dialog>
+        <export-chooser id="exportdialog" dialog-type="info" confirmation-name="Schließen" on-export-paechter="exportPaechter"></export-chooser>
+
+        <div class="toolbar layout horizontal justified" flex>
+            <template is="dom-if" if="[[columnNames.length]]">
+                <grt-grid-pagination id="pages" datalength="[[mvdata.length]]" page-size="{{pageSize}}" pstart="{{_pageStart}}"
+                    on-pagechanged="changePage"></grt-grid-pagination>
+            </template>
+            <div class="layout horizontal justified" flex="50">
+                <paper-progress-button class="demo" bottom raised on-click="addPaecheter" loading-label="Nicht so hecktisch ..."
+                    loading="[[_loading]]">Antrag erfassen <iron-icon icon="add-circle-outline" slot="item-icon"></iron-icon>
+                </paper-progress-button>
+                <paper-progress-button class="demo" bottom raised on-click="postPaechter" loading-label="Nicht so hecktisch ..."
+                    loading="[[_loading]]">Speichern</paper-progress-button>
+                <paper-progress-button class="demo" disabled="[[!mvdata]]" bottom raised on-click="_showExportDialog"
+                    loading-label="Nicht so hecktisch ..." loading="[[_loading]]">Exportieren</paper-progress-button>
+            </div>
+        </div>
+
+        <div class="page">
+            <vaadin-grid id="mygrid" page-size="{{pageSize}}" active-item="{{activeItem}}" aria-label="Basic Binding Example"
+                items="[[mvdata]]" column-reordering-allowed>
+                <template class="row-details">
+                    <div class="details">
+                        <p>
+                            <span>Anschrift</span><br>
+                            <small>[[columnNames.3]]:[[item.STRASSE]]</small><br>
+                            <small>[[columnNames.4]]:[[item.PLZ]]</small><br>
+                            <small>[[columnNames.5]]:[[item.ORT]]</small><br>
+                        </p>
+                    </div>
+                </template>
+                <!--auto-select wenn man will dass man auch über das anklicken in der zeile nicht nur in der box selektieren kann-->
+                <vaadin-grid-selection-column auto-select width="40px"></vaadin-grid-selection-column>
+
+                <vaadin-grid-column path="GaNr" header="GaNr" width="75px" flex-grow="0" text-align="end">
+                    <template class="header">
+                        <vaadin-grid-sorter path="GaNr" on-sorter-changed="_sortChange">
+                            [[columnNames.2]]
+                        </vaadin-grid-sorter>
+                    </template>
+                </vaadin-grid-column>
+
+                <vaadin-grid-column path="NAME" width="141px" resizable>
+                    <template class="header">
+                        <vaadin-grid-sorter path="NAME" on-sorter-changed="_sortChange">
+                            [[columnNames.0]]
+                        </vaadin-grid-sorter>
+                    </template>
+                </vaadin-grid-column>
+
+                <vaadin-grid-column path="VORNAME" width="100px" resizable>
+                    <template class="header">
+                        <vaadin-grid-sorter path="VORNAME" on-sorter-changed="_sortChange">
+                            [[columnNames.1]]
+                        </vaadin-grid-sorter>
+                    </template>
+                </vaadin-grid-column>
+
+                <vaadin-grid-column path="GBV" width="80px" resizable text-align="end">
+                    <template class="header">
+                        <vaadin-grid-sorter path="GBV" on-sorter-changed="_sortChange">
+                            [[columnNames.11]]
+                        </vaadin-grid-sorter>
+                    </template>
+                </vaadin-grid-column>
+
+                <vaadin-grid-column path="FED" width="80px" resizable text-align="end">
+                    <template class="header">
+                        <vaadin-grid-sorter path="FED" on-sorter-changed="_sortChange">
+                            [[columnNames.12]]
+                        </vaadin-grid-sorter>
+                    </template>
+                </vaadin-grid-column>
+
+                <vaadin-grid-column path="HoeV" width="80px" resizable text-align="end">
+                    <template class="header">
+                        <vaadin-grid-sorter path="HoeV" on-sorter-changed="_sortChange">
+                            [[columnNames.13]]
+                        </vaadin-grid-sorter>
+                    </template>
+                </vaadin-grid-column>
+                <!-- </vaadin-grid-column-group> -->
+                <vaadin-grid-column path="SA" width="60px" resizable>
+                    <template class="header">
+                        <vaadin-grid-sorter path="SA" on-sorter-changed="_sortChange">
+                            [[columnNames.6]]
+                        </vaadin-grid-sorter>
+                    </template>
+                </vaadin-grid-column>
+
+                <vaadin-grid-column path="A73" width="80px" resizable text-align="end">
+                    <template class="header">
+                        <vaadin-grid-sorter path="A73" on-sorter-changed="_sortChange">
+                            [[columnNames.9]]
+                        </vaadin-grid-sorter>
+                    </template>
+                </vaadin-grid-column>
+
+                <vaadin-grid-column path="Solar" width="80px" resizable text-align="end">
+                    <template class="header">
+                        <vaadin-grid-sorter path="Solar" on-sorter-changed="_sortChange">
+                            [[columnNames.10]]
+                        </vaadin-grid-sorter>
+                    </template>
+                </vaadin-grid-column>
+
+                <vaadin-grid-column path="UV" width="60px" resizable text-align="end">
+                    <template class="header">
+                        <vaadin-grid-sorter path="UV" on-sorter-changed="_sortChange">
+                            [[columnNames.7]]
+                        </vaadin-grid-sorter>
+                    </template>
+                </vaadin-grid-column>
+
+                <vaadin-grid-column path="Beitrag" width="90px" resizable text-align="end">
+                    <template class="header">
+                        <vaadin-grid-sorter path="Beitrag" on-sorter-changed="_sortChange">
+                            [[columnNames.8]]
+                        </vaadin-grid-sorter>
+                    </template>
+                </vaadin-grid-column>
+
+                <vaadin-grid-column path="Bemerkung" resizable>
+                    <template class="header">
+                        <vaadin-grid-sorter path="Bemerkung" on-sorter-changed="_sortChange">
+                            [[columnNames.15]]
+                        </vaadin-grid-sorter>
+                    </template>
+                </vaadin-grid-column>
+
+                <vaadin-grid-column width="100px">
+                    <template class="header"></template>
+                    <template>
+                        <button id="bt[[item.GaNr]]" on-click="_openDetails" class="endpagebutton">
+                            <slot>
+                                <iron-icon id="cr[[item.GaNr]]" icon="create" slot="item-icon" on-click="_openDetails"></iron-icon>
+                            </slot>
+                        </button>
+                        <button id="bt[[item.GaNr]]" on-click="_removeItem" class="endpagebutton" disabled="[[detailsOpened]]">
+                            <iron-icon id="rm[[item.GaNr]]" icon="delete" slot="item-icon" on-click="_removeItem"></iron-icon>
+                        </button>
+                        <!-- <vaadin-checkbox aria-label$="Show Details for [[NAME]]" checked="{{detailsOpened}}">Details</vaadin-checkbox> -->
+                    </template>
+                </vaadin-grid-column>
+            </vaadin-grid>
+
+        </div>
+        <!-- <div id="pages"></div> -->
+
+
+    </template>
+
+
+
+
+
+    <script>
+        class MyPaechter extends Polymer.Element {
+            static get is() { return 'my-paechter'; }
+
+            static get properties() {
+                return {
+                    pageSize: {
+                        type: Number,
+                        value: null,
+                        observer: 'changePage'
+                    },
+                    _pageStart: {
+                        type: Number,
+                        value: 0
+                        //observer: '_setPageEnd'
+                    },
+                    // _pageEnd: {
+                    //   type: Number,
+                    //   value: 0
+                    // },
+                    _katzen: {
+                        type: Array,
+                        value: null,
+                        notify: true
+                    },
+                    _loading: {
+                        type: Boolean,
+                        value: false
+                    },
+                    mvdata: {
+                        type: Array,
+                        value: [],
+                        notify: true,
+                        reflectToAttribute: true
+                    },
+                    _pages: {
+                        type: Object,
+                        value: null
+                    },
+                    selected: {
+                        type: Boolean,
+                        value: false,
+                        observer: '_activeChanged',
+                    },
+
+                    columnNames: {
+                        type: Array,
+                        value: []
+                    }
+                }
+            }
+
+            _openDetails(e) {
+                e.preventDefault();
+                e.model.detailsOpened = !e.model.detailsOpened;
+                e.stopPropagation();
+            }
+
+            _removeItem(e) {
+                e.preventDefault();
+                let id = e.target.id.substring(2);
+                console.log('id ist' + id);
+                let elem = this.mvdata.find((v) => {
+                    return v.GaNr === id
+                });
+                console.log('elem ist' + JSON.stringify(elem));
+                let idx = this.mvdata.indexOf(elem);
+                console.log('index ist' + idx);
+                if (idx >= 0) {
+                    this.splice('mvdata', idx, 1);
+                }
+                e.stopPropagation();
+
+            }
+
+            addPaecheter() {
+                this.$.adddialog.showDialog();
+            }
+
+            _sortChange(e) {
+                let self = this;
+                // Ganz wichtig hier e.stopPropagation, weil sonst der "sorter-changed" Event,
+                // weiter an den vaadin-grid propagiert worden wäre, und dieser würde noch einmal seine eigene 
+                // Sortierung die unsere "überladen"/ ändern würde. Bemerkbar wäre das dann insbesondere bei
+                // der selbst-implementierte "natural-alphanumerischen-Sortierung" (1,2,3,3a,4,4a etc)
+                e.stopPropagation();
+                console.log('sortchange called außer event' + (e.target) + (e.target.path) + (e.target.direction));
+                if (e.target && e.target.path && e.target.direction) {
+                    let key = e.target.path;
+                    let direction = e.target.direction;
+                    let records = JSON.parse(JSON.stringify(self.mvdata));
+                    console.log('sortchange called in event');
+
+                    console.log('sortchange called e.target.path' + key + ' e.target.direction' + direction + " nritems" + records.length)
+                    if (key === 'GaNr') {
+                        // For Number-like Strings containing alphanummerical chars
+                        records = records.sort(function (o1, o2) {
+                            let result = self.naturalSorter(o1.GaNr, o2.GaNr);
+                            if (direction === 'asc') {
+                                return (result < 0) ? -1 : 1;
+                            } else {
+                                return (result < 0) ? 1 : -1;
+                            }
+                            return 0;
+                        });
+                    } else if (!isNaN(this.mvdata[0][key])) {
+                        // for numbers
+                        records.sort(function (a, b) {
+
+                            if (direction === 'asc') {
+                                if (a[key] < b[key]) return -1;
+                                if (a[key] > b[key]) return 1;
+                            } else {
+                                if (a[key] < b[key]) return 1;
+                                if (a[key] > b[key]) return -1;
+                            }
+                            return 0;
+                        });
+
+                    } else {
+                        // for strings
+                        records.sort(function (a, b) {
+
+                            if (direction === 'asc') {
+                                if (a[key].toLowerCase() < b[key].toLowerCase()) return -1;
+                                if (a[key].toLowerCase() > b[key].toLowerCase()) return 1;
+                            } else {
+                                if (a[key].toLowerCase() < b[key].toLowerCase()) return 1;
+                                if (a[key].toLowerCase() > b[key].toLowerCase()) return -1;
+                            }
+                            return 0;
+                        });
+
+                    }
+                    self.set('mvdata', records);
+                    self.changePage();
+                }
+
+            }
+
+            changePage() {
+                if (this._pageStart || this._pageStart === 0) {
+                    let end = parseInt(this._pageStart) + parseInt(this.pageSize);
+                    let newItems = this.mvdata.slice(this._pageStart, end);
+                    this.$.mygrid.items = newItems;
+                }
+
+            }
+
+
+
+            ready() {
+                super.ready();
+                this.$.firstclient.getPaechterAsJSON().then((resp) => {
+                    if (resp) {
+                        this.set('pageSize', 10);
+                        this.splitToObjects(resp);
+                    } else {
+                        showToast(this, 'Bei der Initialisierung der Seite wurden keine Paecheterdaten gefunden', TOAST_TYPE.ERROR);
+                    }
+                }).catch((err) => {
+
+                    console.log("Fehler beim get fuer Paecheter  kam:" + JSON.stringify(err))
+                    showToast(this, 'Die Paecheterdaten konnten nicht geladen werden', TOAST_TYPE.ERROR);
+                })
+
+                // this.$.firstclient.getPaecheterCSV().then((resp) => {
+                //   this.set('pageSize', 10);
+                //   this.mapToJSON(resp);
+
+                // }).catch((err) => {
+                //   console.log("Fehler beim importPaecheter fuer Paecheter  kam:" + JSON.stringify(err))
+                // })
+
+
+                this.$.adddialog.addEventListener('addpaechter', (e) => {
+                    console.log('adddialog gedruckt' + JSON.stringify(e.detail))
+                    this.splice('mvdata', this._pageStart, 0, e.detail);
+                    //this.push('mvdata', e.detail);
+                });
+
+                this.$.mygrid.addEventListener('selected-items-changed', (e) => {
+                    this.doOnSelection(e);
+                })
+                /**
+                 *  When a row is clicked or the space key is pressed while a row cell is in focus, the related item object is assigned as the grid's activeItem.
+              
+              To programmatically select items, the activeItem, for example, could be added to the grid's selectedItems array. The methods selectItem(item) and deselectItem(item) can also be used to select or deselect items.
+              
+              In the example below, the grid's selectedItems array is replaced whenever activeItem changes, making it single-selectable. 
+                 * ABER NICHT ZUSAMMEN MIT CHECCKBOX SELECTION sondern nur die akteull selektierte itm zu wissen
+                 */
+                this.$.mygrid.addEventListener('active-item-changed', function (event) {
+                    const item = event.detail.value;
+                    //this.$.mygrid.selectedItems = item ? [item] : [];
+                    console.log('active item' + JSON.stringify(event.target.activeItem))
+                });
+            }
+
+            doOnSelection(e) {
+
+                console.log('selectiert sind' + JSON.stringify(e.target.selectedItems));
+
+
+            }
+
+
+            splitToObjects(resp) {
+                let paechterData = resp.data;
+                let columns = resp.columns;
+                this.set('columnNames', columns);
+                this.set('mvdata', paechterData);
+                // this.set('mvdata', paechterData);
+            }
+
+            naturalSorter(as, bs) {
+                let a, b, a1, b1, i = 0, n, L,
+                    rx = /(\.\d+)|(\d+(\.\d+)?)|([^\d.]+)|(\.\D+)|(\.$)/g;
+                if (as === bs) return 0;
+                a = as.toLowerCase().match(rx);
+                b = bs.toLowerCase().match(rx);
+                console.log('path as:' + as + 'bs:' + bs);
+                L = a.length;
+                while (i < L) {
+                    if (!b[i]) return 1;
+                    a1 = a[i],
+                        b1 = b[i++];
+                    if (a1 !== b1) {
+                        n = a1 - b1;
+                        if (!isNaN(n)) {
+                            console.log('path returned wird' + n + ' for as' + as + 'bs' + bs + 'a1' + a1 + 'b1' + b1);
+                            return n;
+                        } else {
+                            console.log('path else')
+                        }
+                        return a1 > b1 ? 1 : -1;
+                    }
+                }
+                return b[i] ? -1 : 0;
+            }
+
+            _setLoading(val) {
+                this.set('_loading', val);
+            }
+
+            _activeChanged(newV, oldV) {
+                console.log('selected changed newV:' + newV + " oldV:" + oldV)
+                if (newV) {
+                    this.$.firstclient.getPaechterAsJSON().then((resp) => {
+                        if (resp) {
+                            this.set('pageSize', 10);
+                            this.splitToObjects(resp);
+                            this.changePage();
+                        } else {
+                            showToast(this, 'Bei der erneuten Initialisierung der Seite wurden keine Paecheterdaten gefunden', TOAST_TYPE.ERROR);
+                        }
+                    }).catch((err) => {
+                        console.log("Fehler beim get fuer Paecheter  kam:" + JSON.stringify(err))
+                        showToast(this, 'Die Paecheterdaten konnten nicht geladen werden', TOAST_TYPE.ERROR);
+                    })
+                }
+            }
+
+            postPaecheter() {
+                let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
+
+                this.$.firstclient.postPaecheterAsJSON(dataAndColumns).then(() => {
+                    console.log('paechter gespeichert')
+                    showToast(this, 'Die Paechter wurden erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
+                }).catch(() => {
+                    showToast(this, 'Fehler beim Speichern der Paecheterndaten', TOAST_TYPE.ERROR);
+                });
+            }
+
+            _showExportDialog() {
+                if (!this.mvdata || !this.mvdata.length) {
+                    this.$.grtinfodialog.showDialog(
+                        {
+                            "title": "Keine Daten",
+                            "message": "Es gibt keine Pächterdaten, die man exportieren könnte."
+                        })
+
+                } else {
+                    this.$.exportdialog.showDialog(
+                        {
+                            "title": "Speicherort Auswahl",
+                            "message": "Bitte wählen Sie ob eine lokale Speicherung erwünscht ist oder eine Speicherung auf dem Server."
+                        })
+                }
+            }
+
+            exportPaecheter(e) {
+                let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
+
+                this.$.firstclient.exportPaecheterAsCSV(dataAndColumns, e.detail).then((savePath) => {
+                    console.log('die antwort ist' + JSON.stringify(savePath))
+                    this.$.grtinfodialog.showDialog(
+                        {
+                            "title": "Daten als CSV - exportieren",
+                            "message": "Die Daten der Versicheten wurden erfolgreich unter " + savePath.path + " gespeichert."
+                        })
+                }).catch(() => {
+                    showToast(this, 'Der Datenexport ist fehlgeschlagen', TOAST_TYPE.ERROR);
+                });
+
+
+
+            }
+        }
+
+        window.customElements.define(MyPaechter.is, MyPaechter);
+    </script>
+</dom-module>

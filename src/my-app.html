@@ -34,7 +34,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
 <link rel="import" href="general/default-page.html">
-
+<link rel="import" href="general/my-paechter.html">
 <link rel="import" href="general/my-versicherte.html">
 <link rel="import" href="general/my-versicherungkonfig.html">
 <link rel="import" href="general/my-versicherungrechner.html">
@@ -170,6 +170,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       </app-drawer>
       <iron-pages selected="[[routeData.page]]" attr-for-selected="name" selected-attribute="selected"
         fallback-selection="view404" role="main">
+        <my-paechter name="paechter"></my-paechter>
         <default-page name="default"></default-page>
         <my-versicherte name="versicherte"></my-versicherte>
         <my-versicherungkonfig name="versicherungkonfig"></my-versicherungkonfig>

@@ -22,16 +22,17 @@
                     URLS: {
                         type: Object,
                         value: {
-                            CATS_BASIC: {
-                                path: '/api/cats',
-                                port: '8000'
-                            },
+
                             CSV_BASIC: {
                                 path: '/loadCSV/test',
                                 port: '8000'
                             },
-                            CSV_GAERTLER: {
-                                path: '/loadCSV/gaertler',
+                            CSV_PAECHTER: {
+                                path: '/loadCSV/paechter',
+                                port: '8000'
+                            },
+                            JSON_PAECHTER: {
+                                path: '/api/paechter',
                                 port: '8000'
                             },
                             CSV_VERSICHERTE: {
@@ -62,57 +63,6 @@
                 return urlToSource;
             }
 
-            getCats() {
-                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.CATS_BASIC.path, this.URLS.CATS_BASIC.port);
-                let myHeaders = new Headers();
-
-                let myInit = {
-                    method: 'GET',
-                    headers: myHeaders,
-                    mode: 'cors',
-                    cache: 'default',
-                    credentials: 'omit'
-                };
-
-                let myRequest = new Request(sourceURL, myInit);
-
-                return fetch(myRequest).then((response) => {
-                    console.log("getCats aaaaaaaantwort" + JSON.stringify(response));
-                    if (response.status === 204) {
-                        return { cats: [{ name: "" }, { name: "" }, { name: "" }] }
-                    } else return response.json();
-                }).catch(() => {
-                    console.log('getCats die Anfrage an api/cats war nicht erfolgreich')
-                });
-            }
-
-            postCats(theCats) {
-                let myHeaders = new Headers();
-                myHeaders.set("Content-Type", "application/json");
-
-                //let parsedObject = theCats.json();
-
-                let myInit = {
-                    method: 'POST',
-                    headers: myHeaders,
-                    mode: 'cors',
-                    cache: 'default',
-                    credentials: 'omit',
-                    body: theCats
-                };
-
-                let myRequest = new Request("http://192.168.2.146:8000/api/cats", myInit);
-
-                return fetch(myRequest).then((response) => {
-                    console.log("getCats antwort" + JSON.stringify(response));
-                    this.dispatchEvent(new CustomEvent('catschanged', { bubbles: true, composed: true }));
-                    return response.json();
-                }).catch(() => {
-                    console.log('getCats die Anfrage an api/cats war nicht erfolgreich')
-                });
-
-            }
-
             getCSV() {
                 let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.CSV_BASIC.path, this.URLS.CSV_BASIC.port);
                 let myHeaders = new Headers();
@@ -137,30 +87,7 @@
                 });
             }
 
-            getGaertlerCSV() {
-                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.CSV_GAERTLER.path, this.URLS.CSV_GAERTLER.port);
-                let myHeaders = new Headers();
 
-                let myInit = {
-                    method: 'GET',
-                    headers: myHeaders,
-                    mode: 'cors',
-                    cache: 'default',
-                    credentials: 'omit'
-                };
-
-                let myRequest = new Request(sourceURL, myInit);
-
-                return fetch(myRequest).then((response) => {
-                    console.log("getCSVs aaaaaaaantwort" + JSON.stringify(response));
-                    if (response.status === 204) {
-                        return [['firstName', 'lastName', 'street', 'city'], [, , ,]]
-                    } else return response.json();
-                }).catch((err) => {
-                    console.log('getGaertlerCSV die Anfrage an /loadCSV/gaertler war nicht erfolgreich')
-                    return Promise.reject(err);
-                });
-            }
 
             getVersicherteCSV() {
                 let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.CSV_VERSICHERTE.path, this.URLS.CSV_VERSICHERTE.port);
@@ -179,10 +106,35 @@
                 return fetch(myRequest).then((response) => {
                     console.log("getCSVs aaaaaaaantwort" + JSON.stringify(response));
                     if (response.status === 204) {
-                        return [['firstName', 'lastName', 'street', 'city'], [, , ,]]
+                        return undefined;
                     } else return response.json();
                 }).catch((err) => {
-                    console.log('getGaertlerCSV die Anfrage an /loadCSV/gaertler war nicht erfolgreich')
+                    console.log('getPaechterCSV die Anfrage an /loadCSV/paechter war nicht erfolgreich')
+                    return Promise.reject(err);
+                });
+            }
+
+            getPaechterCSV() {
+                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.CSV_PAECHTER.path, this.URLS.CSV_PAECHTER.port);
+                let myHeaders = new Headers();
+
+                let myInit = {
+                    method: 'GET',
+                    headers: myHeaders,
+                    mode: 'cors',
+                    cache: 'default',
+                    credentials: 'omit'
+                };
+
+                let myRequest = new Request(sourceURL, myInit);
+
+                return fetch(myRequest).then((response) => {
+                    console.log("getCSVs aaaaaaaantwort" + JSON.stringify(response));
+                    if (response.status === 204) {
+                        return undefined;
+                    } else return response.json();
+                }).catch((err) => {
+                    console.log('getPaechterCSV die Anfrage an /loadCSV/paechter war nicht erfolgreich')
                     return Promise.reject(err);
                 });
             }
@@ -194,6 +146,38 @@
                 myHeaders.set("Content-Type", "application/json");
 
                 let tosend = JSON.stringify(versicherte);
+
+                let myInit = {
+                    method: 'POST',
+                    headers: myHeaders,
+                    mode: 'cors',
+                    cache: 'default',
+                    credentials: 'omit',
+                    body: tosend
+                };
+
+                let myRequest = new Request(sourceURL, myInit);
+
+                return fetch(myRequest).then((response) => {
+                    console.log("postVersicherteAsJSON antwort" + JSON.stringify(response));
+                    if (response && response.ok) {
+                        return response.json();
+                    } else return undefined;
+
+
+                }).catch(() => {
+                    console.log('postVersicherteAsJSON die Anfrage an' + sourceURL + ' war nicht erfolgreich')
+                });
+
+            }
+
+            postPaechterAsJSON(paechter) {
+                console.log('topost' + JSON.stringify(paechter))
+                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.JSON_PAECHTER.path, this.URLS.JSON_PAECHTER.port);
+                let myHeaders = new Headers();
+                myHeaders.set("Content-Type", "application/json");
+
+                let tosend = JSON.stringify(paechter);
 
                 let myInit = {
                     method: 'POST',
@@ -237,38 +221,76 @@
                 return fetch(myRequest).then((response) => {
                     if (response.status && response.status === 204) {
                         console.log("getVersicherte as JSON status 204")
-                        return Promise.reject("NotFound");
+                        return undefined;
                     } else {
                         return response.json();
                     }
-                })
-                    .then((data) => {
-                        console.log('basicclient versicherte as jason wird gesetzt auf' + JSON.stringify(data))
-                        self.set('versichertejson', data);
-                        console.log('basicclient versicherte as json wurde gesetzt auf' + JSON.stringify(this.versicherungconfig))
-                        return Promise.resolve(data);
-                    })
-                    .catch((err) => {
-                        console.log('getVersicherungconfig die Anfrage an api/versicherte war nicht erfolgreich' + JSON.stringify(error))
-                    });
+                }).then((data) => {
+                    console.log('firstclient paechter as json wird gesetzt auf' + JSON.stringify(data))
+                    return Promise.resolve(data);
+                }).catch((err) => {
+                    console.log('getVersicherteAsJSON die Anfrage an api/paechter war nicht erfolgreich' + JSON.stringify(error))
+                });
+            }
 
+            getPaechterAsJSON() {
+                let self = this;
+                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.JSON_PAECHTER.path, this.URLS.JSON_PAECHTER.port);
+                let myHeaders = new Headers();
+
+                let myInit = {
+                    method: 'GET',
+                    headers: myHeaders,
+                    mode: 'cors',
+                    cache: 'default',
+                    credentials: 'omit'
+                };
+
+                let myRequest = new Request(sourceURL, myInit);
+
+                return fetch(myRequest).then((response) => {
+                    if (response.status && response.status === 204) {
+                        console.log("getPaechter as JSON status 204")
+                        return undefined;
+                    } else {
+                        return response.json();
+                    }
+                }).then((data) => {
+                    console.log('firstclient paechter as jason wird gesetzt auf' + JSON.stringify(data))
+                    return Promise.resolve(data);
+                }).catch((err) => {
+                    console.log('getPaechterAsJSON die Anfrage an api/paechter war nicht erfolgreich' + JSON.stringify(error))
+                });
             }
 
             exportVersicherteAsCSV(versicherte, destination) {
                 let asCSV = this.mapToCSV(versicherte);
+                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.CSV_VERSICHERTE.path, this.URLS.CSV_VERSICHERTE.port);
                 console.log('topost' + JSON.stringify(versicherte))
                 if (destination === "server") {
-                    return this._exportRemote(asCSV);
+                    return this._exportRemote(asCSV, sourceURL);
                 } else if (destination === "lokal") {
-                    return this._saveLokalAsCSV(asCSV);
+                    return this._saveLokalAsCSV(asCSV, "versicherte_");
                 } else {
-                    return this._exportRemote(asCSV);
+                    return this._exportRemote(asCSV, sourceURL);
                 }
-
             }
 
-            _exportRemote(asCSV) {
-                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.CSV_VERSICHERTE.path, this.URLS.CSV_VERSICHERTE.port);
+            exportPaechterAsCSV(paechter, destination) {
+                let asCSV = this.mapToCSV(paechter);
+                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.CSV_PAECHTER.path, this.URLS.CSV_PAECHTER.port);
+                console.log('topost' + JSON.stringify(paechter))
+                if (destination === "server") {
+                    return this._exportRemote(asCSV, sourceURL);
+                } else if (destination === "lokal") {
+                    return this._saveLokalAsCSV(asCSV, "paechter_");
+                } else {
+                    return this._exportRemote(asCSV, sourceURL);
+                }
+            }
+
+            _exportRemote(asCSV, sourceURL) {
+
                 let myHeaders = new Headers();
                 myHeaders.set("Content-Type", "text/plain");
 
@@ -283,37 +305,38 @@
 
                 let myRequest = new Request(sourceURL, myInit);
                 return fetch(myRequest).then((response) => {
-                    console.log("postVersicherteAscsv antwort" + response);
+                    console.log("post " + sourceURL + " antwort" + response);
                     if (response && response.ok) {
                         //debugger;
-                        console.log("postVersicherteAscsv antwort1");
+                        console.log("post " + sourceURL + " antwort1");
                         return response.json();
-                    } else { console.log("postVersicherteAscsv antwort2"); return undefined; }
+                    } else { console.log("post " + sourceURL + " antwort2"); return undefined; }
 
 
                 }).catch(() => {
-                    console.log('postVersicherteAscsv die Anfrage an' + sourceURL + ' war nicht erfolgreich')
+                    console.log('postAscsv die Anfrage an' + sourceURL + ' war nicht erfolgreich')
                 });
             }
 
-            _saveLokalAsCSV(asCSV) {
+            _saveLokalAsCSV(asCSV, saveWas) {
                 let nowMoment = moment().format('YYYYMMDD_HHmm')
                 var blob = new Blob([asCSV], { type: "text/csv;charset=utf-8" });
-                saveAs(blob, "versicherte_" + nowMoment + ".csv");
+                saveAs(blob, saveWas + nowMoment + ".csv");
+                return Promise.resolve("Downloads");
             }
 
-            mapToCSV(versicherte) {
+            mapToCSV(data) {
                 let myForCSVArray = [];
-                myForCSVArray.push(versicherte.columns);
-                versicherte.data.forEach((v) => {
-                    let myVerArray = [];
-                    for (var key in v) {
-                        if (v.hasOwnProperty(key)) {
-                            myVerArray.push(String(v[key]));
+                myForCSVArray.push(data.columns);
+                data.data.forEach((d) => {
+                    let myDataArray = [];
+                    for (var key in d) {
+                        if (d.hasOwnProperty(key)) {
+                            myDataArray.push(String(d[key]));
 
                         }
                     }
-                    myForCSVArray.push(myVerArray);
+                    myForCSVArray.push(myDataArray);
                 })
 
                 let paL = myForCSVArray;
