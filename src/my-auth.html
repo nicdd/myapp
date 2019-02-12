@@ -1,11 +1,12 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
-<!-- <link rel="import" href="rest/auth-client.html">
-<link rel="import" href="state/actions/basisdaten-aktionen.html"> -->
+<link rel="import" href="clients/autclient.html">
+
 
 <dom-module id="my-auth">
     <template>
 
-        <auth-client id="authclient"></auth-client>
+        <aut-client id="aclient"></aut-client>
 
     </template>
 
@@ -18,7 +19,7 @@
          * @polymer
          * @extends {Polymer.Element}
          */
-        class MyAuth extends Polymer.Element{//App.BasisDatenAktionenMixin(Polymer.Element) {
+        class MyAuth extends Polymer.Element { //App.BasisDatenAktionenMixin(Polymer.Element) {
             /**
              * String providing the tag name to register the element under.
              */
@@ -31,21 +32,15 @@
              */
             static get properties() {
                 return {
-                    // user: {
-                    //     type: Object,
-                    //     notify: true,
-                    //     value: {
-                    //         authenticated: false
-                    //     }
-                    // },
-                    user : {
-                                name: "nic",
-                                authorities: ["ROLE_LOGIN_gts_my"],
-                                authenticated: true,
-                                gartenbzrk: null
-                            }
-
-                };
+                    user: {
+                        type: Object,
+                        notify: true,
+                        value: {
+                            authenticated: false
+                        },
+                        reflectToAttribute: true
+                    }
+                }
             }
 
             /**
@@ -53,11 +48,13 @@
              */
             ready() {
                 super.ready();
-                //this.authenticate();
+                this.authenticate()
             }
 
             authenticate() {
-                this.$.authclient.getUser()
+                console.log('user authenticate wird called')
+
+                this.$.aclient.getUser()
                     .then(data => {
                         if (this._ismyUser(data.authorities)) {
                             showToast(this, `Login erfolgreich. Willkommen ${data.username}.`, TOAST_TYPE.SUCCESS);
@@ -69,7 +66,7 @@
                             };
                             console.log("Successfull authentication:", this.user)
 
-                            this._updateStore(data);
+                            //this._updateStore(data);
                         } else {
                             console.log("Nutzer hat nicht das Recht ROLE_LOGIN_gts_my", data);
                             showToast(this, `Sie haben keine Berechtigung das mysystem zu benutzen.`,
@@ -108,12 +105,12 @@
             }
 
             logout() {
-                return this.$.authclient.getLogoutURL()
+                return this.$.aclient.getLogoutURL()
                     .then(authserverUrl => { // Beenden der Session am Authserver und am API-Gateway (dieses Artefakt)
                         console.info('Authserver URL: ' + authserverUrl.url);
-                        this.$.authclient.executeLogout(authserverUrl.url)
+                        this.$.aclient.executeLogout(authserverUrl.url)
                             .then(resp => {
-                                this.$.authclient.logout()
+                                this.$.aclient.logout()
                                     .then(res => this._logoutFinishedHandler())
                                     .catch(reason => showToast(this, reason, TOAST_TYPE.ERROR));
                             })

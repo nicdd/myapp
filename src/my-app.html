@@ -22,34 +22,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
-<link rel="import" href="my-icons.html">
-<link rel="import" href="navigation/gts-navigation-menu.html">
 <link rel="import" href="../bower_components/iron-icons/notification-icons.html">
 <link rel="import" href="../bower_components/iron-icons/device-icons.html">
 <link rel="import" href="../bower_components/paper-progress/paper-progress.html">
 <link rel="import" href="../bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="../bower_components/neon-animation/web-animations.html">
-<link rel="import" href="my-auth.html">
-<link rel="import" href="shared-styles.html">
-
-
 <link rel="import" href="general/default-page.html">
 <link rel="import" href="general/my-paechter.html">
 <link rel="import" href="general/my-versicherte.html">
 <link rel="import" href="general/my-versicherungkonfig.html">
 <link rel="import" href="general/my-versicherungrechner.html">
 <link rel="import" href="general/my-view3.html">
-<link rel="import" href="general/my-view3-page.html">
 <link rel="import" href="general/my-view404.html">
 <link rel="import" href="general/my-unauthenticated-page.html">
 <link rel="import" href="utils/current-time.html">
 <link rel="import" href="clients/basicclient.html">
 <link rel="import" href="administrator/my-admin-imports.html">
+<link rel="import" href="my-auth.html">
+<link rel="import" href="my-icons.html">
+<link rel="import" href="navigation/gts-navigation-menu.html">
+<link rel="import" href="shared-styles.html">
 
 
 <dom-module id="my-app">
-  <link rel="import" type="css" href="utils/number-polyfill.css">
-  <script src="utils/number-polyfill.js"></script>
   <template>
     <style include="shared-styles">
       :host {
@@ -183,7 +178,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </app-drawer-layout>
 
     <paper-toast id="success"></paper-toast>
-    <paper-toast id="warn"></paper-toast>
+    <paper-toast id="warn" duration="10000">
+        <paper-icon-button icon="close" on-click="_closeWarnToast"></paper-icon-button>
+    </paper-toast>
     <paper-toast id="error" duration="-1">
       <paper-icon-button icon="close" on-click="_closeErrorToast"></paper-icon-button>
     </paper-toast>
@@ -201,6 +198,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         return {
           user: {
             type: Object,
+            reflectToAttribute: true,
             observer: '_userChanged'
           },
           routeData: Object,
@@ -275,6 +273,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this.shadowRoot.querySelector('#error').close();
       }
 
+      _closeWarnToast(e) {
+        this.shadowRoot.querySelector('#warn').close();
+      }
+
       _isLoading(activeLoadings) {
         return activeLoadings !== 0;
       }
@@ -301,6 +303,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       * verwiesen und die Seitennavigation wird ausgeblendet.
       **/
       _userChanged(user) {
+        console.log('userchanged' + JSON.stringify(user))
         if (!user.authenticated) {
           this.$.drawerLayout.drawer.close();
           this.$.drawerLayout.forceNarrow = true;

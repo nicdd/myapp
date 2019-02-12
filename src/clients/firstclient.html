@@ -320,9 +320,11 @@
 
             _saveLokalAsCSV(asCSV, saveWas) {
                 let nowMoment = moment().format('YYYYMMDD_HHmm')
-                var blob = new Blob([asCSV], { type: "text/csv;charset=utf-8" });
-                saveAs(blob, saveWas + nowMoment + ".csv");
-                return Promise.resolve("Downloads");
+                let blob = new Blob([asCSV], { type: "text/csv;charset=utf-8" });
+                saveAs(blob, saveWas + nowMoment + ".csv")
+                
+                return Promise.resolve("dem voreingestellten Download-Verzeichnis Ihres Browsers")
+
             }
 
             mapToCSV(data) {

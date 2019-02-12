@@ -1,41 +1,68 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
-<link rel="import" href="abstract-client.html">
 
-<dom-module id="auth-client">
+<dom-module id="aut-client">
+    <template></template>
+
     <script>
-        class AuthClient extends customElements.get('abstract-client') {
-            static get is() {
-                return 'auth-client';
-            }
+        class AutClient extends Polymer.Element {
+            static get is() { return 'aut-client'; }
 
-            constructor() {
-                super();
-            }
-
-            /**
-             * Object describing property-related metadata used by Polymer features
-             */
             static get properties() {
                 return {
                     URLS: {
                         type: Object,
                         value: {
-                            USER_INFO: "/auth/uaa/user",
+                            USER_INFO: "/auth/userauth/user",
                             LOGOUT_URL: "/authserver/logouturl",
                             GATEWAY_LOGOUT_URL: "/logout"
                         }
+                    },
+
+                    getConfig: {
+                        type: Object,
+                        value: {
+                            method: 'GET',
+
+                            mode: 'cors',
+                            cache: 'default',
+                            credentials: 'omit'
+                        }
+                    },
+
+                    postConfig: {
+                        type: Object,
+                        value: {
+                            method: 'POST',
+
+                            mode: 'cors',
+                            cache: 'default',
+                            credentials: 'omit'
+                        }
                     }
-                };
+                }
             }
+
 
             ready() {
                 super.ready();
+                
             }
 
             getUser() {
+                let mheaders = new Headers();
+                let mconfig = {
+                    method: 'GET',
+                    headers: mheaders,
+                    mode: 'cors',
+                    cache: 'default',
+                    credentials: 'omit'
+                }
+                console.log('getusercalled')
+                this.set('getConfig.headers', new Headers());
                 var request = new Request(
                     this.URLS.USER_INFO,
-                    this.getBasicGetConfig()
+                    mconfig//this.getConfig//this.getBasicGetConfig()
                 )
 
                 return fetch(request)
@@ -51,7 +78,7 @@
             getLogoutURL() {
                 var request = new Request(
                     this.URLS.LOGOUT_URL,
-                    this.getBasicGetConfig()
+                    this.getConfig//this.getBasicGetConfig()
                 )
 
                 return fetch(request) // Holen der url zum Authserver um die Session beenen zu können.
@@ -85,9 +112,11 @@
             }
 
             logout() {
+
+                this.set('postConfig.headers', new Headers());
                 var request = new Request(
                     this.URLS.GATEWAY_LOGOUT_URL,
-                    this.getBasicPostConfig()
+                    postConfig//this.getBasicPostConfig()
                 )
 
                 return fetch(request) // Holen der url zum Authserver um die Session beenen zu können.
@@ -105,6 +134,6 @@
 
         }
 
-        window.customElements.define(AuthClient.is, AuthClient);
+        window.customElements.define(AutClient.is, AutClient);
     </script>
 </dom-module>

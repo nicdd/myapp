@@ -581,14 +581,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       postVersicherte() {
-        let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
+        if (!this.mvdata || !this.mvdata.length) {
+          this.$.grtinfodialog.showDialog(
+            {
+              "title": "Keine Daten",
+              "message": "Es gibt keine Versichertendaten, die man speichern könnte."
+            })
+        } else {
+          let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
 
-        this.$.firstclient.postVersicherteAsJSON(dataAndColumns).then(() => {
-          console.log('versicherte gespeichert')
-          showToast(this, 'Die Verischerten wurden erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
-        }).catch(() => {
-          showToast(this, 'Fehler beim Speichern der Versichertendaten', TOAST_TYPE.ERROR);
-        });
+          this.$.firstclient.postVersicherteAsJSON(dataAndColumns).then(() => {
+            console.log('versicherte gespeichert')
+            showToast(this, 'Die Verischerten wurden erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
+          }).catch(() => {
+            showToast(this, 'Fehler beim Speichern der Versichertendaten', TOAST_TYPE.ERROR);
+          });
+        }
       }
 
       _showExportDialog() {
@@ -612,14 +620,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       exportVersicherte(e) {
         let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
         this.$.firstclient.exportVersicherteAsCSV(dataAndColumns, e.detail).then((savePath) => {
-          
-          console.log('die antwort ist' + JSON.stringify(savePath))
-          this.$.grtinfodialog.showDialog(
-            {
-              "title": "Daten als CSV - exportieren",
-              "message": "Die Daten der Versicheten wurden erfolgreich unter " + savePath.path + " gespeichert."
-            })
-        }).catch(() => {
+          if (savePath && savePath.path) {
+            this.$.grtinfodialog.showDialog(
+              {
+                "title": "Daten als CSV - exportieren",
+                "message": "Die Daten der Versicheten wurden erfolgreich unter " + savePath.path + " gespeichert."
+              })
+          } else if (savePath) {
+            showToast(this, "Die Daten der Versicheten werden unter " + savePath + " gespeichert.", TOAST_TYPE.WARN);
+          }
+        }).catch((err) => {
+          console.log('vers err' + err)
+          //debugger;
           showToast(this, 'Der Datenexport der Versicherten ist fehlgeschlagen', TOAST_TYPE.ERROR);
         });
 

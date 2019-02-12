@@ -586,14 +586,23 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             postPaecheter() {
-                let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
+                if (!this.mvdata || !this.mvdata.length) {
+                    this.$.grtinfodialog.showDialog(
+                        {
+                            "title": "Keine Daten",
+                            "message": "Es gibt keine Pächterdaten, die man speichern könnte."
+                        })
 
-                this.$.firstclient.postPaecheterAsJSON(dataAndColumns).then(() => {
-                    console.log('paechter gespeichert')
-                    showToast(this, 'Die Paechter wurden erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
-                }).catch(() => {
-                    showToast(this, 'Fehler beim Speichern der Paecheterndaten', TOAST_TYPE.ERROR);
-                });
+                } else {
+                    let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
+
+                    this.$.firstclient.postPaecheterAsJSON(dataAndColumns).then(() => {
+                        console.log('paechter gespeichert')
+                        showToast(this, 'Die Paechter wurden erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
+                    }).catch(() => {
+                        showToast(this, 'Fehler beim Speichern der Paecheterndaten', TOAST_TYPE.ERROR);
+                    });
+                }
             }
 
             _showExportDialog() {
@@ -617,12 +626,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
 
                 this.$.firstclient.exportPaecheterAsCSV(dataAndColumns, e.detail).then((savePath) => {
-                    console.log('die antwort ist' + JSON.stringify(savePath))
-                    this.$.grtinfodialog.showDialog(
-                        {
-                            "title": "Daten als CSV - exportieren",
-                            "message": "Die Daten der Versicheten wurden erfolgreich unter " + savePath.path + " gespeichert."
-                        })
+                    if (savePath && savePath.path) {
+                        this.$.grtinfodialog.showDialog(
+                            {
+                                "title": "Daten als CSV - exportieren",
+                                "message": "Die Daten der Versicheten wurden erfolgreich unter " + savePath.path + " gespeichert."
+                            })
+                    } else if (savePath) {
+                        showToast(this, "Die Daten der Pächter werden unter " + savePath + " gespeichert.", TOAST_TYPE.WARN);
+                    }
                 }).catch(() => {
                     showToast(this, 'Der Datenexport ist fehlgeschlagen', TOAST_TYPE.ERROR);
                 });
