@@ -183,6 +183,28 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     loading-label="Nicht so hecktisch ..." loading="[[_loading]]">Exportieren</paper-progress-button>
             </div>
         </div>
+        {
+            "GartenNr": "248",
+            "Anrede": "Herr",
+            "Nachname": "Ziegler",
+            "Vorname": "Peter",
+            "Strasse": "Pelkovenstr.48",
+            "PLZ": "80992",
+            "Wohnort": "München",
+            "TelefonNr": "14343675",
+            "Weg": "Tulpenweg",
+            "Flächeqm": "265",
+            "Geburtsdat": "02/04/1943",
+            "EMail": "peha.ziegler@online.de",
+            "Bemerkungen": "",
+            "Alter": "75",
+            "JubiläuminMonat": "4.2018",
+            "created": {
+                "user": "nic",
+                "datum": "20190214_1927",
+                "source": "csv"
+            }
+        }
 
         <div class="page">
             <vaadin-grid id="mygrid" page-size="{{pageSize}}" active-item="{{activeItem}}" aria-label="Basic Binding Example"
@@ -191,107 +213,86 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     <div class="details">
                         <p>
                             <span>Anschrift</span><br>
-                            <small>[[columnNames.3]]:[[item.STRASSE]]</small><br>
-                            <small>[[columnNames.4]]:[[item.PLZ]]</small><br>
-                            <small>[[columnNames.5]]:[[item.ORT]]</small><br>
+                            <small>[[columnNames.4]]:[[item.Strasse]]</small><br>
+                            <small>[[columnNames.5]]:[[item.PLZ]]</small><br>
+                            <small>[[columnNames.6]]:[[item.Wohnort]]</small><br>
+                            <small>[[columnNames.7]]:[[item.TelefonNr]]</small><br>
+                            <small>[[columnNames.10]]:[[item.Geburtsdat]]</small><br>
+                            <small>[[columnNames.11]]:[[item.EMail]]</small><br>
                         </p>
                     </div>
                 </template>
                 <!--auto-select wenn man will dass man auch über das anklicken in der zeile nicht nur in der box selektieren kann-->
                 <vaadin-grid-selection-column auto-select width="40px"></vaadin-grid-selection-column>
 
-                <vaadin-grid-column path="GaNr" header="GaNr" width="75px" flex-grow="0" text-align="end">
+                <vaadin-grid-column path="GartenNr" header="GartenNr" width="75px" flex-grow="0" text-align="end">
                     <template class="header">
-                        <vaadin-grid-sorter path="GaNr" on-sorter-changed="_sortChange">
-                            [[columnNames.2]]
-                        </vaadin-grid-sorter>
-                    </template>
-                </vaadin-grid-column>
-
-                <vaadin-grid-column path="NAME" width="141px" resizable>
-                    <template class="header">
-                        <vaadin-grid-sorter path="NAME" on-sorter-changed="_sortChange">
+                        <vaadin-grid-sorter path="GartenNr" on-sorter-changed="_sortChange">
                             [[columnNames.0]]
                         </vaadin-grid-sorter>
                     </template>
                 </vaadin-grid-column>
 
-                <vaadin-grid-column path="VORNAME" width="100px" resizable>
+                <vaadin-grid-column path="Anrede" header="Anrede" width="75px" flex-grow="0" text-align="end">
+                        <template class="header">
+                            <vaadin-grid-sorter path="Anrede" on-sorter-changed="_sortChange">
+                                [[columnNames.1]]
+                            </vaadin-grid-sorter>
+                        </template>
+                    </vaadin-grid-column>
+
+                <vaadin-grid-column path="Nachname" width="141px" resizable>
                     <template class="header">
-                        <vaadin-grid-sorter path="VORNAME" on-sorter-changed="_sortChange">
-                            [[columnNames.1]]
+                        <vaadin-grid-sorter path="Nachname" on-sorter-changed="_sortChange">
+                            [[columnNames.2]]
                         </vaadin-grid-sorter>
                     </template>
                 </vaadin-grid-column>
 
-                <vaadin-grid-column path="GBV" width="80px" resizable text-align="end">
+                <vaadin-grid-column path="Vorname" width="100px" resizable>
                     <template class="header">
-                        <vaadin-grid-sorter path="GBV" on-sorter-changed="_sortChange">
-                            [[columnNames.11]]
+                        <vaadin-grid-sorter path="Vorname" on-sorter-changed="_sortChange">
+                            [[columnNames.3]]
                         </vaadin-grid-sorter>
                     </template>
                 </vaadin-grid-column>
 
-                <vaadin-grid-column path="FED" width="80px" resizable text-align="end">
+                <vaadin-grid-column path="Weg" width="80px" resizable text-align="end">
                     <template class="header">
-                        <vaadin-grid-sorter path="FED" on-sorter-changed="_sortChange">
-                            [[columnNames.12]]
-                        </vaadin-grid-sorter>
-                    </template>
-                </vaadin-grid-column>
-
-                <vaadin-grid-column path="HoeV" width="80px" resizable text-align="end">
-                    <template class="header">
-                        <vaadin-grid-sorter path="HoeV" on-sorter-changed="_sortChange">
-                            [[columnNames.13]]
-                        </vaadin-grid-sorter>
-                    </template>
-                </vaadin-grid-column>
-                <!-- </vaadin-grid-column-group> -->
-                <vaadin-grid-column path="SA" width="60px" resizable>
-                    <template class="header">
-                        <vaadin-grid-sorter path="SA" on-sorter-changed="_sortChange">
-                            [[columnNames.6]]
-                        </vaadin-grid-sorter>
-                    </template>
-                </vaadin-grid-column>
-
-                <vaadin-grid-column path="A73" width="80px" resizable text-align="end">
-                    <template class="header">
-                        <vaadin-grid-sorter path="A73" on-sorter-changed="_sortChange">
-                            [[columnNames.9]]
-                        </vaadin-grid-sorter>
-                    </template>
-                </vaadin-grid-column>
-
-                <vaadin-grid-column path="Solar" width="80px" resizable text-align="end">
-                    <template class="header">
-                        <vaadin-grid-sorter path="Solar" on-sorter-changed="_sortChange">
-                            [[columnNames.10]]
-                        </vaadin-grid-sorter>
-                    </template>
-                </vaadin-grid-column>
-
-                <vaadin-grid-column path="UV" width="60px" resizable text-align="end">
-                    <template class="header">
-                        <vaadin-grid-sorter path="UV" on-sorter-changed="_sortChange">
-                            [[columnNames.7]]
-                        </vaadin-grid-sorter>
-                    </template>
-                </vaadin-grid-column>
-
-                <vaadin-grid-column path="Beitrag" width="90px" resizable text-align="end">
-                    <template class="header">
-                        <vaadin-grid-sorter path="Beitrag" on-sorter-changed="_sortChange">
+                        <vaadin-grid-sorter path="Weg" on-sorter-changed="_sortChange">
                             [[columnNames.8]]
                         </vaadin-grid-sorter>
                     </template>
                 </vaadin-grid-column>
 
-                <vaadin-grid-column path="Bemerkung" resizable>
+                <vaadin-grid-column path="Flächeqm" width="80px" resizable text-align="end">
                     <template class="header">
-                        <vaadin-grid-sorter path="Bemerkung" on-sorter-changed="_sortChange">
-                            [[columnNames.15]]
+                        <vaadin-grid-sorter path="Flächeqm" on-sorter-changed="_sortChange">
+                            [[columnNames.9]]
+                        </vaadin-grid-sorter>
+                    </template>
+                </vaadin-grid-column>
+
+                <vaadin-grid-column path="Alter" width="80px" resizable text-align="end">
+                    <template class="header">
+                        <vaadin-grid-sorter path="Alter" on-sorter-changed="_sortChange">
+                            [[columnNames.13]]
+                        </vaadin-grid-sorter>
+                    </template>
+                </vaadin-grid-column>
+                <!-- </vaadin-grid-column-group> -->
+                <vaadin-grid-column path="JubiläuminMonat" width="60px" resizable>
+                    <template class="header">
+                        <vaadin-grid-sorter path="JubiläuminMonat" on-sorter-changed="_sortChange">
+                            [[columnNames.14]]
+                        </vaadin-grid-sorter>
+                    </template>
+                </vaadin-grid-column>
+
+                <vaadin-grid-column path="Bemerkungen" resizable>
+                    <template class="header">
+                        <vaadin-grid-sorter path="Bemerkungen" on-sorter-changed="_sortChange">
+                            [[columnNames.12]]
                         </vaadin-grid-sorter>
                     </template>
                 </vaadin-grid-column>
@@ -299,13 +300,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 <vaadin-grid-column width="100px">
                     <template class="header"></template>
                     <template>
-                        <button id="bt[[item.GaNr]]" on-click="_openDetails" class="endpagebutton">
+                        <button id="bt[[item.GartenNr]]" on-click="_openDetails" class="endpagebutton">
                             <slot>
-                                <iron-icon id="cr[[item.GaNr]]" icon="create" slot="item-icon" on-click="_openDetails"></iron-icon>
+                                <iron-icon id="cr[[item.GartenNr]]" icon="create" slot="item-icon" on-click="_openDetails"></iron-icon>
                             </slot>
                         </button>
-                        <button id="bt[[item.GaNr]]" on-click="_removeItem" class="endpagebutton" disabled="[[detailsOpened]]">
-                            <iron-icon id="rm[[item.GaNr]]" icon="delete" slot="item-icon" on-click="_removeItem"></iron-icon>
+                        <button id="bt[[item.GartenNr]]" on-click="_removeItem" class="endpagebutton" disabled="[[detailsOpened]]">
+                            <iron-icon id="rm[[item.GartenNr]]" icon="delete" slot="item-icon" on-click="_removeItem"></iron-icon>
                         </button>
                         <!-- <vaadin-checkbox aria-label$="Show Details for [[NAME]]" checked="{{detailsOpened}}">Details</vaadin-checkbox> -->
                     </template>
@@ -385,7 +386,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 let id = e.target.id.substring(2);
                 console.log('id ist' + id);
                 let elem = this.mvdata.find((v) => {
-                    return v.GaNr === id
+                    return v.GartenNr === id
                 });
                 console.log('elem ist' + JSON.stringify(elem));
                 let idx = this.mvdata.indexOf(elem);
@@ -416,10 +417,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     console.log('sortchange called in event');
 
                     console.log('sortchange called e.target.path' + key + ' e.target.direction' + direction + " nritems" + records.length)
-                    if (key === 'GaNr') {
+                    if (key === 'GartenNr') {
                         // For Number-like Strings containing alphanummerical chars
                         records = records.sort(function (o1, o2) {
-                            let result = self.naturalSorter(o1.GaNr, o2.GaNr);
+                            let result = self.naturalSorter(o1.GartenNr, o2.GartenNr);
                             if (direction === 'asc') {
                                 return (result < 0) ? -1 : 1;
                             } else {

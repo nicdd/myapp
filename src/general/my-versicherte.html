@@ -627,7 +627,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 "message": "Die Daten der Versicheten wurden erfolgreich unter " + savePath.path + " gespeichert."
               })
           } else if (savePath) {
-            showToast(this, "Die Daten der Versicheten werden unter " + savePath + " gespeichert.", TOAST_TYPE.WARN);
+            showToast(this, "Die Daten der Versicheten werden unter " + savePath + " gespeichert.", TOAST_TYPE.WARN, 'topRight');
           }
         }).catch((err) => {
           console.log('vers err' + err)

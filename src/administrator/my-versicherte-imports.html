@@ -11,7 +11,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../administrator/import-versicherte.html">
 
-<dom-module id="my-admin-imports">
+<dom-module id="my-versicherte-imports">
   <template>
     <style>
       :host {
@@ -26,8 +26,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </template>
 
   <script>
-    class MyAdminImports extends Polymer.Element {
-      static get is() { return 'my-admin-imports'; }
+    class MyVersicherteImports extends Polymer.Element {
+      static get is() { return 'my-versicherte-imports'; }
       static get properties() {
         return {
          etwas: Boolean
@@ -35,6 +35,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
     }
 
-    window.customElements.define(MyAdminImports.is, MyAdminImports);
+    window.customElements.define(MyVersicherteImports.is, MyVersicherteImports);
   </script>
 </dom-module>

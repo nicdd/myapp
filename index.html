@@ -10,15 +10,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <!doctype html>
 <html style="height: 100%" lang="de">
-  <head>
-    <meta charset="utf-8">
-    <meta name="generator" content="Polymer Starter Kit">
-    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
 
-    <title>Niky's App</title>
-    <meta name="description" content="My App description">
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Polymer Starter Kit">
+  <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
 
-    <!--
+  <title>Niky's App</title>
+  <meta name="description" content="My App description">
+
+  <!--
       The `<base>` tag below is present to support two advanced deployment options:
       1) Differential serving. 2) Serving from a non-root path.
 
@@ -28,56 +29,60 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       Note: If you intend to serve from a non-root path, see [polymer-root-path] below.
     -->
-    <base href="/">
+  <base href="/">
 
-    <link rel="icon" href="images/favicon.ico">
+  <link rel="icon" href="images/favicon.ico">
 
-    <!-- See https://goo.gl/OOhYW5 -->
-    <link rel="manifest" href="manifest.json">
+  <!-- See https://goo.gl/OOhYW5 -->
+  <link rel="manifest" href="manifest.json">
 
-    <!-- See https://goo.gl/qRE0vM -->
-    <meta name="theme-color" content="#3f51b5">
+  <!-- See https://goo.gl/qRE0vM -->
+  <meta name="theme-color" content="#3f51b5">
 
-    <!-- Add to homescreen for Chrome on Android. Fallback for manifest.json -->
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="My App">
+  <!-- Add to homescreen for Chrome on Android. Fallback for manifest.json -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="My App">
 
-    <!-- Add to homescreen for Safari on iOS -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="My App">
+  <!-- Add to homescreen for Safari on iOS -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="My App">
 
-    <!-- Homescreen icons -->
-    <link rel="apple-touch-icon" href="images/manifest/icon-48x48.png">
-    <link rel="apple-touch-icon" sizes="72x72" href="images/manifest/icon-72x72.png">
-    <link rel="apple-touch-icon" sizes="96x96" href="images/manifest/icon-96x96.png">
-    <link rel="apple-touch-icon" sizes="144x144" href="images/manifest/icon-144x144.png">
-    <link rel="apple-touch-icon" sizes="192x192" href="images/manifest/icon-192x192.png">
+  <!-- Homescreen icons -->
+  <link rel="apple-touch-icon" href="images/manifest/icon-48x48.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="images/manifest/icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="96x96" href="images/manifest/icon-96x96.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="images/manifest/icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="images/manifest/icon-192x192.png">
 
-    <!-- Tile icon for Windows 8 (144x144 + tile color) -->
-    <meta name="msapplication-TileImage" content="images/manifest/icon-144x144.png">
-    <meta name="msapplication-TileColor" content="#3f51b5">
-    <meta name="msapplication-tap-highlight" content="no">
+  <!-- Tile icon for Windows 8 (144x144 + tile color) -->
+  <meta name="msapplication-TileImage" content="images/manifest/icon-144x144.png">
+  <meta name="msapplication-TileColor" content="#3f51b5">
+  <meta name="msapplication-tap-highlight" content="no">
+  <!-- IziToast -->
+  <link rel="stylesheet" href="bower_components/izitoast/dist/css/iziToast.min.css">
+  <script src="bower_components/izitoast/dist/js/iziToast.min.js" type="text/javascript"></script>
 
-    <script>
-      /**
-      * [polymer-root-path]
-      *
-      * By default, we set `Polymer.rootPath` to the server root path (`/`).
-      * Leave this line unchanged if you intend to serve your app from the root
-      * path (e.g., with URLs like `my.domain/` and `my.domain/view1`).
-      *
-      * If you intend to serve your app from a non-root path (e.g., with URLs
-      * like `my.domain/my-app/` and `my.domain/my-app/view1`), edit this line
-      * to indicate the path from which you'll be serving, including leading
-      * and trailing slashes (e.g., `/my-app/`).
-      */
-      window.Polymer = {rootPath: '/'};
 
-      // Load and register pre-caching Service Worker
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
-          navigator.serviceWorker.register('service-worker.js', {
+  <script>
+    /**
+    * [polymer-root-path]
+    *
+    * By default, we set `Polymer.rootPath` to the server root path (`/`).
+    * Leave this line unchanged if you intend to serve your app from the root
+    * path (e.g., with URLs like `my.domain/` and `my.domain/view1`).
+    *
+    * If you intend to serve your app from a non-root path (e.g., with URLs
+    * like `my.domain/my-app/` and `my.domain/my-app/view1`), edit this line
+    * to indicate the path from which you'll be serving, including leading
+    * and trailing slashes (e.g., `/my-app/`).
+    */
+    window.Polymer = { rootPath: '/' };
+
+    // Load and register pre-caching Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('service-worker.js', {
           scope: Polymer.rootPath,
         })
           .then(function (reg) {
@@ -97,58 +102,149 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           .catch(function (error) {
             console.log('gartenworker Registrierung scheiterte wegen:  ' + error);
           });;
-        });
-      }
-    </script>
+      });
+    }
+  </script>
 
-    <!-- Load webcomponents-loader.js to check and load any polyfills your browser needs -->
-    <script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
-    <script src="bower_components/moment/min/moment.min.js"></script>
-    <!-- Load your application shell -->
-    <link rel="import" href="src/my-app.html">
 
-    <!-- Add any global styles for body, document, etc. -->
-    <style>
-      body {
-        margin: 0;
-        font-family: 'Roboto', 'Noto', sans-serif;
-        line-height: 1.5;
-        min-height: 100vh;
-        background-color: #eeeeee;
+  <!-- Load webcomponents-loader.js to check and load any polyfills your browser needs -->
+  <script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="bower_components/moment/min/moment.min.js"></script>
+  <!-- Load your application shell -->
+  <link rel="import" href="src/my-app.html">
+
+  <!-- Add any global styles for body, document, etc. -->
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Roboto', 'Noto', sans-serif;
+      line-height: 1.5;
+      min-height: 100vh;
+      background-color: #eeeeee;
+    }
+    /* Loading spinner */
+    .loader {
+      width: 100px;
+      height: 100px;
+
+      position: absolute;
+      top:0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+
+      margin: auto;
+    }
+
+    .loader-ring {
+      display: inline-block;
+      position: relative;
+      width: 64px;
+      height: 64px;
+    }
+   
+    .loader-ring div {
+      box-sizing: border-box;
+      display: block;
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      margin: 12px;
+      border: 12px solid #29434e;
+      border-radius: 50%;
+      animation: loader-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+      border-color: #29434e transparent transparent transparent;
+    }
+
+    .loader-ring div:nth-child(1) {
+      animation-delay: -0.45s;
+    }
+
+    .loader-ring div:nth-child(2) {
+      animation-delay: -0.3s;
+    }
+
+    .loader-ring div:nth-child(3) {
+      animation-delay: -0.15s;
+    }
+
+    @keyframes loader-ring {
+      0% {
+        transform: rotate(0deg);
       }
-    </style>
-  </head>
-  <body>
-    <my-app></my-app>
-    <noscript>
-      Please enable JavaScript to view this website.
-    </noscript>
-    <!-- Built with love using Polymer Starter Kit -->
-  </body>
-  <script>
-      function dispatchLoading(element) {
-        element.dispatchEvent(new CustomEvent('loading', {
-          bubbles: true,
-          composed: true
-        }));
+
+      100% {
+        transform: rotate(360deg);
       }
-    
-      function dispatchLoadingFinished(element) {
-        element.dispatchEvent(new CustomEvent('loadingFinished', {
-          bubbles: true,
-          composed: true
-        }));
-      }
-    
-      function showToast(element, message, type) {
-        let app = document.querySelector('my-app');
-        app.showToast(element, message, type);
-      }
-    
-      const TOAST_TYPE = {
-        SUCCESS: "success",
-        WARN: "warn",
-        ERROR: "error"
-      }
-    </script>
+    }
+  </style>
+</head>
+
+<body>
+  <div class="loader">
+    <div class="loader-ring">
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
+  </div>
+  <my-app></my-app>
+  <noscript>
+    Please enable JavaScript to view this website.
+  </noscript>
+  <!-- Built with love using Polymer Starter Kit -->
+</body>
+<script>
+  function dispatchLoading(element) {
+    element.dispatchEvent(new CustomEvent('loading', {
+      bubbles: true,
+      composed: true
+    }));
+  }
+
+  function dispatchLoadingFinished(element) {
+    element.dispatchEvent(new CustomEvent('loadingFinished', {
+      bubbles: true,
+      composed: true
+    }));
+  }
+
+  function showToast(element, message, type, pos) {
+    let bc = null;
+    let toShow = { message: message };
+    switch (type) {
+      case TOAST_TYPE.SUCCESS:
+        toShow = { backgroundColor: getComputedStyle(element).getPropertyValue('--app-success-color'), message: message }
+        break;
+      case TOAST_TYPE.ERROR:
+        toShow = { backgroundColor: getComputedStyle(element).getPropertyValue('--app-error-color'), message: message, timeout: false }
+        break;
+      case TOAST_TYPE.WARN:
+        toShow = { backgroundColor: getComputedStyle(element).getPropertyValue('--app-warning-color'), message: message }
+        break;
+      default:
+        break;
+    }
+    if (pos) {
+      toShow['position'] = pos;
+    }
+    iziToast.show(toShow);
+  }
+
+  const TOAST_TYPE = {
+    SUCCESS: "success",
+    WARN: "warn",
+    ERROR: "error"
+  }
+
+  function _removeLoader(){
+    document.querySelector(".loader").remove();
+    // if(theLoader)
+    // document.removeChild(theLoader);
+  }
+
+
+</script>
+
 </html>

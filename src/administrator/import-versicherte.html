@@ -56,10 +56,9 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/paper-progress-button/paper-progress-button.html">
 <link rel="import" href="../../bower_components/granite-file-reader/granite-file-reader.html">
-
 <link rel="import" href="../clients/firstclient.html">
 <link rel="import" href="../shared-styles.html">
-<script src="../../bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+<!-- <script src="../../bower_components/webcomponentsjs/webcomponents-lite.js"></script> -->
 
 <dom-module id="import-versicherte">
   <template>
@@ -75,11 +74,8 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
 
       .clickHere {
         border-radius: 3px;
-
-        /* padding: 10px; */
-        background-color: #4285f4;
+        background-color: var(--app-primary-color);
         color: white;
-
         padding: 0.5rem 1rem;
       }
     </style>
@@ -89,14 +85,10 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
       <paper-progress-button bottom raised on-click="_importRemoteVersichertePressed" loading-label="Nicht so hecktisch ..."
         loading="[[_loading]]">KVD Daten aus CSV-Datei vom Server importieren <iron-icon icon="add-circle-outline" slot="item-icon"></iron-icon>
       </paper-progress-button>
-      <paper-progress-button bottom raised on-click="_importLocalVersichertePressed" loading-label="Nicht so hecktisch ..."
-        loading="[[_loading]]">KVD Daten aus lokaler CSV-Datei importieren <iron-icon icon="add-circle-outline" slot="item-icon"></iron-icon>
-      </paper-progress-button>
       <granite-file-reader read-as="dataURL" accept=".csv" on-file-read="_doOnFileRead">
-        <div class="clickHere">Click here to load a file...</div>
+        <div class="clickHere">KVD Daten aus lokaler CSV-Datei importieren</div>
       </granite-file-reader>
     </div>
-    sf[[showfile(mfile)]]
   </template>
 
   <script>
@@ -125,11 +117,7 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
             observer: '_transformCSVToArray'
 
           }
-
         }
-      }
-      showfile(mfile) {
-        return this.mfile;
       }
 
       _doOnFileRead(e) {
@@ -140,7 +128,6 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
           reader.onload = function (e) {
             let text = reader.result;
             self.set('mfile', text);
-            showToast(self, 'Datei erfolgreich gelesen', TOAST_TYPE.SUCCESS);
           }
           reader.readAsText(file, 'base64');
         })
@@ -161,8 +148,6 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
         let usr = document.querySelector('my-app').getAttribute('user')
         console.log('andtheuseris app' + usr + " type of usr" + (typeof usr));
         usr = JSON.parse(usr);
-
-        
         
         let transformedResult = [];
         let columns = resp[0];//.filter((elem) => elem.length > 0);
@@ -202,7 +187,6 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
           })
         }
         this._importLocalVersichertePressed(finalArray);
-
       }
 
       _importRemoteVersichertePressed() {
@@ -234,30 +218,11 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
           } else {
             showToast(this, 'Bei der Importierung der KVD-Daten wurden keine Versichertendaten gefunden', TOAST_TYPE.ERROR);
           }
-
-        // this.$.firstclient.getVersicherteCSV().then((resp) => {
-        //   if (resp) {
-        //     this.mapToJSON(resp);
-        //     let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
-        //     this.saveToDB(dataAndColumns);
-        //     showToast(this, 'Die KVD-Daten wurden erfolgreich vom Server importiert', TOAST_TYPE.SUCCESS);
-        //   } else {
-        //     showToast(this, 'Bei der Importierung der KVD-Daten wurden keine Versichertendaten gefunden', TOAST_TYPE.ERROR);
-        //   }
-        // }).catch((err) => {
-        //   showToast(this, 'Fehler bei der Importierung der KVD-Daten vom Server', TOAST_TYPE.SUCCESS);
-        //   console.log("Fehler beim importVersicherte fuer versicherte  kam:" + JSON.stringify(err))
-        // })
       }
-
-
-
-
 
       _setLoading(val) {
         this.set('_loading', val);
       }
-
 
     }
 

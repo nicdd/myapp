@@ -1,0 +1,175 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/paper-progress-button/paper-progress-button.html">
+<link rel="import" href="../../bower_components/granite-file-reader/granite-file-reader.html">
+<link rel="import" href="../clients/firstclient.html">
+<link rel="import" href="../shared-styles.html">
+<!-- <script src="../../bower_components/webcomponentsjs/webcomponents-lite.js"></script> -->
+
+<dom-module id="import-paechter">
+  <template>
+    <style include="shared-styles">
+      :host {
+        /* Stretch this element to fill viewport */
+        height: 85vh;
+        /* Make a flex column layout of children */
+        display: flex;
+        flex-direction: column;
+      }
+
+      .clickHere {
+        border-radius: 3px;
+        background-color: var(--app-primary-color);
+        color: white;
+        padding: 0.5rem 1rem;
+      }
+    </style>
+
+    <first-client id="firstclient"></first-client>
+    <div class="toolbar layout horizontal center-justified" flex>
+      <paper-progress-button bottom raised on-click="_importRemotePaechterPressed" loading-label="Nicht so hecktisch ..."
+        loading="[[_loading]]">Pächter-Daten aus CSV-Datei vom Server importieren <iron-icon icon="add-circle-outline" slot="item-icon"></iron-icon>
+      </paper-progress-button>
+      <granite-file-reader read-as="dataURL" accept=".csv" on-file-read="_doOnFileRead">
+        <div class="clickHere">Pächter-Daten aus lokaler CSV-Datei importieren</div>
+      </granite-file-reader>
+    </div>
+  </template>
+
+  <script>
+    class ImportPaechter extends Polymer.Element {
+      static get is() { return 'import-paechter'; }
+
+      static get properties() {
+        return {
+
+          _loading: {
+            type: Boolean,
+            value: false
+          },
+
+          mvdata: {
+            type: Array,
+            value: [],
+            notify: true,
+            reflectToAttribute: true
+          },
+
+          mfile: {
+            type: Object,
+            value: null,
+            notify: true,
+            observer: '_transformCSVToArray'
+
+          }
+        }
+      }
+
+      _doOnFileRead(e) {
+        let self = this;
+        let b64Result = e.detail;
+        self._urltoFile(b64Result, 'paechter.csv', 'text/csv').then((file) => {
+          let reader = new FileReader();
+          reader.onload = function (e) {
+            let text = reader.result;
+            self.set('mfile', text);
+          }
+          reader.readAsText(file, 'base64');
+        })
+      }
+
+      _urltoFile(url, filename, mimeType) {
+        let self = this;
+        return (fetch(url)
+          .then(function (res) { return res.arrayBuffer(); })
+          .then(function (buf) { return new File([buf], filename, { type: mimeType }); })
+          .catch((err)=>{
+            showToast(self, 'Fehler bei der Importierung der Pächter-Daten aus der lokalen Datei', TOAST_TYPE.ERROR);
+          })
+        );
+      }
+
+      mapToJSON(resp) {
+        let usr = document.querySelector('my-app').getAttribute('user')
+        console.log('andtheuseris app' + usr + " type of usr" + (typeof usr));
+        usr = JSON.parse(usr);
+        
+        let transformedResult = [];
+        let columns = resp[0];//.filter((elem) => elem.length > 0);
+        console.log('das sind die columns' + columns.toString())
+        for (let i = 1; i < resp.length; i++) {
+          if (resp[i][0] !== 'Ende der Liste') {
+            let myRowObj = {};
+            console.log(i + ' resp[i].length ' + resp[i].length)
+            for (let j = 0; j < columns.length; j++) {
+              console.log('column j' + j)
+              let attrName = columns[j].replace(/[\. ,:-]+/g, "");
+              attrName = attrName.replace(/ü/g, 'ue').replace(/ö/g, 'oe');
+              let attrValue = (attrName === "GBV" || attrName === "FED" || attrName === "Beitrag" || attrName === "UV" || attrName === "HoeV") ? (isFinite(resp[i][j]) && !isNaN(resp[i][j]) ? (parseInt(resp[i][j]) || 0) : 0) : resp[i][j];
+              myRowObj[attrName] = attrValue;
+            }
+            myRowObj['created'] = {user: usr.name, datum: moment().format('YYYYMMDD_HHmm'), source: 'csv'};
+            transformedResult.push(myRowObj);
+          } else {
+            break;
+          }
+
+        }
+        this.set('columnNames', columns);
+        this.set('mvdata', transformedResult);
+        console.log('transformeddata' + JSON.stringify(this.mvdata))
+      }
+
+      _transformCSVToArray() {
+        let finalArray = [];
+        if (this.mfile) {
+          let firstArr = this.mfile.split('\n');
+          console.log('firstArray' + JSON.stringify(firstArr))
+          let secondArray = null;
+          firstArr.forEach((el) => {
+            secondArray = el.split(',');
+            finalArray.push(secondArray);
+          })
+        }
+        this._importLocalPaechterPressed(finalArray);
+      }
+
+      _importRemotePaechterPressed() {
+        this.$.firstclient.getPaechterCSV().then((resp) => {
+          if (resp) {
+            this.mapToJSON(resp);
+            let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
+            this.saveToDB(dataAndColumns);
+            showToast(this, 'Die Pächter-Daten wurden erfolgreich vom Server importiert', TOAST_TYPE.SUCCESS);
+          } else {
+            showToast(this, 'Bei der Importierung der Vereinsdaten wurden keine Paechterdaten gefunden', TOAST_TYPE.ERROR);
+          }
+        }).catch((err) => {
+          showToast(this, 'Fehler bei der Importierung der Pächter-Daten vom Server', TOAST_TYPE.ERROR);
+          console.log("Fehler beim ImportPaechter fuer paechter  kam:" + JSON.stringify(err))
+        })
+      }
+
+      saveToDB(dataAndColumns) {
+        this.$.firstclient.postPaechterAsJSON(dataAndColumns);
+      }
+
+      _importLocalPaechterPressed(localPaechterFromCSVAsArray) {
+        if (localPaechterFromCSVAsArray && localPaechterFromCSVAsArray.length) {
+            this.mapToJSON(localPaechterFromCSVAsArray);
+            let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
+            this.saveToDB(dataAndColumns);
+            showToast(this, 'Die Pächter-Daten wurden aus der lokalen Datei erfolgreich importiert', TOAST_TYPE.SUCCESS);
+          } else {
+            showToast(this, 'Bei der Importierung der Vereinsdaten wurden keine Paechterdaten gefunden', TOAST_TYPE.ERROR);
+          }
+      }
+
+      _setLoading(val) {
+        this.set('_loading', val);
+      }
+
+    }
+
+    window.customElements.define(ImportPaechter.is, ImportPaechter);
+  </script>
+</dom-module>

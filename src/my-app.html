@@ -25,7 +25,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/iron-icons/notification-icons.html">
 <link rel="import" href="../bower_components/iron-icons/device-icons.html">
 <link rel="import" href="../bower_components/paper-progress/paper-progress.html">
-<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="../bower_components/neon-animation/web-animations.html">
 <link rel="import" href="general/default-page.html">
 <link rel="import" href="general/my-paechter.html">
@@ -37,7 +36,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="general/my-unauthenticated-page.html">
 <link rel="import" href="utils/current-time.html">
 <link rel="import" href="clients/basicclient.html">
-<link rel="import" href="administrator/my-admin-imports.html">
+<link rel="import" href="administrator/my-versicherte-imports.html">
+<link rel="import" href="administrator/my-paechter-imports.html">
 <link rel="import" href="my-auth.html">
 <link rel="import" href="my-icons.html">
 <link rel="import" href="navigation/gts-navigation-menu.html">
@@ -118,23 +118,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           transition: background-color ease-in-out 300ms !important;
         }
       }
-
-      #success {
-        --paper-toast-background-color: var(--app-success-color);
-      }
-
-      #warn {
-        --paper-toast-background-color: var(--app-warning-color);
-        color: black;
-      }
-
-      #error {
-        --paper-toast-background-color: var(--app-error-color);
-      }
-
-      #error>paper-icon-button {
-        margin-right: -8px;
-      }
+      
     </style>
 
     <my-auth id="auth" user={{user}}></my-auth>
@@ -173,17 +157,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <my-view3 name="view3"></my-view3>
         <my-view404 name="view404"></my-view404>
         <gts-unauthenticated-page name="unauthenticated"></gts-unauthenticated-page>
-        <my-admin-imports name="admin-imports"></my-admin-imports>
+        <my-versicherte-imports name="versicherte-imports"></my-versicherte-imports>
+        <my-paechter-imports name="paechter-imports"></my-paechter-imports>
       </iron-pages>
     </app-drawer-layout>
 
-    <paper-toast id="success"></paper-toast>
-    <paper-toast id="warn" duration="10000">
-        <paper-icon-button icon="close" on-click="_closeWarnToast"></paper-icon-button>
-    </paper-toast>
-    <paper-toast id="error" duration="-1">
-      <paper-icon-button icon="close" on-click="_closeErrorToast"></paper-icon-button>
-    </paper-toast>
   </template>
 
   <script>
@@ -236,10 +214,27 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       ready() {
+        _removeLoader();
         this.addEventListener('loading', this._loadingListener);
         this.addEventListener('loadingFinished', this._loadingFinishedListener);
         super.ready();
         this.loadBaseConfig();
+
+        iziToast.settings({
+          position: 'bottomLeft',
+
+          timeout: 10000,
+          resetOnHover: true,
+          icon: 'material-icons',
+          transitionIn: 'fadeInLeft',
+          transitionOut: 'flipOutX'//,
+          // onOpening: function () {
+          //   console.log('callback abriu!');
+          // },
+          // onClosing: function () {
+          //   console.log("callback fechou!");
+          // }
+        });
       }
 
       loadBaseConfig() {
@@ -249,17 +244,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         })
       }
 
-      showToast(element, message, type) {
-        let toast = this.shadowRoot.querySelector(`#${type}`);
-        if (toast) {
-          toast.close();
-          toast.text = message;
-          toast.show();
-        } else {
-          alert("#showToast doesn't support type " + type);
-        }
-      }
-
       _toggleDrawer() {
         var drawerLayout = this.$.drawerLayout;
         if (drawerLayout.forceNarrow || !drawerLayout.narrow) {
@@ -267,14 +251,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         } else {
           drawerLayout.drawer.toggle();
         }
-      }
-
-      _closeErrorToast(e) {
-        this.shadowRoot.querySelector('#error').close();
-      }
-
-      _closeWarnToast(e) {
-        this.shadowRoot.querySelector('#warn').close();
       }
 
       _isLoading(activeLoadings) {
