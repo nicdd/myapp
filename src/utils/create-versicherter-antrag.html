@@ -208,7 +208,7 @@ Pagination Element for Vaadin-Grid Tables
                 this.$.bclient.getVersicherungconfig().then((vconf) => {
                     this.set('vconfig', vconf)
                 }).finally(() => {
-                    let newVersicherter = versicherter;
+                    let newVersicherter = {};
                     if (!versicherter) {
                         newVersicherter = {
                             "NAME": null,
@@ -228,7 +228,32 @@ Pagination Element for Vaadin-Grid Tables
                             "": "",
                             "Bemerkung": null,
                         }
+                    } else {
+                        Object.keys(versicherter).map(function (key, index) {
+                            switch (key) {
+                                case 'GartenNr':
+                                    newVersicherter['GaNr'] = versicherter[key];
+                                case 'Vorname':
+                                    newVersicherter['VORNAME'] = versicherter[key];
+                                    break;
+                                case 'Nachname':
+                                    newVersicherter['NAME'] = versicherter[key];
+                                    break;
+                                case 'Strasse':
+                                    newVersicherter['STRASSE'] = versicherter[key];
+                                    break;
+                                case 'PLZ':
+                                    newVersicherter['PLZ'] = versicherter[key];
+                                    break;
+                                case 'Wohnort':
+                                    newVersicherter['ORT'] = versicherter[key];
+                                    break;
+                                default:
+                                    break;
+                            }
+                        });
                     }
+                    console.log('thenewversicherter' + JSON.stringify(versicherter))
                     this.set('nv', newVersicherter)
                     this.$.pdialog.opened = true;
                 })

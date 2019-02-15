@@ -83,6 +83,15 @@
                 --paper-item-icon-width: 32px;
             }
 
+            .haupt {
+                color: var(--app-primary-contrast-text-color);
+                background-color: var(--app-primary-color);
+            }
+
+            .nav-item.haupt:hover {
+                transform: scale(1.04);
+            }
+
             .erstekategorie {
                 color: var(--app-primary-contrast-text-color);
                 background-color: var(--app-primary-color);
@@ -109,7 +118,7 @@
 
             .iron-selected {
                 font-weight: bold;
-                background-color: #eeeeee;
+                /* background-color: #eeeeee; */
             }
 
             .nav {
@@ -136,16 +145,14 @@
 
         <div class="drawer-content">
             <div class="nav">
-
                 <iron-selector selected="[[page]]" attr-for-selected="name">
-
+                    <paper-item on-click="_navigateEvent" name="default" class="nav-item parent haupt" href="#[[rootPath]]default">Home</paper-item>
                     <iron-collapse-button class="erstekategorie" forbidden$='false' closed>
                         <div slot="collapse-trigger" class="nav-item parent flex">
                             Verein
                         </div>
                         <div slot="collapse-content">
                             <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list">
-                                <paper-item on-click="_navigateEvent" name="default" class="nav-item child" href="#[[rootPath]]default">Home</paper-item>
                                 <paper-item on-click="_navigateEvent" name="paechter" class="nav-item child" href="#[[rootPath]]paechter">Pächter</paper-item>
                                 <paper-item on-click="_navigateEvent" name="foerdermitglieder" class="nav-item child" href="#[[rootPath]]foerdermitglieder">Fördermitglieder</paper-item>
                                 <paper-item on-click="_navigateEvent" name="passivemitglieder" class="nav-item child" href="#[[rootPath]]passivemitglieder">Passive Mitglieder</paper-item>
@@ -159,7 +166,6 @@
                         </div>
                         <div slot="collapse-content">
                             <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list">
-                                <paper-item on-click="_navigateEvent" name="default" class="nav-item child" href="#[[rootPath]]default">Home</paper-item>
                                 <paper-item on-click="_navigateEvent" name="versicherte" class="nav-item child" href="#[[rootPath]]versicherte">Versicherte</paper-item>
                                 <paper-item on-click="_navigateEvent" name="versicherungkonfig" class="nav-item child"
                                     href="#[[rootPath]]versicherungkonfig">Konfiguration</paper-item>

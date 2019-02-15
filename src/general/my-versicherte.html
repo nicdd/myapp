@@ -370,7 +370,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           columnNames: {
             type: Array,
             value: []
-          }
+          },
+
+          paechter: {
+            type: Array,
+            value: [],
+            observer: 'paechterChanged'
+          },
+
+          gartenNrSelections: String
         }
       }
 
@@ -378,6 +386,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         e.preventDefault();
         e.model.detailsOpened = !e.model.detailsOpened;
         e.stopPropagation();
+      }
+
+      paechterChanged() {
+        let gNrOptions = '<select style:"background-color: white;"><option value="">Auswahl</option>';
+        this.paechter.forEach((p) => {
+          console.log('then p:' + JSON.stringify(p))
+          gNrOptions = gNrOptions + '<option value="' + p.GartenNr + '">' + p.GartenNr + '</option>'
+        });
+        gNrOptions += '</select>';
+        this.set('gartenNrSelections', gNrOptions);
       }
 
       _removeItem(e) {
@@ -398,7 +416,51 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       addVersicherter() {
-        this.$.adddialog.showDialog();
+        let self = this;
+        //showToast(this, 'Bei der Initialisierung der Seite wurden keine Versichertendaten gefunden', TOAST_TYPE.INPUT);
+        //this.$.adddialog.showDialog();
+        this.$.firstclient.getPaechterAsJSON().then((ps) => {
+          let records = ps.data;
+          // For Number-like Strings containing alphanummerical chars
+          records = records.sort(function (o1, o2) {
+            let sresult = self.naturalSorter(o1.GartenNr, o2.GartenNr);
+            return (sresult < 0) ? -1 : 1;
+          });
+          this.set('paechter', records);
+          let toastBGColor = window.getComputedStyle(self).getPropertyValue('--app-primary-color')
+          iziToast.question({
+            theme: 'light',
+            //backgroundColor: toastBGColor,
+            //color: 'white',
+            timeout: false,
+            drag: false,
+            close: false,
+            overlay: true,
+            title: 'Gartennummer',
+            message: 'Wählen Sie bitte eine Gartennummer aus',
+            position: 'center',
+            inputs: [
+              [self.gartenNrSelections, 'change', function (instance, toast, select, e) {
+                console.info(select.options[select.selectedIndex].value);
+              }, true] // true to focus
+            ],
+            buttons: [
+              ['<button><b>Abbrechen</b></button>', function (instance, toast, button, e, inputs) {
+                instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+              }, false],
+              ['<button><b>Bestätigen</b></button>', function (instance, toast, button, e, inputs) {
+                let gaNr = inputs[0].options[inputs[0].selectedIndex].value;
+                let pt = self.paechter.find((ap) => ap.GartenNr === gaNr);
+                self.$.adddialog.showDialog(pt);
+                //console.log('Auswahl2' + JSON.stringify(pt))
+               // alert('Auswahl: ' + JSON.stringify(inputs[0].options[inputs[0].selectedIndex].value))
+                instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+              }, false]
+            ]
+          });
+
+        })
+
       }
 
       _sortChange(e) {

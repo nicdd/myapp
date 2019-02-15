@@ -183,43 +183,28 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     loading-label="Nicht so hecktisch ..." loading="[[_loading]]">Exportieren</paper-progress-button>
             </div>
         </div>
-        {
-            "GartenNr": "248",
-            "Anrede": "Herr",
-            "Nachname": "Ziegler",
-            "Vorname": "Peter",
-            "Strasse": "Pelkovenstr.48",
-            "PLZ": "80992",
-            "Wohnort": "München",
-            "TelefonNr": "14343675",
-            "Weg": "Tulpenweg",
-            "Flächeqm": "265",
-            "Geburtsdat": "02/04/1943",
-            "EMail": "peha.ziegler@online.de",
-            "Bemerkungen": "",
-            "Alter": "75",
-            "JubiläuminMonat": "4.2018",
-            "created": {
-                "user": "nic",
-                "datum": "20190214_1927",
-                "source": "csv"
-            }
-        }
 
         <div class="page">
             <vaadin-grid id="mygrid" page-size="{{pageSize}}" active-item="{{activeItem}}" aria-label="Basic Binding Example"
                 items="[[mvdata]]" column-reordering-allowed>
                 <template class="row-details">
                     <div class="details">
+                        <div class="layout horizontal justified">
                         <p>
                             <span>Anschrift</span><br>
                             <small>[[columnNames.4]]:[[item.Strasse]]</small><br>
                             <small>[[columnNames.5]]:[[item.PLZ]]</small><br>
-                            <small>[[columnNames.6]]:[[item.Wohnort]]</small><br>
+                            <small>[[columnNames.6]]:[[item.Wohnort]]</small>
+                        </p>
+                        <p>
+                            <span>Kontakt</span><br>
                             <small>[[columnNames.7]]:[[item.TelefonNr]]</small><br>
-                            <small>[[columnNames.10]]:[[item.Geburtsdat]]</small><br>
                             <small>[[columnNames.11]]:[[item.EMail]]</small><br>
                         </p>
+                        <p>
+                            <small>[[columnNames.10]]:[[item.Geburtsdat]]</small><br>
+                        </p>
+                    </div>
                     </div>
                 </template>
                 <!--auto-select wenn man will dass man auch über das anklicken in der zeile nicht nur in der box selektieren kann-->
@@ -234,12 +219,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 </vaadin-grid-column>
 
                 <vaadin-grid-column path="Anrede" header="Anrede" width="75px" flex-grow="0" text-align="end">
-                        <template class="header">
-                            <vaadin-grid-sorter path="Anrede" on-sorter-changed="_sortChange">
-                                [[columnNames.1]]
-                            </vaadin-grid-sorter>
-                        </template>
-                    </vaadin-grid-column>
+                    <template class="header">
+                        <vaadin-grid-sorter path="Anrede" on-sorter-changed="_sortChange">
+                            [[columnNames.1]]
+                        </vaadin-grid-sorter>
+                    </template>
+                </vaadin-grid-column>
 
                 <vaadin-grid-column path="Nachname" width="141px" resizable>
                     <template class="header">

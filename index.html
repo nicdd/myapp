@@ -16,7 +16,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <meta name="generator" content="Polymer Starter Kit">
   <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
 
-  <title>Niky's App</title>
+  <title>Vereins- und Versicherungsverwaltung</title>
   <meta name="description" content="My App description">
 
   <!--
@@ -122,13 +122,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       min-height: 100vh;
       background-color: #eeeeee;
     }
+
     /* Loading spinner */
     .loader {
       width: 100px;
       height: 100px;
 
       position: absolute;
-      top:0;
+      top: 0;
       bottom: 0;
       left: 0;
       right: 0;
@@ -142,7 +143,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       width: 64px;
       height: 64px;
     }
-   
+
     .loader-ring div {
       box-sizing: border-box;
       display: block;
@@ -223,6 +224,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       case TOAST_TYPE.WARN:
         toShow = { backgroundColor: getComputedStyle(element).getPropertyValue('--app-warning-color'), message: message }
         break;
+      case TOAST_TYPE.INPUT:
+        toShow = { backgroundColor: getComputedStyle(element).getPropertyValue('--app-warning-color'), message: message }
+        break;
       default:
         break;
     }
@@ -235,10 +239,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   const TOAST_TYPE = {
     SUCCESS: "success",
     WARN: "warn",
-    ERROR: "error"
+    ERROR: "error",
+    INPUT: "input"
   }
 
-  function _removeLoader(){
+  function _removeLoader() {
     document.querySelector(".loader").remove();
     // if(theLoader)
     // document.removeChild(theLoader);
