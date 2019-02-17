@@ -272,6 +272,10 @@ Pagination Element for Vaadin-Grid Tables
             mergeStrasseWithHausnr(nv) {
                 nv.STRASSE = nv.STRASSE + " " + nv.HAUSNR;
                 delete nv['HAUSNR'];
+                //Logg wer den Datensatz angelegt hat
+                let usr = document.querySelector('my-app').getAttribute('user')
+                usr = JSON.parse(usr);
+                nv["created"] = { user: usr.name, datum: moment().format('YYYYMMDD_HHmm'), source: 'v-antrag' }
                 return nv;
             }
 

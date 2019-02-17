@@ -451,16 +451,50 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               ['<button><b>Bestätigen</b></button>', function (instance, toast, button, e, inputs) {
                 let gaNr = inputs[0].options[inputs[0].selectedIndex].value;
                 let pt = self.paechter.find((ap) => ap.GartenNr === gaNr);
-                self.$.adddialog.showDialog(pt);
-                //console.log('Auswahl2' + JSON.stringify(pt))
-               // alert('Auswahl: ' + JSON.stringify(inputs[0].options[inputs[0].selectedIndex].value))
-                instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+                self.gartenNichtSchonVorhanden(gaNr, pt).then(() => {
+
+                  self.$.adddialog.showDialog(pt);
+                  //console.log('Auswahl2' + JSON.stringify(pt))
+                  // alert('Auswahl: ' + JSON.stringify(inputs[0].options[inputs[0].selectedIndex].value))
+                  instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+                }).catch((aenderungen) => {
+                  if (aenderungen.name || aenderungen.anschrift) {
+                    let messageZusatzName = (aenderungen.name) ? "Name" : null;
+                    let messageZusatzAnschrift = (aenderungen.name) ? "Anschrift" : null;
+                    showToast(self, "Für den Garten Nr. " + gaNr +
+                      " existiert bereits einen Versicherung-Datensatz." +
+                      "Die folgenden Änderungen wurden festgestellt:" + messageZusatzName + " " + messageZusatzAnschrift,
+                      TOAST_TYPE.WARN, 'center');
+
+                  } else {
+                    showToast(self, "Für den Garten Nr. " + gaNr + " existiert bereits einen Versicherung-Datensatz unter dem gleichen Namen und unter der gleichen Anschrift.", TOAST_TYPE.WARN, 'center');
+                  }
+
+                })
+
+
               }, false]
             ]
           });
 
         })
 
+      }
+
+      gartenNichtSchonVorhanden(gaNr, paechter) {
+        let bereitsVorhandener = this.mvdata.find((versicherter) => {
+          return versicherter.GaNr === gaNr;
+        })
+        if (bereitsVorhandener) {
+          let namensAenderung = (bereitsVorhandener.NAME !== paechter.Nachname || bereitsVorhandener.VORNAME !== paechter.Vorname);
+          let anschriftsAenderung = (bereitsVorhandener.STRASSE !== paechter.Strasse || bereitsVorhandener.PLZ !== paechter.PLZ || bereitsVorhandener.ORT !== paechter.Wohnort);
+          let aenderungen = { name: namensAenderung, anschrift: anschriftsAenderung }
+
+
+          return Promise.reject(aenderungen);
+        } else {
+          return Promise.resolve();
+        }
       }
 
       _sortChange(e) {
