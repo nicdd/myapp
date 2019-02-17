@@ -459,11 +459,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                   instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
                 }).catch((aenderungen) => {
                   if (aenderungen.name || aenderungen.anschrift) {
-                    let messageZusatzName = (aenderungen.name) ? "Name" : null;
-                    let messageZusatzAnschrift = (aenderungen.name) ? "Anschrift" : null;
+                    let gesamtZusatzMessage = "";
+                    if (aenderungen.name){
+                      gesamtZusatzMessage += " Name";
+                    }
+                    if (aenderungen.anschrift){
+                      gesamtZusatzMessage += " Anschrift";
+                    }
                     showToast(self, "Für den Garten Nr. " + gaNr +
                       " existiert bereits einen Versicherung-Datensatz." +
-                      "Die folgenden Änderungen wurden festgestellt:" + messageZusatzName + " " + messageZusatzAnschrift,
+                      "Die folgenden Änderungen wurden festgestellt:" + gesamtZusatzMessage + ".\nBitte bearbeiten Sie die ungeklärten Fälle.",
                       TOAST_TYPE.WARN, 'center');
 
                   } else {
@@ -486,9 +491,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           return versicherter.GaNr === gaNr;
         })
         if (bereitsVorhandener) {
+          console.log('vgl paechter' + JSON.stringify(paechter) )
+          console.log('vgl bereitsVorhandener' + JSON.stringify(bereitsVorhandener) )
           let namensAenderung = (bereitsVorhandener.NAME !== paechter.Nachname || bereitsVorhandener.VORNAME !== paechter.Vorname);
           let anschriftsAenderung = (bereitsVorhandener.STRASSE !== paechter.Strasse || bereitsVorhandener.PLZ !== paechter.PLZ || bereitsVorhandener.ORT !== paechter.Wohnort);
+          console.log("vgl bereitsVorhandener.STRASSE.length" + bereitsVorhandener.STRASSE.length + "paechter.Strasse.length" + paechter.Strasse.length)
           let aenderungen = { name: namensAenderung, anschrift: anschriftsAenderung }
+          console.log('vgl aenderungen' + JSON.stringify(aenderungen) )
 
 
           return Promise.reject(aenderungen);

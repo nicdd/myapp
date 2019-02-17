@@ -1,0 +1,94 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../clients/firstclient.html">
+
+<dom-module id="data-consistency">
+    <template>
+        <first-client id="firstclient"></first-client>
+    </template>
+
+    <script>
+        class DataConsistency extends Polymer.Element {
+            static get is() { return 'data-consistency'; }
+
+            static get properties() {
+                return {
+
+                }
+            }
+
+
+            ready() {
+                super.ready();
+            }
+
+            checkConsistencyBetweenVersicherteAndPaechter(versicherte, paechter) {
+                let theVersicherte = null;
+                let thePaechter = null;
+                if (!versicherte) {
+                    this.$.firstclient.getVersicherteAsJSON().then((vs) => {
+                        theVersicherte = vs.data;
+                    }).catch(() => {
+                        return;
+                    })
+                } else {
+                    theVersicherte = versicherte;
+                }
+
+                if (!paechter) {
+                    this.$.firstclient.getPaechterAsJSON().then((ps) => {
+                        thePaechter = ps.data;
+                    }).catch(() => {
+                        return;
+                    })
+                } else {
+                    thePaechter = paechter;
+                }
+
+                theVersicherte.forEach((v) => {
+                    let dispatchNeuUKVFall = false;
+                    let p = thePaechter.find((ap) => {
+                        ap.GartenNr === v.GaNr;
+                    })
+                    if (!p) {
+                        v['status'] = { wert: "ungeklaert", grund: "Kein korrespondierender Pächter vorhanden" }
+                        this.$.firstclient.postUngeklaerterVersicherter(v).then(() => {
+                            dispatchNeuUKVFall = true;
+                        })
+                    } else {
+                        let namensAenderung = (v.NAME !== p.Nachname || v.VORNAME !== p.Vorname);
+                        let anschriftsAenderung = (v.STRASSE !== p.Strasse || v.PLZ !== p.PLZ || v.ORT !== p.Wohnort);
+                        if (namensAenderung || anschriftsAenderung) {
+                            let aenderungen = { name: namensAenderung, anschrift: anschriftsAenderung }
+                            let gesamtZusatzMessage = "";
+                            if (aenderungen.name) {
+                                gesamtZusatzMessage += " Name";
+                            }
+                            if (aenderungen.anschrift) {
+                                gesamtZusatzMessage += " Anschrift";
+                            }
+                            let grund = "Änderungen wurden festgestellt:" + gesamtZusatzMessage;
+                            v['NAME'] = p.Nachname;
+                            v['VORNAME'] = p.Vorname;
+                            v['STRASSE'] = p.STRASSE;
+                            v['PLZ'] = p.PLZ;
+                            v['ORT'] = p.Wohnort;
+                            v['status'] = { wert: "ungeklaert", grund: grund }
+                        }
+
+                    }
+                })
+
+                if (dispatchNeuUKVFall){
+                    this.dispatchEvent(new CustomEvent('neu-uk-vfall'));
+                }
+
+            }
+
+
+
+        }
+
+        window.customElements.define(DataConsistency.is, DataConsistency);
+    </script>
+</dom-module>
