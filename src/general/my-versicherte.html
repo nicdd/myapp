@@ -180,7 +180,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </style>
 
     <first-client id="firstclient"></first-client>
-    [[pageSize]]
     <create-versicherter-antrag id="adddialog" cancel-name="Abbrechen" confirmation-name="Hinzufügen"></create-versicherter-antrag>
     <grt-dialog id="grtinfodialog" dialog-type="info"></grt-dialog>
     <export-chooser id="exportdialog" dialog-type="info" confirmation-name="Schließen" on-export-versicherte="exportVersicherte"></export-chooser>
@@ -419,17 +418,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         // } else {
         //   console.log('isTrue idx mg NOT FOUND')
         // }
-        // var element = this.$.mygrid;
-        // var n = document.createTextNode(' ');
-        // var disp = element.style.display;  // don't worry about previous display style
+        var element = this.$.mygrid;
+        var n = document.createTextNode(' ');
+        var disp = element.style.display;  // don't worry about previous display style
 
-        // element.appendChild(n);
-        // element.style.display = 'none';
+        element.appendChild(n);
+        element.style.display = 'none';
 
-        // setTimeout(function () {
-        //   element.style.display = disp;
-        //   n.parentNode.removeChild(n);
-        // }, 10);
+        setTimeout(function () {
+          element.style.display = disp;
+          n.parentNode.removeChild(n);
+        }, 50);
 
 
 
@@ -635,8 +634,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         super.ready();
         this.$.firstclient.getVersicherteAsJSON().then((resp) => {
           if (resp) {
-            this.set('pageSize', 10);
             this.splitToObjects(resp);
+            this.set('pageSize', 10);
           } else {
             showToast(this, 'Bei der Initialisierung der Seite wurden keine Versichertendaten gefunden', TOAST_TYPE.ERROR);
           }

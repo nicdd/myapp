@@ -463,8 +463,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 super.ready();
                 this.$.firstclient.getPaechterAsJSON().then((resp) => {
                     if (resp) {
-                        this.set('pageSize', 10);
                         this.splitToObjects(resp);
+                        this.set('pageSize', 10);
                     } else {
                         showToast(this, 'Bei der Initialisierung der Seite wurden keine Paecheterdaten gefunden', TOAST_TYPE.ERROR);
                     }
