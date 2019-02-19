@@ -182,15 +182,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 </head>
 
 <body>
-  <div class="loader">
-    <div class="loader-ring">
-      <div></div>
-      <div></div>
-      <div></div>
-      <div></div>
+  <my-app>
+    <div class="loader">
+      <div class="loader-ring">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
     </div>
-  </div>
-  <my-app></my-app>
+
+  </my-app>
   <noscript>
     Please enable JavaScript to view this website.
   </noscript>
@@ -243,11 +245,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     INPUT: "input"
   }
 
-  function _removeLoader() {
-    document.querySelector(".loader").remove();
-    // if(theLoader)
-    // document.removeChild(theLoader);
-  }
+  // function removeLoader() {
+  //   document.querySelector(".loader").remove();
+  //   // if(theLoader)
+  //   // document.removeChild(theLoader);
+  // }
 
 
 </script>

@@ -74,6 +74,9 @@
                             v['PLZ'] = p.PLZ;
                             v['ORT'] = p.Wohnort;
                             v['status'] = { wert: "ungeklaert", grund: grund }
+                            this.$.firstclient.postUngeklaerterVersicherter(v).then(() => {
+                            dispatchNeuUKVFall = true;
+                        })
                         }
 
                     }

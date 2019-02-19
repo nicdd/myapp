@@ -55,7 +55,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../clients/firstclient.html">
 <link rel="import" href="../shared-styles.html">
 <link rel="import" href="../utils/grt-grid-pagination.html">
-<link rel="import" href="../utils/member-select-dialog.html">
+<!-- <link rel="import" href="../utils/member-select-dialog.html"> -->
 <link rel="import" href="../utils/export-chooser.html">
 <link rel="import" href="../utils/grt-dialog.html">
 
@@ -164,7 +164,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </style>
 
         <first-client id="firstclient"></first-client>
-        <member-select-dialog id="adddialog" cancel-name="Abbrechen" confirmation-name="Hinzufügen"></member-select-dialog>
+        <!-- <member-select-dialog id="adddialog" cancel-name="Abbrechen" confirmation-name="Hinzufügen"></member-select-dialog> -->
         <grt-dialog id="grtinfodialog" dialog-type="info"></grt-dialog>
         <export-chooser id="exportdialog" dialog-type="info" confirmation-name="Schließen" on-export-paechter="exportPaechter"></export-chooser>
 
@@ -384,7 +384,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             addPaecheter() {
-                this.$.adddialog.showDialog();
+                // this.$.adddialog.showDialog();
             }
 
             _sortChange(e) {
@@ -483,11 +483,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 // })
 
 
-                this.$.adddialog.addEventListener('addpaechter', (e) => {
-                    console.log('adddialog gedruckt' + JSON.stringify(e.detail))
-                    this.splice('mvdata', this._pageStart, 0, e.detail);
-                    //this.push('mvdata', e.detail);
-                });
+                // this.$.adddialog.addEventListener('addpaechter', (e) => {
+                //     console.log('adddialog gedruckt' + JSON.stringify(e.detail))
+                //     this.splice('mvdata', this._pageStart, 0, e.detail);
+                //     //this.push('mvdata', e.detail);
+                // });
 
                 this.$.mygrid.addEventListener('selected-items-changed', (e) => {
                     this.doOnSelection(e);
