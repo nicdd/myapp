@@ -53,6 +53,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <link rel="import" href="../../bower_components/vaadin-grid/theme/material/all-imports.html">
 <link rel="import" href="../../bower_components/iron-collapse-button/iron-collapse-button.html">
+<link rel="import" href="../../bower_components/iron-icons/editor-icons.html">
 <link rel="import" href="../clients/firstclient.html">
 <link rel="import" href="../shared-styles.html">
 <link rel="import" href="../utils/grt-grid-pagination.html">
@@ -173,6 +174,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         margin-right: -12px;
       }
 
+      .mcolapstrigger {}
+
+      .lastelement {
+
+        /* border-style: solid;
+         border-width: 0.5px; */
+        border-radius: 1%;
+        padding: 0px 5px;
+        margin: 0px 5px 10px 25px;
+        background-color: var(--app-secondary-light-color);
+        box-shadow: 0px 0px 8px 5px #888888;
+      }
 
       /* .header {
           max-height: 5px !important;
@@ -205,20 +218,37 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         items="[[mvdata]]" column-reordering-allowed>
         <template class="row-details">
           <div class="details">
-            <p>
+
+            <!-- <p>
               <span>Anschrift</span><br>
               <small>[[columnNames.3]]:[[item.STRASSE]]</small><br>
               <small>[[columnNames.4]]:[[item.PLZ]]</small><br>
               <small>[[columnNames.5]]:[[item.ORT]]</small><br>
-            </p>
-            <iron-collapse-button forbidden$='false' on-opened-changed="isTrue">
-              <div slot="collapse-trigger" class="nav-item parent flex">
-                Versicherungsdaten opened
+            </p> -->
+            <iron-collapse-button forbidden$='false' expand-icon="add-circle-outline" collapse-icon="remove-circle-outline"
+              on-opened-changed="isTrue" class="lastelement flex" opened>
+              <div slot="collapse-trigger" class="flex">
+                <span>Anschrift</span>
+              </div>
+              <div slot="collapse-content">
+                <p>
+
+                  <small>[[columnNames.3]]:[[item.STRASSE]]</small><br>
+                  <small>[[columnNames.4]]:[[item.PLZ]]</small><br>
+                  <small>[[columnNames.5]]:[[item.ORT]]</small><br>
+                </p>
+              </div>
+            </iron-collapse-button>
+            <iron-collapse-button forbidden$='false' expand-icon="add-circle-outline" collapse-icon="remove-circle-outline"
+              on-opened-changed="isTrue" class="lastelement flex">
+              <div slot="collapse-trigger" class="flex">
+                Versicherungsdaten
               </div>
               <div slot="collapse-content">
                 <my-versicherungrechner></my-versicherungrechner>
               </div>
             </iron-collapse-button>
+
           </div>
         </template>
         <!--auto-select wenn man will dass man auch über das anklicken in der zeile nicht nur in der box selektieren kann-->
@@ -407,37 +437,34 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       }
 
-      isTrue() {
-        console.log('isTrue idx nix')
-       // this.$.mygrid.hide().show(0);
-        //document.getElementById('mygrid').notifyResize();
-        // let mg = document.querySelector('iron-collapse');
-        // if(mg){
-        //   console.log('isTrue idx mg found')
-        //   mg.notifyResize();
-        // } else {
-        //   console.log('isTrue idx mg NOT FOUND')
-        // }
-        var element = this.$.mygrid;
-        var n = document.createTextNode(' ');
-        var disp = element.style.display;  // don't worry about previous display style
-
-        element.appendChild(n);
-        element.style.display = 'none';
-
-        setTimeout(function () {
-          element.style.display = disp;
-          n.parentNode.removeChild(n);
-        }, 50);
-
-
-
+      isTrue(e) {
+        if (e.model.detailsOpened) {
+          //noch einmal detailsOpened propagieren, damit der Grid richtig gerendert wird
+          e.model.detailsOpened = false;
+          e.model.detailsOpened = true;
+        }
+        //Extremlösung
+        // var element = this.$.mygrid;
+        // var n = document.createTextNode(' ');
+        // var disp = element.style.display;  // don't worry about previous display style
+        // element.appendChild(n);
+        // element.style.display = 'none';
+        // setTimeout(function () {
+        //   element.style.display = disp;
+        //   n.parentNode.removeChild(n);
+        // }, 50);
       }
 
       _openDetails(e) {
         e.preventDefault();
         e.model.detailsOpened = !e.model.detailsOpened;
         e.stopPropagation();
+        //wichtig weil sonst der scroll balken rechts aktiv bleibt auch nach der Fensterreduzierung 
+        this.$.mygrid.notifyResize()
+      }
+
+      _keepDetailsOpen(e) {
+        e.model.detailsOpened = true;
       }
 
       paechterChanged() {
