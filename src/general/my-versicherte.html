@@ -385,6 +385,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           pageSize: {
             type: Number,
             value: null,
+            notify: true,
             observer: 'changePage'
           },
           _pageStart: {
@@ -661,8 +662,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         super.ready();
         this.$.firstclient.getVersicherteAsJSON().then((resp) => {
           if (resp) {
+
+
             this.splitToObjects(resp);
-            this.set('pageSize', 10);
+
           } else {
             showToast(this, 'Bei der Initialisierung der Seite wurden keine Versichertendaten gefunden', TOAST_TYPE.ERROR);
           }
@@ -714,8 +717,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       splitToObjects(resp) {
         let versichertenData = resp.data;
         let columns = resp.columns;
+
         this.set('columnNames', columns);
+
         this.set('mvdata', versichertenData);
+        this.set('pageSize', 10);
+
+
+
         // this.set('mvdata', versichertenData);
       }
 

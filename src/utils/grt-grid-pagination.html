@@ -174,11 +174,11 @@ Pagination Element for Vaadin-Grid Tables
             }
 
             doPageSizeChanged(newV, oldV) {
-
                 let newValue = (newV) ? parseInt(newV) : 0;
                 let oldValue = (oldV) ? parseInt(oldV) : 0;
                 let anzahlSeiten = Math.ceil(this.datalength / parseInt(this.pageSize));
-                if (newValue && oldValue) {
+                //if (newValue && oldValue) { - machte probleme beim von bis
+                if (newValue) {
                     // nur für gültige Seitengrößen behandeln
                     if ((newValue !== oldValue)) {
                         let sel = Math.floor((this.pstart) / parseInt(this.pageSize));
