@@ -117,7 +117,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           transition: background-color ease-in-out 300ms !important;
         }
       }
-      
     </style>
 
     <my-auth id="auth" user={{user}}></my-auth>
@@ -134,7 +133,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <app-toolbar>
           <paper-icon-button hidden="[[!user.authenticated]]" on-tap="_toggleDrawer" icon="menu"></paper-icon-button>
           <span>vvv@NW12</span>
-          <paper-icon-button hidden="[[!user.authenticated]]" on-tap="_toggleDrawer" icon="menu"></paper-icon-button>
+          <template is="dom-if" if="[[!fullScreen]]">
+            <paper-icon-button hidden="[[!user.authenticated]]" on-tap="_enterFullScreen" icon="fullscreen"></paper-icon-button>
+          </template>
+          <template is="dom-if" if="[[fullScreen]]">
+            <paper-icon-button hidden="[[!user.authenticated]]" on-tap="_exitFullScreen" icon="fullscreen-exit"></paper-icon-button>
+          </template>
           <div class="layout flex"></div>
           <current-time></current-time>
           <paper-icon-button hidden="[[!user.authenticated]]" id="logout" icon="power-settings-new" on-tap="logout"></paper-icon-button>
@@ -186,6 +190,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           currentlyLoading: {
             type: Number,
             value: 0
+          },
+          fullScreen: {
+            type: Boolean,
+            value: false,
+            notify: true
           }
         };
       }
@@ -213,10 +222,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       ready() {
-        this.addEventListener('loading', this._loadingListener);
-        this.addEventListener('loadingFinished', this._loadingFinishedListener);
+        let self = this;
+        self.addEventListener('loading', self._loadingListener);
+        self.addEventListener('loadingFinished', self._loadingFinishedListener);
         super.ready();
-        this.loadBaseConfig();
+        self.loadBaseConfig();
+        window.addEventListener('fullscreenchange', function (e) {
+          let isFull = !!(document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement);
+          self.set('fullScreen', isFull);
+        });
 
         iziToast.settings({
           position: 'bottomLeft',
@@ -250,6 +264,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         } else {
           drawerLayout.drawer.toggle();
         }
+      }
+
+      _enterFullScreen() {
+        // this.set('fullScreen', !this.fullScreen);
+        doFullScreen(true);
+      }
+
+      _exitFullScreen() {
+        // this.set('fullScreen', !this.fullScreen);
+        doFullScreen(false);
       }
 
       _isLoading(activeLoadings) {
