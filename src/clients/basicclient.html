@@ -2,9 +2,9 @@
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 
 <dom-module id="basic-client">
-        <template>
-                <style></style>
-                </template>
+    <template>
+        <style></style>
+    </template>
     <script>
         class BasicClient extends Polymer.Element {
             static get is() { return 'basic-client'; }
@@ -36,8 +36,10 @@
 
             _vconfigChanged(newV, oldV) {
                 if (newV) {
-                    console.log('event config wird gefeuert')// + JSON.stringify(newV))
-                    this.dispatchEvent(new CustomEvent('vconfig-changed', {bubbles: true, composed: true, detail: newV }));
+                    //debugger;
+                    console.log('event vconfigchanged wird gefeuert')// + JSON.stringify(newV))
+                    //this.dispatchEvent(new CustomEvent('vconfigchanged', { bubbles: true, composed: true, detail: newV }));
+                    this.eventDispatch('vconfigchanged', newV)
                 }
             }
 
@@ -45,6 +47,21 @@
             ready() {
                 super.ready();
                 this._setActualLocation();
+            }
+
+            connectedCallback() {
+                super.connectedCallback();
+                this.eventDispatch();
+                //this.$.bclient.addEventListener('vconfigchanged', (e) => this._boundListener(e));
+            }
+            
+            eventDispatch(eventName, eventDetail){
+                this.dispatchEvent(new CustomEvent(eventName, { bubbles: true, composed: true, detail: eventDetail }));
+            }
+
+            disconnectedCallback() {
+                super.disconnectedCallback();
+                //this.$.bclient.removeEventListener('vconfigchanged', (e) => this._boundListener(e));
             }
 
             _setActualLocation() {
@@ -78,20 +95,19 @@
                     } else {
                         return response.json();
                     }
+                }).then((data) => {
+                    //console.log('basicclient versicherungconfig wird gesetzt auf' + JSON.stringify(data))
+                    self.set('versicherungconfig', data);
+                    //console.log('basicclient versicherungconfig wurde gesetzt auf' + JSON.stringify(this.versicherungconfig))
+                    return Promise.resolve(data);
                 })
-                    .then((data) => {
-                        console.log('basicclient versicherungconfig wird gesetzt auf' + JSON.stringify(data))
-                        self.set('versicherungconfig', data);
-                        console.log('basicclient versicherungconfig wurde gesetzt auf' + JSON.stringify(this.versicherungconfig))
-                        return Promise.resolve(data);
-                    })
                     .catch((err) => {
                         console.log('getVersicherungconfig die Anfrage an api/versicherungconfig war nicht erfolgreich' + JSON.stringify(error))
                     });
             }
 
             postVersicherungconfig(theConfig) {
-                let tosend=JSON.stringify(theConfig);
+                let tosend = JSON.stringify(theConfig);
                 console.log('theconfigtosave' + JSON.stringify(theConfig))
                 let self = this;
                 let sourceURL = self._getSourceURL(self.actualLocation, self.URLS.VERSICHERUNG_CONFIG.path, self.URLS.VERSICHERUNG_CONFIG.port);
@@ -112,9 +128,14 @@
                 let myRequest = new Request(sourceURL, myInit);
 
                 return fetch(myRequest).then((response) => {
-                    console.log("getVersicherungconfig antwort" + JSON.stringify(response));
-                    //this.dispatchEvent(new CustomEvent('versicherungconfigchanged', { bubbles: true, composed: true }));
+                    console.log("postVersicherungconfig antwort" + JSON.stringify(response));
+                    // this.dispatchEvent(new CustomEvent('vconfigchanged', { bubbles: true, composed: true }));
                     return response.json();
+                }).then((data) => {
+                    console.log("postVersicherungconfig antwort" + JSON.stringify(data));
+                    self.set('versicherungconfig', data);
+
+                    return Promise.resolve(data);
                 }).catch(() => {
                     console.log('postVersicherungconfig die Anfrage an api/versicherungconfig war nicht erfolgreich')
                 });

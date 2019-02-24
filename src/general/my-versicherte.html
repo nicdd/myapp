@@ -55,6 +55,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../../bower_components/iron-collapse-button/iron-collapse-button.html">
 <link rel="import" href="../../bower_components/iron-icons/editor-icons.html">
 <link rel="import" href="../clients/firstclient.html">
+<link rel="import" href="../clients/basicclient.html">
 <link rel="import" href="../shared-styles.html">
 <link rel="import" href="../utils/grt-grid-pagination.html">
 <link rel="import" href="../utils/create-versicherter-antrag.html">
@@ -193,6 +194,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </style>
 
     <first-client id="firstclient"></first-client>
+    <basic-client id="bclient"></basic-client>
     <create-versicherter-antrag id="adddialog" cancel-name="Abbrechen" confirmation-name="Hinzufügen"></create-versicherter-antrag>
     <grt-dialog id="grtinfodialog" dialog-type="info"></grt-dialog>
     <export-chooser id="exportdialog" dialog-type="info" confirmation-name="Schließen" on-export-versicherte="exportVersicherte"></export-chooser>
@@ -225,6 +227,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               <small>[[columnNames.4]]:[[item.PLZ]]</small><br>
               <small>[[columnNames.5]]:[[item.ORT]]</small><br>
             </p> -->
+
             <iron-collapse-button forbidden$='false' expand-icon="add-circle-outline" collapse-icon="remove-circle-outline"
               on-opened-changed="isTrue" class="lastelement flex" opened>
               <div slot="collapse-trigger" class="flex">
@@ -241,12 +244,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             </iron-collapse-button>
             <iron-collapse-button forbidden$='false' expand-icon="add-circle-outline" collapse-icon="remove-circle-outline"
               on-opened-changed="isTrue" class="lastelement flex">
-              <div slot="collapse-trigger" class="flex">
-                Versicherungsdaten
-              </div>
-              <div slot="collapse-content">
-                <my-versicherungrechner></my-versicherungrechner>
-              </div>
+              <template is="dom-if" if="[[detailsOpened]]">
+                <div slot="collapse-trigger" class="flex">
+                  Versicherungsdaten
+                </div>
+                <div slot="collapse-content">
+                  <my-versicherungrechner id="vrd[[index]]" vcs="[[vconfig]]" saved-data="[[item]]"></my-versicherungrechner>
+                </div>
+              </template>
             </iron-collapse-button>
 
           </div>
@@ -355,7 +360,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <template>
             <button id="bt[[item.GaNr]]" on-click="_openDetails" class="endpagebutton">
               <slot>
-                <iron-icon id="cr[[item.GaNr]]" icon="create" slot="item-icon" on-click="_openDetails"></iron-icon>
+                <iron-icon id="cr[[item.GaNr]]" icon="[[getIcon(detailsOpened)]]" slot="item-icon" on-click="_openDetails"></iron-icon>
               </slot>
             </button>
             <button id="bt[[item.GaNr]]" on-click="_removeItem" class="endpagebutton" disabled="[[detailsOpened]]">
@@ -434,9 +439,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           dtls: {
             type: Array,
             value: []
+          }, 
+
+          vconfig : {
+            type: Object,
+            value: null,
+            notify: true
           }
         }
       }
+
+
 
       isTrue(e) {
         if (e.model.detailsOpened) {
@@ -458,14 +471,32 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _openDetails(e) {
         e.preventDefault();
-        e.model.detailsOpened = !e.model.detailsOpened;
         e.stopPropagation();
+        // if (e.model && e.model.detailsOpened) {
+        //   console.log('e.target.id' + e.target.id + ' justindex' + e.target.id.substring(2))
+        //   let mslotId = '#vrd' + 3;
+        //   //this.$.mslotId.disconnectedCallback();
+        //   let docgefunden = this.shadowRoot.querySelector(mslotId);
+        //   if (docgefunden) {
+        //     console.log('e.target.id ja')
+        //   } else {
+        //     console.log('e.target.id nein')
+        //   }
+        // }
+        e.model.detailsOpened = !e.model.detailsOpened;
+
         //wichtig weil sonst der scroll balken rechts aktiv bleibt auch nach der Fensterreduzierung 
         this.$.mygrid.notifyResize()
       }
 
       _keepDetailsOpen(e) {
         e.model.detailsOpened = true;
+      }
+
+      getIcon(detailsOpened) {
+        if (detailsOpened) {
+          return 'close';
+        } else return 'create';
       }
 
       paechterChanged() {
@@ -662,10 +693,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         super.ready();
         this.$.firstclient.getVersicherteAsJSON().then((resp) => {
           if (resp) {
-
-
             this.splitToObjects(resp);
-
           } else {
             showToast(this, 'Bei der Initialisierung der Seite wurden keine Versichertendaten gefunden', TOAST_TYPE.ERROR);
           }
@@ -681,10 +709,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         //   console.log("Fehler beim importVersicherte fuer versicherte  kam:" + JSON.stringify(err))
         // })
 
-
-        this.$.adddialog.addEventListener('addversicherter', (e) => {
-          console.log('adddialog gedruckt' + JSON.stringify(e.detail))
-          this.splice('mvdata', this._pageStart, 0, e.detail);
+        let self = this;
+        this.$.adddialog.addEventListener('add-v', (e) => {
+          console.debug('adddialog gedruckt' + JSON.stringify(e.detail))
+          console.debug('mvdataadd davor' + JSON.stringify(self.mvdata))
+          self.splice('mvdata', self._pageStart, 0, e.detail);
+          console.debug('mvdataadd danach' + JSON.stringify(self.mvdata))
+          //e.stopPropagation()
           //this.push('mvdata', e.detail);
         });
 
@@ -704,6 +735,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           //this.$.mygrid.selectedItems = item ? [item] : [];
           console.log('active item' + JSON.stringify(event.target.activeItem))
         });
+
+        window.addEventListener('vconfigchanged', (e) => {
+          console.log('vconfigchanged in versicherte' + JSON.stringify(e.detail))
+                    this.set('vconfig', e.detail);
+        })
       }
 
       doOnSelection(e) {

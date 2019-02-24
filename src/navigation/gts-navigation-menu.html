@@ -101,7 +101,7 @@
             .erstekategorie .iron-selected {
                 font-weight: bold;
                 background-color: #eeeeee;
-                color: var(--app-primary-color);
+                color: var(--app-primary-text-color);
             }
 
             .zweitekategorie {
@@ -113,7 +113,7 @@
             .zweitekategorie .iron-selected {
                 font-weight: bold;
                 background-color: #eeeeee;
-                color: var(--app-primary-color);
+                color: var(--app-primary-text-color);
             }
 
             .iron-selected {
@@ -134,28 +134,35 @@
                 --paper-item-focused-before: {
                     opacity: 0;
                 }
+
+                /* --paper-item-focused:{
+                    font-weight: bold;
+                    color: var(--app-primary-text-color);
+                    background-color: #eeeeee;
+
+                } */
             }
 
             .nav-item.child:hover {
                 transform: scale(1.08);
             }
-
-            
         </style>
 
         <div class="drawer-content">
             <div class="nav">
-                <iron-selector selected="[[page]]" attr-for-selected="name">
+                <iron-selector attr-for-selected="name">
                     <paper-item on-click="_navigateEvent" name="default" class="nav-item parent haupt" href="#[[rootPath]]default">Home</paper-item>
                     <iron-collapse-button class="erstekategorie" forbidden$='false' closed>
                         <div slot="collapse-trigger" class="nav-item parent flex">
                             Verein
                         </div>
                         <div slot="collapse-content">
-                            <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list">
+                            <iron-selector attr-for-selected="name" class="drawer-list">
                                 <paper-item on-click="_navigateEvent" name="paechter" class="nav-item child" href="#[[rootPath]]paechter">Pächter</paper-item>
-                                <paper-item on-click="_navigateEvent" name="foerdermitglieder" class="nav-item child" href="#[[rootPath]]foerdermitglieder">Fördermitglieder</paper-item>
-                                <paper-item on-click="_navigateEvent" name="passivemitglieder" class="nav-item child" href="#[[rootPath]]passivemitglieder">Passive Mitglieder</paper-item>
+                                <paper-item on-click="_navigateEvent" name="foerdermitglieder" class="nav-item child"
+                                    href="#[[rootPath]]foerdermitglieder">Fördermitglieder</paper-item>
+                                <paper-item on-click="_navigateEvent" name="passivemitglieder" class="nav-item child"
+                                    href="#[[rootPath]]passivemitglieder">Passive Mitglieder</paper-item>
                             </iron-selector>
                         </div>
                     </iron-collapse-button>
@@ -165,7 +172,7 @@
                             Versicherung
                         </div>
                         <div slot="collapse-content">
-                            <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list">
+                            <iron-selector attr-for-selected="name" class="drawer-list">
                                 <paper-item on-click="_navigateEvent" name="versicherte" class="nav-item child" href="#[[rootPath]]versicherte">Versicherte</paper-item>
                                 <paper-item on-click="_navigateEvent" name="versicherungkonfig" class="nav-item child"
                                     href="#[[rootPath]]versicherungkonfig">Konfiguration</paper-item>
@@ -181,7 +188,7 @@
                             Verwaltung
                         </div>
                         <div slot="collapse-content">
-                            <iron-selector selected="[[page]]" attr-for-selected="name">
+                            <iron-selector attr-for-selected="name">
 
 
                                 <paper-icon-item on-click="_navigateEvent" name="versicherte" class="nav-item child"
@@ -218,7 +225,7 @@
                             Administrator
                         </div>
                         <div slot="collapse-content">
-                            <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list">
+                            <iron-selector attr-for-selected="name" class="drawer-list">
                                 <paper-item on-click="_navigateEvent" name="versicherungsdaten" class="nav-item child"
                                     href="#[[rootPath]]versicherte-imports">Versicherungsdaten</paper-item>
                                 <paper-item on-click="_navigateEvent" name="paechterdaten" class="nav-item child" href="#[[rootPath]]paechter-imports">Pächterdaten</paper-item>
@@ -249,6 +256,13 @@
             }
 
             _navigateEvent(event) {
+                let irons = this.shadowRoot.querySelectorAll('iron-selector.drawer-list');
+                let currentSelectedName = event.currentTarget.getAttribute('name');
+                irons.forEach((iselector) => {
+                    if (iselector.__data.selected !== currentSelectedName) {
+                        iselector.select(null)
+                    }
+                })
                 this._navigate(event.currentTarget.href);
             }
 

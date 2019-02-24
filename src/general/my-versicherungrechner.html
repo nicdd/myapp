@@ -282,8 +282,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     vconfig: {
                         type: Object,
                         value: null,
-                        notify: true,
-                        observer: '_onconfigChange'
+                        notify: true
                     },
 
                     vc: {
@@ -296,22 +295,100 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         value: null,
                         notify: true
                     },
-                    etwasanderes: {
+                    
+                    savedData: {
                         type: Object,
-                        value: "aaa"
-                    },
-                    semaphore: Boolean
+                        value: null
+                    }
                 }
             }
-            getstritem(item){
-                return JSON.stringify(item)
+
+            static get observers() {
+                return [
+                    '_transferToVC(vcs, savedData)'
+                ];
             }
 
             ready() {
                 super.ready();
-                window.addEventListener('vconfig-changed', (e) => {
-                    this._setVersicherungKonfig(e.detail);
+                if (!this.vcs) {
+                    this.loadVersicherungKonfig();
+                }
+            }
+
+            connectedCallback() {
+                super.connectedCallback();
+                let idPrefix = this.id.substring(0, 3);
+                //Für die grt-versicherungrechner unter vaadin-grid - OpenDetails keine Listeners setzen,
+                // weil sonst alle geöffneten grt-versicherungrechner, werden darauf lauschen
+                if (idPrefix !== 'vrd')
+                    window.addEventListener('vconfigchanged', this._resetVersicherungKonfig.bind(this));
+            }
+
+            disconnectedCallback() {
+                super.disconnectedCallback();
+                let idPrefix = this.id.substring(0, 3);
+                if (idPrefix !== 'vrd')
+                    window.removeEventListener('vconfigchanged', this._resetVersicherungKonfig.bind(this));
+            }
+
+            loadVersicherungKonfig() {
+                this.$.bclient.getVersicherungconfig().then((vconf) => {
+                    this._setVersicherungKonfig(vconf);
                 })
+            }
+
+            _resetVersicherungKonfig(e) {
+                this._setVersicherungKonfig(e.detail);
+            }
+
+            _transferToVC(aktVCS, data) {
+                if (aktVCS && data) {
+                    let tmpVC = JSON.parse(JSON.stringify(aktVCS));
+
+                    if (tmpVC && Object.keys(tmpVC).length) {
+
+                        let hoeherGBV = parseInt(data.GBV) - parseInt(aktVCS.GBV.grundbeitrag.versicherteSumme);
+                        tmpVC.GBV.schritt.versicherteSumme = hoeherGBV;
+                        tmpVC.GBV.schritt.beitrag = parseInt(aktVCS.GBV.schritt.beitrag) * hoeherGBV / parseInt(aktVCS.GBV.schritt.versicherteSumme);
+
+                        tmpVC.FED.schritt.versicherteSumme = (parseInt(data.HoeV) || 0);
+                        tmpVC.FED.schritt.beitrag = parseInt(aktVCS.FED.schritt.beitrag) * (parseInt(data.HoeV) || 0) / parseInt(aktVCS.FED.schritt.versicherteSumme);
+                        //Geräteschuppen
+                        tmpVC.FED.zusatzversicherungen[0].schritt.versicherteSumme = (parseInt(data.SA) || 0);
+                        tmpVC.FED.zusatzversicherungen[0].schritt.beitrag = parseInt(aktVCS.FED.zusatzversicherungen[0].schritt.beitrag) * (parseInt(data.SA) || 0) / parseInt(aktVCS.FED.zusatzversicherungen[0].schritt.versicherteSumme);
+                        //Strommagregate
+                        tmpVC.FED.zusatzversicherungen[1].schritt.versicherteSumme = (parseInt(data.A73) || 0);
+                        tmpVC.FED.zusatzversicherungen[1].schritt.beitrag = parseInt(aktVCS.FED.zusatzversicherungen[1].schritt.beitrag) * (parseInt(data.A73) || 0) / parseInt(aktVCS.FED.zusatzversicherungen[1].schritt.versicherteSumme);
+                        //Solaranlage
+                        tmpVC.FED.zusatzversicherungen[2].schritt.versicherteSumme = (parseInt(data.Solar) || 0);
+                        tmpVC.FED.zusatzversicherungen[2].schritt.beitrag = parseInt(aktVCS.FED.zusatzversicherungen[2].schritt.beitrag) * (parseInt(data.Solar) || 0) / parseInt(aktVCS.FED.zusatzversicherungen[2].schritt.versicherteSumme);
+
+                        tmpVC.UV.grundbeitrag.beitrag = (parseInt(data.UV) || 0);
+
+                        this.set('vc', tmpVC);
+                    }
+                }
+            }
+
+            _setVersicherungKonfig(vconfig) {
+                let tmpVC = JSON.parse(JSON.stringify(vconfig));
+                if (tmpVC && Object.keys(tmpVC).length) {
+                    tmpVC.GBV.schritt.beitrag = 0;
+                    tmpVC.GBV.schritt.versicherteSumme = 0;
+                    tmpVC.FED.schritt.beitrag = 0;
+                    tmpVC.FED.schritt.versicherteSumme = 0;
+                    tmpVC.FED.zusatzversicherungen[0].schritt.beitrag = 0;
+                    tmpVC.FED.zusatzversicherungen[0].schritt.versicherteSumme = 0;
+                    tmpVC.FED.zusatzversicherungen[1].schritt.beitrag = 0;
+                    tmpVC.FED.zusatzversicherungen[1].schritt.versicherteSumme = 0;
+                    tmpVC.FED.zusatzversicherungen[2].schritt.beitrag = 0;
+                    tmpVC.FED.zusatzversicherungen[2].schritt.versicherteSumme = 0;
+                    tmpVC.UV.grundbeitrag.beitrag = 0;
+                    this.set('vc', tmpVC);
+                }
+                if (vconfig && Object.keys(vconfig).length)
+                    this.set('vcs', JSON.parse(JSON.stringify(vconfig)));
             }
 
             /**
@@ -419,41 +496,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.setZUSSchrittEURO(e.target.value, index);
             }
 
-
-
-
-            _setVersicherungKonfig(vconfig) {
-                console.log('_setVersicherungKonfig called' + JSON.stringify(vconfig))
-                let berechnungVC = JSON.parse(JSON.stringify(vconfig));
-                // berechnungVC.GBV.schritt.beitrag = 0;
-                // berechnungVC.FED.schritt.beitrag = 0;
-                // berechnungVC.FED.zusatzversicherungen[0].schritt.beitrag = 0;
-                // berechnungVC.FED.zusatzversicherungen[1].schritt.beitrag = 0;
-                // berechnungVC.FED.zusatzversicherungen[2].schritt.beitrag = 0;
-                // berechnungVC.UV.grundbeitrag.beitrag = 0;
-
-                this.set('vc', berechnungVC);
-                this.set('vc.GBV.schritt.beitrag', 0);
-                this.set('vc.GBV.schritt.versicherteSumme', 0);
-                this.set('vc.FED.schritt.beitrag', 0);
-                this.set('vc.FED.schritt.versicherteSumme', 0);
-                this.set('vc.FED.zusatzversicherungen.0.schritt.beitrag', 0);
-                this.set('vc.FED.zusatzversicherungen.0.schritt.versicherteSumme', 0);
-                this.set('vc.FED.zusatzversicherungen.1.schritt.beitrag', 0);
-                this.set('vc.FED.zusatzversicherungen.1.schritt.versicherteSumme', 0);
-                this.set('vc.FED.zusatzversicherungen.2.schritt.beitrag', 0);
-                this.set('vc.FED.zusatzversicherungen.2.schritt.versicherteSumme', 0);
-                this.set('vc.UV.grundbeitrag.beitrag', 0);
-                this.set('vcs', JSON.parse(JSON.stringify(vconfig)));
-            }
-
-            _onconfigChange() {
-                this._setVersicherungKonfig(this.vconfig);
-                // this.set('vc', this.vconfig);
-                // this.set('vcs', JSON.parse(JSON.stringify(this.vconfig)));
-
-            }
-
             getStepForFEDZusatzVS(i) {
                 return (this.vcs.FED.zusatzversicherungen[i].schritt.versicherteSumme) || 1;
             }
@@ -476,15 +518,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
                     return res;
                 }
-
             }
+
             getGesamtGBVEUR(a, b) {
                 if (this.vc) {
                     let res = parseInt(a) + parseInt(b);
                     this.set('gesamtGBVEUR', res);
                     return res;
                 }
-
             }
 
             getGesamtFEDVS(a, b, changed) {
@@ -518,21 +559,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             getGesamtKOSTEN(gesamtGBVEUR, gesamtFEDEUR, uvBeitrag) {
-                if(this.vc){
+                if (this.vc) {
                     let gbeitrag = parseInt(this.gesamtGBVEUR) + parseInt(this.gesamtFEDEUR) + parseInt(this.vc.UV.grundbeitrag.beitrag);
-                return gbeitrag;
-                } 
-                
+                    return gbeitrag;
+                }
             }
-
-            //   _saveVersicherungKonfiguration(){
-            //     this.$.bclient.postVersicherungconfig(this.vc).then(()=>{
-            //       this.showToast(this, 'Versicherungskonfiguration erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
-            //     }).catch(()=>{
-            //       this.showToast(this, 'Fehler beim Speichern der Versicherungskonfiguration', TOAST_TYPE.ERROR);
-            //     })
-
-            //   }
 
         }
 

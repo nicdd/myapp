@@ -88,7 +88,8 @@ Pagination Element for Vaadin-Grid Tables
                         strasse="{{nv.STRASSE}}" hausnr="{{nv.HAUSNR}}" plz="{{nv.PLZ}}" ort="{{nv.ORT}}">
                         <h4 slot="title">Versicherungsnehmer</h4>
                     </grt-gartler>
-                    <my-versicherungrechner id="versicherungrechner" vconfig="[[vconfig]]" vc="{{vdata}}">
+                    <my-versicherungrechner id="versicherungrechner" vconfig="[[vconfig]]" vc="{{vdata}}">  
+                    <!-- vconfig="[[vconfig]]" vc="{{vdata}}"> -->
                         <h4 slot="title">Daten zur Versicherung</h4>
                     </my-versicherungrechner>
                 </div>
@@ -206,6 +207,7 @@ Pagination Element for Vaadin-Grid Tables
             }
 
             showDialog(versicherter) {
+                
                 this.$.bclient.getVersicherungconfig().then((vconf) => {
                     this.set('vconfig', vconf)
                 }).finally(() => {
@@ -266,7 +268,7 @@ Pagination Element for Vaadin-Grid Tables
 
             _doAdd() {
                 this._vdataChanged();
-                this.dispatchEvent(new CustomEvent('addversicherter', { detail: this.mergeStrasseWithHausnr(this.nv) }));
+                this.dispatchEvent(new CustomEvent('add-v', { detail: this.mergeStrasseWithHausnr(this.nv)}));
                 this._closeDialog();
             }
 
@@ -281,7 +283,7 @@ Pagination Element for Vaadin-Grid Tables
                 let usr = document.querySelector('my-app').getAttribute('user')
                 usr = JSON.parse(usr);
                 nv["created"] = { user: usr.name, datum: moment().format('YYYYMMDD_HHmm'), source: 'v-antrag' }
-                return nv;
+                return JSON.parse(JSON.stringify(nv));
             }
 
             getCancelName(cancelName) {
