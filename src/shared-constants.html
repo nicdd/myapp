@@ -1,0 +1,31 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<!-- shared constants for all views -->
+<dom-module id="shared-constants">
+    <template>
+
+    </template>
+    <script>
+        class SharedConstants extends Polymer.Element {
+            static get is() { return 'shared-constants'; }
+
+            static get properties() {
+                return {
+                    TOAST_TYPE : {
+                        type: Object,
+                        value: {
+                            SUCCESS: "success",
+                            WARN: "warn",
+                            ERROR: "error",
+                            INPUT: "input"
+                        }
+                    }
+                }
+            }
+
+        }
+
+        window.customElements.define(SharedConstants.is, SharedConstants);
+    </script>
+</dom-module>

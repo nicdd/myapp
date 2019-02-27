@@ -67,8 +67,11 @@
 
                 return fetch(request)
                     .then(this._responseHandler)
-                    .then(response => {
+                    .then((response) => {
+                        
                         return response.json();
+                    }).then((theuser)=>{
+                        return theuser;
                     })
                     .catch(error => {
                         return Promise.reject(error);

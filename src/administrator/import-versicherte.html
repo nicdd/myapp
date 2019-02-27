@@ -139,7 +139,7 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
           .then(function (res) { return res.arrayBuffer(); })
           .then(function (buf) { return new File([buf], filename, { type: mimeType }); })
           .catch((err)=>{
-            this.showToast(self, 'Fehler bei der Importierung der KVD-Daten aus der lokalen Datei', TOAST_TYPE.ERROR);
+            showToast(self, 'Fehler bei der Importierung der KVD-Daten aus der lokalen Datei', TOAST_TYPE.ERROR);
           })
         );
       }
@@ -197,7 +197,7 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
             this.saveToDB(dataAndColumns);
             showToast(this, 'Die KVD-Daten wurden erfolgreich vom Server importiert', TOAST_TYPE.SUCCESS);
           } else {
-            this.showToast(this, 'Bei der Importierung der KVD-Daten wurden keine Versichertendaten gefunden', TOAST_TYPE.ERROR, undefined);
+            showToast(this, 'Bei der Importierung der KVD-Daten wurden keine Versichertendaten gefunden', TOAST_TYPE.ERROR);
           }
         }).catch((err) => {
           showToast(this, 'Fehler bei der Importierung der KVD-Daten vom Server', TOAST_TYPE.ERROR);
@@ -214,9 +214,9 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
             this.mapToJSON(localVersicherteFromCSVAsArray);
             let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
             this.saveToDB(dataAndColumns);
-            showToast(this, 'Die KVD-Daten wurden aus der lokalen Datei erfolgreich importiert', TOAST_TYPE.SUCCESS, undefined);
+            showToast(this, 'Die KVD-Daten wurden aus der lokalen Datei erfolgreich importiert', TOAST_TYPE.SUCCESS);
           } else {
-            showToast(this, 'Bei der Importierung der KVD-Daten wurden keine Versichertendaten gefunden', TOAST_TYPE.ERROR, undefined);
+            showToast(this, 'Bei der Importierung der KVD-Daten wurden keine Versichertendaten gefunden', TOAST_TYPE.ERROR);
           }
       }
 

@@ -64,6 +64,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <div class="mcard layout vertical">
             <p class="cardtitle">
                 <slot name="title"></slot>
+
+                <template is="dom-if" if="[[savedData]]">
+                    <button on-click="_saveItemData" disabled="[[!changedSavedData]]">
+                        <iron-icon icon="save" slot="item-icon" on-click="_saveItemData"></iron-icon>
+                    </button>
+                </template>
             </p>
             <div class="mcard layout vertical">
                 <div class="cardcontent">
@@ -92,7 +98,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                         value="[[vc.GBV.schritt.versicherteSumme]]"></paper-input>
                                     <!-- <paper-input always-float-label label="Beitrag" type="number" value="[[getGBVSchrittEURO(vc.GBV.schritt.versicherteSumme, vcs.GBV.schritt.beitrag)]]"></paper-input> -->
                                     <paper-input class="labelgroup" min="0" always-float-label label="Beitrag" type="number"
-                                        on-change="_gbvEuroChanged" value="[[vc.GBV.schritt.beitrag]]"></paper-input>
+                                        step="[[vcs.GBV.schritt.beitrag]]" on-change="_gbvEuroChanged" value="[[vc.GBV.schritt.beitrag]]"></paper-input>
                                 </div>
                             </div>
                         </div>
@@ -155,18 +161,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
                             <div class="layout vertical ">
                                 <h5>Zusatzversicherungen: Merkblatt Punkt 7</h5>
-                                <template is="dom-repeat" items="{{vc.FED.zusatzversicherungen}}" index-as="i">
+                                <template is="dom-repeat" items="[[vc.FED.zusatzversicherungen]]" index-as="i">
                                     <div class="layout vertical">
                                         <label>[[item.bezeichnung]]</label>
                                         <div class="layout horizontal">
                                             <paper-input class="labelgroup" min="0" id="vs[[i]]" always-float-label
                                                 label="Erhöhung (EURO)" type="number" step="[[getStepForFEDZusatzVS(i)]]"
-                                                on-change="_zusVSChanged" value="{{item.schritt.versicherteSumme::change}}"
-                                                max="[[item.maximumVersicherungssumme]]"></paper-input>
+                                                on-change="_zusVSChanged" value="[[item.schritt.versicherteSumme]]" max="[[item.maximumVersicherungssumme]]"></paper-input>
                                             <paper-input class="labelgroup" min="0" id="eu[[i]]" always-float-label
                                                 label="Beitrag" type="number" step="[[getStepForFEDZusatzEU(i)]]"
-                                                on-change="_zusEuroChanged" value="{{item.schritt.beitrag::change}}"
-                                                max="[[getMaxZusatzEUR(i)]]"></paper-input>
+                                                on-change="_zusEuroChanged" value="[[item.schritt.beitrag]]" max="[[getMaxZusatzEUR(i)]]"></paper-input>
 
                                         </div>
                                     </div>
@@ -206,7 +210,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         <h5>Versicherungsbeitrag</h5>
                         <div class="layout horizontal">
                             <paper-input class="labelgroup" min="0" always-float-label label="Beitrag" type="number"
-                                step="[[vcs.UV.grundbeitrag.beitrag]]" max="[[vcs.UV.grundbeitrag.beitrag]]" value="{{vc.UV.grundbeitrag.beitrag::change}}"></paper-input>
+                                step="[[vcs.UV.grundbeitrag.beitrag]]" max="[[vcs.UV.grundbeitrag.beitrag]]" on-change="uvChanged"
+                                value="[[vc.UV.grundbeitrag.beitrag]]"></paper-input>
                         </div>
 
                     </div>
@@ -295,17 +300,28 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         value: null,
                         notify: true
                     },
-                    
+
                     savedData: {
                         type: Object,
                         value: null
+                    },
+
+                    originaldata: {
+                        type: Object,
+                        value: null
+                    },
+
+                    changedSavedData: {
+                        type: Boolean,
+                        value: false,
+                        notify: true
                     }
                 }
             }
 
             static get observers() {
                 return [
-                    '_transferToVC(vcs, savedData)'
+                    '_transferToVC(vcs, savedData)', 'versicherungsdatenChanged(vc.*)'
                 ];
             }
 
@@ -315,6 +331,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     this.loadVersicherungKonfig();
                 }
             }
+
+            versicherungsdatenChanged(changed) {
+                // den Vergleich nur bei Rechner-Instanzen anwenden die vorgespeicherte Daten laden
+                // (Property savedData wird angewandt)
+                if (this.savedData && this.vc && this.originaldata) {
+                    let thesame = this.compareVCwithOriginal(this.vc, this.originaldata);
+                    this.set('changedSavedData', !thesame);
+                } else {
+                    this.set('changedSavedData', false);
+                }
+            }
+
+            compareVCwithOriginal(nowVC, origVC) {
+                console.log('thesame nowVC' + JSON.stringify(nowVC))
+                console.log('thesame origVC' + JSON.stringify(origVC))
+                return _.isEqual(nowVC, origVC);
+            }
+
 
             connectedCallback() {
                 super.connectedCallback();
@@ -342,8 +376,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this._setVersicherungKonfig(e.detail);
             }
 
-            _transferToVC(aktVCS, data) {
-                if (aktVCS && data) {
+            _transferToVC(aktVCS, savedData) {
+                if (aktVCS && savedData) {
+                    let data = JSON.parse(JSON.stringify(savedData));
                     let tmpVC = JSON.parse(JSON.stringify(aktVCS));
 
                     if (tmpVC && Object.keys(tmpVC).length) {
@@ -367,6 +402,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         tmpVC.UV.grundbeitrag.beitrag = (parseInt(data.UV) || 0);
 
                         this.set('vc', tmpVC);
+                        this.set('originaldata', JSON.parse(JSON.stringify(tmpVC)))
                     }
                 }
             }
@@ -395,8 +431,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             * GBV Beitragsanpassung
             */
             setGBVSchrittVS(euro) {
-                if (euro && this.vcs) {
-                    let ergebnis = (parseInt(this.vcs.GBV.schritt.versicherteSumme) * parseInt(euro)) / parseInt(this.vcs.GBV.schritt.beitrag);
+                console.log('CALL setGBVSchrittVS')
+                if ((euro || euro === 0) && this.vcs) {
+                    let ergebnis = (parseInt(this.vcs.GBV.schritt.versicherteSumme) * euro) / parseInt(this.vcs.GBV.schritt.beitrag);
                     if (parseInt(this.vc.GBV.schritt.versicherteSumme) !== ergebnis) {
                         this.set('vc.GBV.schritt.versicherteSumme', ergebnis);
                     }
@@ -404,8 +441,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             setGBVSchrittEURO(versSumme) {
+                console.log('CALL setGBVSchrittEURO')
                 if (this.vcs) {
-                    let ergebnis = (parseInt(this.vc.GBV.schritt.versicherteSumme) / parseInt(this.vcs.GBV.schritt.versicherteSumme)) * parseInt(this.vcs.GBV.schritt.beitrag);
+                    let ergebnis = (versSumme / parseInt(this.vcs.GBV.schritt.versicherteSumme)) * parseInt(this.vcs.GBV.schritt.beitrag);
                     if (parseInt(this.vc.GBV.schritt.beitrag) !== ergebnis) {
                         this.set('vc.GBV.schritt.beitrag', ergebnis);
                     }
@@ -413,21 +451,28 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             _gbvEuroChanged(e) {
-                this.set('vc.GBV.schritt.beitrag', e.target.value);
-                this.setGBVSchrittVS(e.target.value);
+                e.stopPropagation();
+                console.log('CALL _gbvEuroChanged')
+                let nv = (parseInt(e.target.value) || 0);
+                this.set('vc.GBV.schritt.beitrag', nv);
+                this.setGBVSchrittVS(nv);
             }
 
             _gbvVSChanged(e) {
-                this.set('vc.GBV.schritt.versicherteSumme', e.target.value);
-                this.setGBVSchrittEURO(e.target.value);
+                e.stopPropagation();
+                console.log('CALL _gbvVSChanged')
+                let nv = (parseInt(e.target.value) || 0);
+                this.set('vc.GBV.schritt.versicherteSumme', nv);
+                this.setGBVSchrittEURO(nv);
             }
 
             /**
             * FED Höherversicherung
             */
             setFEDSchrittVS(euro) {
-                if (euro && this.vcs) {
-                    let ergebnis = (parseInt(this.vcs.FED.schritt.versicherteSumme) * parseInt(euro)) / parseInt(this.vcs.FED.schritt.beitrag);
+                console.log('CALL setFEDSchrittVS')
+                if ((euro || euro === 0) && this.vcs) {
+                    let ergebnis = (parseInt(this.vcs.FED.schritt.versicherteSumme) * euro) / parseInt(this.vcs.FED.schritt.beitrag);
                     if (parseInt(this.vc.FED.schritt.versicherteSumme) !== ergebnis) {
                         this.set('vc.FED.schritt.versicherteSumme', ergebnis);
                     }
@@ -435,8 +480,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             setFEDSchrittEURO(versSumme) {
+                console.log('CALL setFEDSchrittEURO')
                 if (this.vcs) {
-                    let ergebnis = (parseInt(this.vc.FED.schritt.versicherteSumme) / parseInt(this.vcs.FED.schritt.versicherteSumme)) * parseInt(this.vcs.FED.schritt.beitrag);
+                    let ergebnis = (versSumme / parseInt(this.vcs.FED.schritt.versicherteSumme)) * parseInt(this.vcs.FED.schritt.beitrag);
                     if (parseInt(this.vc.FED.schritt.beitrag) !== ergebnis) {
                         this.set('vc.FED.schritt.beitrag', ergebnis);
                     }
@@ -444,21 +490,28 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             _fedEuroChanged(e) {
-                this.set('vc.FED.schritt.beitrag', e.target.value);
-                this.setFEDSchrittVS(e.target.value);
+                e.stopPropagation();
+                console.log('CALL _fedEuroChanged')
+                let nv = (parseInt(e.target.value) || 0);
+                this.set('vc.FED.schritt.beitrag', nv);
+                this.setFEDSchrittVS(nv);
             }
 
             _fedVSChanged(e) {
-                this.set('vc.FED.schritt.versicherteSumme', e.target.value);
-                this.setFEDSchrittEURO(e.target.value);
+                e.stopPropagation();
+                console.log('CALL _fedVSChanged')
+                let nv = (parseInt(e.target.value) || 0);
+                this.set('vc.FED.schritt.versicherteSumme', nv);
+                this.setFEDSchrittEURO(nv);
             }
 
             /**
            * FED Zusatzversicherung
            */
             setZUSSchrittVS(euro, index) {
-                if (euro && this.vcs) {
-                    let ergebnis = (parseInt(this.vcs.FED.zusatzversicherungen[index].schritt.versicherteSumme) * parseInt(euro)) / parseInt(this.vcs.FED.zusatzversicherungen[index].schritt.beitrag);
+                console.log('CALL setZUSSchrittVS')
+                if ((euro || euro === 0) && this.vcs) {
+                    let ergebnis = (parseInt(this.vcs.FED.zusatzversicherungen[index].schritt.versicherteSumme) * euro) / parseInt(this.vcs.FED.zusatzversicherungen[index].schritt.beitrag);
                     if (parseInt(this.vc.FED.zusatzversicherungen[index].schritt.versicherteSumme) !== ergebnis) {
                         let path = 'vc.FED.zusatzversicherungen.' + index + '.schritt.versicherteSumme';
                         this.set(path, ergebnis);
@@ -467,8 +520,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             setZUSSchrittEURO(versSumme, index) {
+                console.log('CALL setZUSSchrittEURO')
                 if (this.vcs) {
-                    let ergebnis = (parseInt(this.vc.FED.zusatzversicherungen[index].schritt.versicherteSumme) / parseInt(this.vcs.FED.zusatzversicherungen[index].schritt.versicherteSumme)) * parseInt(this.vcs.FED.zusatzversicherungen[index].schritt.beitrag);
+                    let ergebnis = (versSumme / parseInt(this.vcs.FED.zusatzversicherungen[index].schritt.versicherteSumme)) * parseInt(this.vcs.FED.zusatzversicherungen[index].schritt.beitrag);
                     if (parseInt(this.vc.FED.zusatzversicherungen[index].schritt.beitrag) !== ergebnis) {
                         let path = 'vc.FED.zusatzversicherungen.' + index + '.schritt.beitrag';
                         this.set(path, ergebnis);
@@ -477,34 +531,50 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             _zusEuroChanged(e) {
+
+                console.log('CALL _zusEuroChanged')
                 let index = 0;
                 if (e.target) {
                     index = e.target.id[e.target.id.length - 1];
                 }
                 let path = 'vc.FED.zusatzversicherungen.' + index + '.schritt.beitrag';
-                this.set(path, e.target.value);
-                this.setZUSSchrittVS(e.target.value, index);
+                let nv = (parseInt(e.target.value) || 0);
+                this.set(path, nv);
+                this.setZUSSchrittVS(nv, index);
+                e.stopPropagation()
             }
 
             _zusVSChanged(e) {
+
+                console.log('CALL _zusVSChanged')
                 let index = 0;
                 if (e.target) {
                     index = e.target.id[e.target.id.length - 1];
                 }
                 let path = 'vc.FED.zusatzversicherungen.' + index + '.schritt.versicherteSumme';
-                this.set(path, e.target.value);
-                this.setZUSSchrittEURO(e.target.value, index);
+                let nv = (parseInt(e.target.value) || 0);
+                this.set(path, nv);
+                this.setZUSSchrittEURO(nv, index);
+                e.stopPropagation()
+            }
+
+            uvChanged(e) {
+                let nv = (parseInt(e.target.value) || 0);
+                this.set('vc.UV.grundbeitrag.beitrag', nv);
             }
 
             getStepForFEDZusatzVS(i) {
+                console.log('CALL getStepForFEDZusatzVS')
                 return (this.vcs.FED.zusatzversicherungen[i].schritt.versicherteSumme) || 1;
             }
 
             getStepForFEDZusatzEU(i) {
+                console.log('CALL getStepForFEDZusatzEU')
                 return (this.vcs.FED.zusatzversicherungen[i].schritt.beitrag) || 1;
             }
 
             getMaxZusatzEUR(i) {
+                console.log('CALL getMaxZusatzEUR')
                 if (this.vcs.FED.zusatzversicherungen[i].maximumVersicherungssumme) {
                     let maxBeitrag = Math.floor(parseInt(this.vcs.FED.zusatzversicherungen[i].maximumVersicherungssumme) / parseInt(this.vcs.FED.zusatzversicherungen[i].schritt.versicherteSumme)) * parseInt(this.vcs.FED.zusatzversicherungen[i].schritt.beitrag);
                     return maxBeitrag;
@@ -512,6 +582,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             getGesamtGBVVS(a, b) {
+                console.log('CALL getGesamtGBVVS')
                 if (this.vc) {
                     let res = parseInt(a) + parseInt(b);
                     this.set('gesamtGBVVS', res);
@@ -521,6 +592,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             getGesamtGBVEUR(a, b) {
+                console.log('CALL getGesamtGBVEUR')
                 if (this.vc) {
                     let res = parseInt(a) + parseInt(b);
                     this.set('gesamtGBVEUR', res);
@@ -529,6 +601,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             getGesamtFEDVS(a, b, changed) {
+                console.log('CALL getGesamtFEDVS')
                 let sum;
                 if (this.vc && changed && changed.base) {
                     sum = 0;
@@ -542,6 +615,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             getGesamtFEDEUR(a, b, changed) {
+                console.log('CALL getGesamtFEDEUR')
                 let sum;
                 if (this.vc && changed && changed.base) {
                     sum = 0;
@@ -555,10 +629,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             getGesamtVS(gesamtGBVVS, gesamtFEDVS) {
+                console.log('CALL getGesamtVS')
                 return parseInt(gesamtGBVVS) + parseInt(gesamtFEDVS);
             }
 
             getGesamtKOSTEN(gesamtGBVEUR, gesamtFEDEUR, uvBeitrag) {
+                console.log('CALL getGesamtKOSTEN')
                 if (this.vc) {
                     let gbeitrag = parseInt(this.gesamtGBVEUR) + parseInt(this.gesamtFEDEUR) + parseInt(this.vc.UV.grundbeitrag.beitrag);
                     return gbeitrag;

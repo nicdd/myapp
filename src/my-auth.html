@@ -1,11 +1,12 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="/src/shared-constants.html">
 <link rel="import" href="clients/autclient.html">
 
 
 <dom-module id="my-auth">
     <template>
-
+        <shared-constants id="sc"></shared-constants>
         <aut-client id="aclient"></aut-client>
 
     </template>
@@ -53,11 +54,12 @@
 
             authenticate() {
                 console.log('user authenticate wird called')
-
+                let self = this;
                 this.$.aclient.getUser()
-                    .then(data => {
+                    .then((data) => {
                         if (this._ismyUser(data.authorities)) {
-                            showToast(this, `Login erfolgreich. Willkommen ${data.username}.`, TOAST_TYPE.SUCCESS);
+                            // showToast(self, `Login erfolgreich. Willkommen ${data.username}.`, 'success');
+                            //this.showToast(this, "Login erfolgreich. Willkommen", "success", "center");
                             this.user = {
                                 name: data.username,
                                 authorities: data.authorities,
@@ -76,7 +78,7 @@
                     })
                     .catch(error => {
                         console.log("Unsuccsessfull authentication:", error)
-                        showToast(this, "Login fehlgeschlagen.", TOAST_TYPE.ERROR);
+                        //showToast(this, "Login fehlgeschlagen.", TOAST_TYPE.ERROR);
                         this.user = {
                             authenticated: false
                         };

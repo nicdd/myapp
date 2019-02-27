@@ -141,8 +141,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
 
         --paper-button-disabled-mixin: {
-          background: #efefef;
-          color: black;
+          /* background: #efefef; */
+          background-color: var(--app-primary-color);
+          color: white;
+          opacity: 0.4; 
+         
         }
       }
 
@@ -204,22 +207,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <grt-grid-pagination id="pages" datalength="[[mvdata.length]]" page-size="{{pageSize}}" pstart="{{_pageStart}}"
           on-pagechanged="changePage"></grt-grid-pagination>
       </template>
+     
       <div class="layout horizontal justified" flex="50">
         <paper-progress-button class="demo" bottom raised on-click="addVersicherter" loading-label="Nicht so hecktisch ..."
-          loading="[[_loading]]">Antrag erfassen <iron-icon icon="add-circle-outline" slot="item-icon"></iron-icon>
+          loading="[[_loading]]" disabled="[[isAddDisabled(openeddetails.*)]]">Antrag erfassen <iron-icon icon="add-circle-outline" slot="item-icon"></iron-icon>
         </paper-progress-button>
         <paper-progress-button class="demo" bottom raised on-click="postVersicherte" loading-label="Nicht so hecktisch ..."
-          loading="[[_loading]]">Speichern</paper-progress-button>
+          loading="[[_loading]]" disabled="[[openeddetails.length]]">Speichern</paper-progress-button>
         <paper-progress-button class="demo" disabled="[[!mvdata]]" bottom raised on-click="_showExportDialog"
           loading-label="Nicht so hecktisch ..." loading="[[_loading]]">Exportieren</paper-progress-button>
       </div>
     </div>
-
     <div class="page">
       <vaadin-grid id="mygrid" page-size="{{pageSize}}" active-item="{{activeItem}}" aria-label="Basic Binding Example"
         items="[[mvdata]]" column-reordering-allowed>
-        <template class="row-details">
-          <div class="details">
+        <template class="row-details" >
+          <div class="details" >
 
             <!-- <p>
               <span>Anschrift</span><br>
@@ -228,28 +231,27 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               <small>[[columnNames.5]]:[[item.ORT]]</small><br>
             </p> -->
 
-            <iron-collapse-button forbidden$='false' expand-icon="add-circle-outline" collapse-icon="remove-circle-outline"
-              on-opened-changed="isTrue" class="lastelement flex" opened>
+            <iron-collapse-button expand-icon="add-circle-outline" collapse-icon="remove-circle-outline"
+              on-opened-changed="isTrue" class="lastelement flex">
               <div slot="collapse-trigger" class="flex">
                 <span>Anschrift</span>
               </div>
               <div slot="collapse-content">
                 <p>
-
                   <small>[[columnNames.3]]:[[item.STRASSE]]</small><br>
                   <small>[[columnNames.4]]:[[item.PLZ]]</small><br>
                   <small>[[columnNames.5]]:[[item.ORT]]</small><br>
                 </p>
               </div>
             </iron-collapse-button>
-            <iron-collapse-button forbidden$='false' expand-icon="add-circle-outline" collapse-icon="remove-circle-outline"
+            <iron-collapse-button expand-icon="add-circle-outline" collapse-icon="remove-circle-outline"
               on-opened-changed="isTrue" class="lastelement flex">
               <template is="dom-if" if="[[detailsOpened]]">
                 <div slot="collapse-trigger" class="flex">
-                  Versicherungsdaten
+                  Versicherungsdaten 
                 </div>
                 <div slot="collapse-content">
-                  <my-versicherungrechner id="vrd[[index]]" vcs="[[vconfig]]" saved-data="[[item]]"></my-versicherungrechner>
+                  <my-versicherungrechner id="vrd[[index]]" vcs="[[vconfig]]" saved-data="[[item]]" ></my-versicherungrechner>
                 </div>
               </template>
             </iron-collapse-button>
@@ -283,7 +285,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           </template>
         </vaadin-grid-column>
 
-        <vaadin-grid-column path="GBV" width="80px" resizable text-align="end">
+        <vaadin-grid-column path="GBV" width="60px" resizable text-align="end">
           <template class="header">
             <vaadin-grid-sorter path="GBV" on-sorter-changed="_sortChange">
               [[columnNames.11]]
@@ -291,7 +293,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           </template>
         </vaadin-grid-column>
 
-        <vaadin-grid-column path="FED" width="80px" resizable text-align="end">
+        <vaadin-grid-column path="FED" width="60px" resizable text-align="end">
           <template class="header">
             <vaadin-grid-sorter path="FED" on-sorter-changed="_sortChange">
               [[columnNames.12]]
@@ -299,7 +301,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           </template>
         </vaadin-grid-column>
 
-        <vaadin-grid-column path="HoeV" width="80px" resizable text-align="end">
+        <vaadin-grid-column path="HoeV" width="50px" resizable text-align="end">
           <template class="header">
             <vaadin-grid-sorter path="HoeV" on-sorter-changed="_sortChange">
               [[columnNames.13]]
@@ -307,7 +309,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           </template>
         </vaadin-grid-column>
         <!-- </vaadin-grid-column-group> -->
-        <vaadin-grid-column path="SA" width="60px" resizable>
+        <vaadin-grid-column path="SA" width="50px" resizable>
           <template class="header">
             <vaadin-grid-sorter path="SA" on-sorter-changed="_sortChange">
               [[columnNames.6]]
@@ -315,7 +317,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           </template>
         </vaadin-grid-column>
 
-        <vaadin-grid-column path="A73" width="80px" resizable text-align="end">
+        <vaadin-grid-column path="A73" width="50px" resizable text-align="end">
           <template class="header">
             <vaadin-grid-sorter path="A73" on-sorter-changed="_sortChange">
               [[columnNames.9]]
@@ -323,7 +325,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           </template>
         </vaadin-grid-column>
 
-        <vaadin-grid-column path="Solar" width="80px" resizable text-align="end">
+        <vaadin-grid-column path="Solar" width="70px" resizable text-align="end">
           <template class="header">
             <vaadin-grid-sorter path="Solar" on-sorter-changed="_sortChange">
               [[columnNames.10]]
@@ -331,7 +333,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           </template>
         </vaadin-grid-column>
 
-        <vaadin-grid-column path="UV" width="60px" resizable text-align="end">
+        <vaadin-grid-column path="UV" width="50px" resizable text-align="end">
           <template class="header">
             <vaadin-grid-sorter path="UV" on-sorter-changed="_sortChange">
               [[columnNames.7]]
@@ -339,7 +341,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           </template>
         </vaadin-grid-column>
 
-        <vaadin-grid-column path="Beitrag" width="90px" resizable text-align="end">
+        <vaadin-grid-column path="Beitrag" width="70px" resizable text-align="end">
           <template class="header">
             <vaadin-grid-sorter path="Beitrag" on-sorter-changed="_sortChange">
               [[columnNames.8]]
@@ -445,8 +447,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             type: Object,
             value: null,
             notify: true
+          },
+
+          openeddetails:{
+            type: Array,
+            value: []
           }
         }
+      }
+
+      isAddDisabled(){
+        return true;
       }
 
 
@@ -470,23 +481,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       _openDetails(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        // if (e.model && e.model.detailsOpened) {
-        //   console.log('e.target.id' + e.target.id + ' justindex' + e.target.id.substring(2))
-        //   let mslotId = '#vrd' + 3;
-        //   //this.$.mslotId.disconnectedCallback();
-        //   let docgefunden = this.shadowRoot.querySelector(mslotId);
-        //   if (docgefunden) {
-        //     console.log('e.target.id ja')
-        //   } else {
-        //     console.log('e.target.id nein')
-        //   }
-        // }
+        //e.preventDefault();
         e.model.detailsOpened = !e.model.detailsOpened;
 
         //wichtig weil sonst der scroll balken rechts aktiv bleibt auch nach der Fensterreduzierung 
         this.$.mygrid.notifyResize()
+        if(e.model.detailsOpened){
+          this.push('openeddetails', true);
+        } else {
+          this.shift('openeddetails');
+        }
+        e.stopPropagation();
+        
       }
 
       _keepDetailsOpen(e) {
@@ -683,6 +689,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           let end = parseInt(this._pageStart) + parseInt(this.pageSize);
           let newItems = this.mvdata.slice(this._pageStart, end);
           this.$.mygrid.items = newItems;
+          this.$.mygrid.clearCache();
         }
 
       }

@@ -39,7 +39,8 @@
     "polymer": "^2.0.0",
     "iron-ajax": "2.1.3",
     "iron-icons": "2.1.1",
-    "iron-input": "1 - 2"
+    "iron-input": "1 - 2",
+    "lodash": "^4.17.11"
   },
   "devDependencies": {
     "web-component-tester": "Polymer/web-component-tester#^6.0.0"

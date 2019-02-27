@@ -158,7 +158,7 @@
             this.mapToJSON(localPaechterFromCSVAsArray);
             let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
             this.saveToDB(dataAndColumns);
-            showToast(this, 'Die Pächter-Daten wurden aus der lokalen Datei erfolgreich importiert', TOAST_TYPE.SUCCESS);
+           showToast(this, 'Die Pächter-Daten wurden aus der lokalen Datei erfolgreich importiert', TOAST_TYPE.SUCCESS);
           } else {
             showToast(this, 'Bei der Importierung der Vereinsdaten wurden keine Paechterdaten gefunden', TOAST_TYPE.ERROR);
           }
