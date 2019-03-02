@@ -53,7 +53,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <link rel="import" href="../../bower_components/vaadin-grid/theme/material/all-imports.html">
 <link rel="import" href="../clients/firstclient.html">
-<link rel="import" href="../shared-styles.html">
+<link rel="import" href="../first-domain-styles.html">
 <link rel="import" href="../utils/grt-grid-pagination.html">
 <!-- <link rel="import" href="../utils/member-select-dialog.html"> -->
 <link rel="import" href="../utils/export-chooser.html">
@@ -62,7 +62,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <dom-module id="my-paechter">
     <template>
-        <style include="shared-styles">
+        <style include="first-domain-styles">
             :host {
                 /* Stretch this element to fill viewport */
                 height: 85vh;
@@ -171,7 +171,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <div class="toolbar layout horizontal justified" flex>
             <template is="dom-if" if="[[columnNames.length]]">
                 <grt-grid-pagination id="pages" datalength="[[mvdata.length]]" page-size="{{pageSize}}" pstart="{{_pageStart}}"
-                    on-pagechanged="changePage"></grt-grid-pagination>
+                    on-pagechanged="changePage" style-domain="first-domain"></grt-grid-pagination>
             </template>
             <div class="layout horizontal justified" flex="50">
                 <paper-progress-button class="demo" bottom raised on-click="addPaecheter" loading-label="Nicht so hecktisch ..."
@@ -285,12 +285,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 <vaadin-grid-column width="100px">
                     <template class="header"></template>
                     <template>
-                        <button id="bt[[item.GartenNr]]" on-click="_openDetails" class="endpagebutton">
+                        <button id="bt[[item.GartenNr]]" on-click="_openDetails" class="first-domain-endpagebutton">
                             <slot>
                                 <iron-icon id="cr[[item.GartenNr]]" icon="create" slot="item-icon" on-click="_openDetails"></iron-icon>
                             </slot>
                         </button>
-                        <button id="bt[[item.GartenNr]]" on-click="_removeItem" class="endpagebutton" disabled="[[detailsOpened]]">
+                        <button id="bt[[item.GartenNr]]" on-click="_removeItem" class="first-domain-endpagebutton" disabled="[[detailsOpened]]">
                             <iron-icon id="rm[[item.GartenNr]]" icon="delete" slot="item-icon" on-click="_removeItem"></iron-icon>
                         </button>
                         <!-- <vaadin-checkbox aria-label$="Show Details for [[NAME]]" checked="{{detailsOpened}}">Details</vaadin-checkbox> -->

@@ -42,6 +42,10 @@
                             JSON_VERSICHERTE: {
                                 path: '/api/versicherte',
                                 port: '8000'
+                            },
+                            JSON_ONE_VERSICHERTER: {
+                                path: '/api/versicherter',
+                                port: '8000'
                             }
                         }
                     }
@@ -167,6 +171,40 @@
 
                 }).catch(() => {
                     console.log('postVersicherteAsJSON die Anfrage an' + sourceURL + ' war nicht erfolgreich')
+                });
+            }
+            
+            postOneVersicherter(theOne){
+                
+                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.JSON_ONE_VERSICHERTER.path, this.URLS.JSON_ONE_VERSICHERTER.port);
+                let myHeaders = new Headers();
+                myHeaders.set("Content-Type", "application/json");
+
+                let tosend = JSON.stringify(theOne);
+
+                let myInit = {
+                    method: 'POST',
+                    headers: myHeaders,
+                    mode: 'cors',
+                    cache: 'default',
+                    credentials: 'omit',
+                    body: tosend
+                };
+
+                let myRequest = new Request(sourceURL, myInit);
+
+                return fetch(myRequest).then((response) => {
+                    console.log("postOneVersicherter antwort" + JSON.stringify(response));
+                    if (!response.ok) { 
+                        throw response; 
+                    } else if (response && response.ok) {
+                        return response.json();
+                    } else return undefined;
+
+
+                }).catch(() => {
+                    console.log('postOneVersicherter die Anfrage an' + sourceURL + ' war nicht erfolgreich')
+                    return Promise.reject();
                 });
 
             }

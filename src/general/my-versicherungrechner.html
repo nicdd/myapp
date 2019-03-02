@@ -11,11 +11,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../clients/basicclient.html">
-<link rel="import" href="../shared-styles.html">
+<link rel="import" href="../clients/firstclient.html">
+<link rel="import" href="../second-domain-styles.html">
 
 <dom-module id="my-versicherungrechner">
     <template>
-        <style include="shared-styles">
+        <style include="second-domain-styles">
             :host {
         display: block;
 
@@ -23,6 +24,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
       .titlelabel {
         color:#999; 
+        font-size:14px;
+      }
+
+      .lightlabel {
+        color:white; 
         font-size:14px;
       }
 
@@ -47,37 +53,23 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
       }
 
-      .lastelement{
-         
-        /* border-style: solid;
-        border-width: 0.5px; */
-        border-radius: 2%;
-        padding: 0px 5px;
-        margin: 0px 5px 10px 25px;
-        background-color: var(--app-secondary-light-color);
-        box-shadow: 0px 0px 8px 5px #888888;
-      }
+      
 
       paper-input {padding-right:20px }
     </style>
         <basic-client id="bclient"></basic-client>
+        <first-client id="firstclient"></first-client>
         <div class="mcard layout vertical">
             <p class="cardtitle">
                 <slot name="title"></slot>
-
-                <template is="dom-if" if="[[savedData]]">
-                    <button on-click="_saveItemData" disabled="[[!changedSavedData]]">
-                        <iron-icon icon="save" slot="item-icon" on-click="_saveItemData"></iron-icon>
-                    </button>
-                </template>
             </p>
-            <div class="mcard layout vertical">
+            <div class="mcard layout vertical dark-element">
                 <div class="cardcontent">
-                    <h5>Gebäude-Feuer-Versicherung (GBV)</h5>
+                    <h4>Gebäude-Feuer-Versicherung (GBV)</h4>
                     <div class="layout horizontal justified">
                         <div class="layout vertical">
                             <div class="layout vertical  ">
-                                <h5>Grundbeitrag: Feuer, Sturm u. Hagel lt. Merkblatt Punkt 2.2</h5>
+                                <h4>Grundbeitrag: Feuer, Sturm u. Hagel lt. Merkblatt Punkt 2.2</h4>
                                 <div class="layout horizontal justified">
                                     <div class="layout vertical labelgroup">
                                         <label class="titlelabel">Grundbeitrag</label>
@@ -91,7 +83,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             </div>
 
                             <div class="layout vertical ">
-                                <h5>Erhöhung der Versicherungsumme: GBV Merkblatt Punkt 3</h5>
+                                <h4>Erhöhung der Versicherungsumme: GBV Merkblatt Punkt 3</h4>
                                 <div class="layout horizontal justified">
                                     <paper-input class="labelgroup" min="0" always-float-label label="Erhöhung (EURO)"
                                         type="number" step="[[vcs.GBV.schritt.versicherteSumme]]" on-change="_gbvVSChanged"
@@ -103,14 +95,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             </div>
                         </div>
 
-                        <div class="layout vertical lastelement">
-                            <h5>GBV gesamt</h5>
+                        <div class="layout vertical lastelement light-element">
+                            <h4>GBV gesamt</h4>
                             <div class="layout vertical ">
 
                                 <div class="layout horizontal justified">
                                     <div class="layout vertical labelgroup">
-                                        <label class="titlelabel">Versicherungsumme</label>
-                                        <label class="titlelabel contentlabelnr">[[getGesamtGBVVS(vc.GBV.grundbeitrag.versicherteSumme,
+                                        <label class="lightlabel">Versicherungsumme</label>
+                                        <label class="lightlabel contentlabelnr">[[getGesamtGBVVS(vc.GBV.grundbeitrag.versicherteSumme,
                                             vc.GBV.schritt.versicherteSumme)]]</label>
                                     </div>
                                 </div>
@@ -119,8 +111,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
                                 <div class="layout horizontal justified">
                                     <div class="layout vertical labelgroup">
-                                        <label class="titlelabel">Kosten</label>
-                                        <label class="titlelabel contentlabelnr">[[getGesamtGBVEUR(vc.GBV.grundbeitrag.beitrag,
+                                        <label class="lightlabel">Kosten</label>
+                                        <label class="lightlabel contentlabelnr">[[getGesamtGBVEUR(vc.GBV.grundbeitrag.beitrag,
                                             vc.GBV.schritt.beitrag)]]</label>
                                     </div>
                                 </div>
@@ -129,13 +121,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     </div>
                 </div>
             </div>
-            <div class="mcard layout vertical">
+            <div class="mcard layout vertical dark-element">
                 <div class="cardcontent">
-                    <h5>Inventar Grundversicherung (Feuer-Einbruch-Diebstahl FED)</h5>
+                    <h4>Inventar Grundversicherung (Feuer-Einbruch-Diebstahl FED)</h4>
                     <div class="layout horizontal justified">
                         <div class="layout vertical">
                             <div class="layout vertical ">
-                                <h5>Grundbeitrag</h5>
+                                <h4>Grundbeitrag</h4>
                                 <div class="layout horizontal justified">
                                     <div class="layout vertical labelgroup">
                                         <label class="titlelabel">Grundbeitrag</label>
@@ -149,7 +141,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             </div>
 
                             <div class="layout vertical ">
-                                <h5>Höherversicherung: Merkblatt Punkt 6.2</h5>
+                                <h4>Höherversicherung: Merkblatt Punkt 6.2</h4>
                                 <div class="layout horizontal">
                                     <paper-input class="labelgroup" min="0" always-float-label label="Erhöhung (EURO)"
                                         type="number" step="[[vcs.FED.schritt.versicherteSumme]]" on-change="_fedVSChanged"
@@ -160,7 +152,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             </div>
 
                             <div class="layout vertical ">
-                                <h5>Zusatzversicherungen: Merkblatt Punkt 7</h5>
+                                <h4>Zusatzversicherungen: Merkblatt Punkt 7</h4>
                                 <template is="dom-repeat" items="[[vc.FED.zusatzversicherungen]]" index-as="i">
                                     <div class="layout vertical">
                                         <label>[[item.bezeichnung]]</label>
@@ -177,14 +169,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                 </template>
                             </div>
                         </div>
-                        <div class="layout vertical lastelement">
-                            <h5>FED gesamt</h5>
+                        <div class="layout vertical lastelement light-element">
+                            <h4>FED gesamt</h4>
                             <div class="layout vertical ">
 
                                 <div class="layout horizontal justified">
                                     <div class="layout vertical labelgroup">
-                                        <label class="titlelabel">Versicherungsumme</label>
-                                        <label class="titlelabel contentlabelnr">[[getGesamtFEDVS(vc.FED.grundbeitrag.versicherteSumme,
+                                        <label class="lightlabel">Versicherungsumme</label>
+                                        <label class="lightlabel contentlabelnr">[[getGesamtFEDVS(vc.FED.grundbeitrag.versicherteSumme,
                                             vc.FED.schritt.versicherteSumme, vc.FED.zusatzversicherungen.*)]]</label>
                                     </div>
                                 </div>
@@ -192,8 +184,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             <div class="layout vertical ">
                                 <div class="layout horizontal justified">
                                     <div class="layout vertical labelgroup">
-                                        <label class="titlelabel ">Kosten</label>
-                                        <label class="titlelabel contentlabelnr ">[[getGesamtFEDEUR(vc.FED.grundbeitrag.beitrag,
+                                        <label class="lightlabel ">Kosten</label>
+                                        <label class="lightlabel contentlabelnr ">[[getGesamtFEDEUR(vc.FED.grundbeitrag.beitrag,
                                             vc.FED.schritt.beitrag, vc.FED.zusatzversicherungen.*)]]</label>
                                     </div>
                                 </div>
@@ -202,12 +194,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     </div>
                 </div>
             </div>
-            <div class="mcard layout vertical">
+            <div class="mcard layout vertical dark-element">
                 <div class="cardcontent">
-                    <h5>Familien-Unfallversicherung (UV) - optional</h5>
+                    <h4>Familien-Unfallversicherung (UV) - optional</h4>
                     <div class="layout vertical">
 
-                        <h5>Versicherungsbeitrag</h5>
+                        <h4>Versicherungsbeitrag</h4>
                         <div class="layout horizontal">
                             <paper-input class="labelgroup" min="0" always-float-label label="Beitrag" type="number"
                                 step="[[vcs.UV.grundbeitrag.beitrag]]" max="[[vcs.UV.grundbeitrag.beitrag]]" on-change="uvChanged"
@@ -218,10 +210,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 </div>
             </div>
             <div class="mcard">
-                <div class="cardcontent layout horizontal justified">
+                <div class="cardcontent layout horizontal justified dark-element">
                     <div class="layout vertical">
                         <div class="layout vertical">
-                            <h5>GBV</h5>
+                            <h4>GBV</h4>
                             <div class="layout vertical labelgroup">
                                 <label class="titlelabel">Kosten</label>
                                 <label class="titlelabel contentlabelnr">[[gesamtGBVEUR]]</label>
@@ -234,7 +226,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     </div>
                     <div class="layout vertical">
                         <div class="layout vertical">
-                            <h5>FED</h5>
+                            <h4>FED</h4>
                             <div class="layout vertical labelgroup">
                                 <label class="titlelabel">Kosten</label>
                                 <label class="titlelabel contentlabelnr">[[gesamtFEDEUR]]</label>
@@ -247,26 +239,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     </div>
 
                     <div class="layout vertical">
-                        <h5>UV</h5>
+                        <h4>UV</h4>
                         <div class="layout vertical labelgroup">
                             <label class="titlelabel">Kosten</label>
                             <label class="titlelabel contentlabelnr">[[vc.UV.grundbeitrag.beitrag]]</label>
                         </div>
                     </div>
 
-                    <div class="layout vertical lastelement">
+                    <div class="layout vertical lastelement light-element">
                         <div class="layout vertical">
-                            <h5>Zusammen</h5>
+                            <h4>Zusammen</h4>
                             <div class="layout vertical labelgroup">
-                                <label class="titlelabel">Kosten</label>
-                                <label class="titlelabel contentlabelnr">[[getGesamtKOSTEN(gesamtGBVEUR,
+                                <label class="lightlabel">Kosten</label>
+                                <label class="lightlabel contentlabelnr">[[getGesamtKOSTEN(gesamtGBVEUR,
                                     gesamtFEDEUR, vc.UV.grundbeitrag.beitrag)]]</label>
                             </div>
                         </div>
                         <div class="layout vertical">
                             <div class="layout vertical labelgroup">
-                                <label class="titlelabel">Versicherungsumme</label>
-                                <label class="titlelabel contentlabelnr">[[getGesamtVS(gesamtGBVVS,
+                                <label class="lightlabel">Versicherungsumme</label>
+                                <label class="lightlabel contentlabelnr">[[getGesamtVS(gesamtGBVVS,
                                     gesamtFEDVS)]]</label>
                             </div>
                         </div>
@@ -303,7 +295,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
                     savedData: {
                         type: Object,
-                        value: null
+                        value: null,
+                        notify: true,
+                        reflectToAttribute: true
+
                     },
 
                     originaldata: {
@@ -315,6 +310,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         type: Boolean,
                         value: false,
                         notify: true
+                    },
+                    // bekommt den index des geänderten Items 
+                    dosave: {
+                        type: Number,
+                        value: null,
+                        notify: true,
+                        reflectToAttribute: true,
+                        observer: 'saveChangedItem'
                     }
                 }
             }
@@ -346,7 +349,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             compareVCwithOriginal(nowVC, origVC) {
                 console.log('thesame nowVC' + JSON.stringify(nowVC))
                 console.log('thesame origVC' + JSON.stringify(origVC))
+                //console.log('lodash difference is ' + JSON.stringify(this.difference(nowVC, origVC)))
                 return _.isEqual(nowVC, origVC);
+            }
+
+            difference(object, base) {
+                function changes(object, base) {
+                    return _.transform(object, function (result, value, key) {
+                        if (!_.isEqual(value, base[key])) {
+                            result[key] = (_.isObject(value) && _.isObject(base[key])) ? changes(value, base[key]) : value;
+                        }
+                    });
+                }
+                return changes(object, base);
             }
 
 
@@ -377,13 +392,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             _transferToVC(aktVCS, savedData) {
+                console.log('das hier wird aufgerufen')
                 if (aktVCS && savedData) {
                     let data = JSON.parse(JSON.stringify(savedData));
                     let tmpVC = JSON.parse(JSON.stringify(aktVCS));
 
                     if (tmpVC && Object.keys(tmpVC).length) {
 
-                        let hoeherGBV = parseInt(data.GBV) - parseInt(aktVCS.GBV.grundbeitrag.versicherteSumme);
+                        let hoeherGBV = (data.GBV && (parseInt(data.GBV) >= parseInt(aktVCS.GBV.grundbeitrag.versicherteSumme))) ? (parseInt(data.GBV) - parseInt(aktVCS.GBV.grundbeitrag.versicherteSumme)) : 0;
                         tmpVC.GBV.schritt.versicherteSumme = hoeherGBV;
                         tmpVC.GBV.schritt.beitrag = parseInt(aktVCS.GBV.schritt.beitrag) * hoeherGBV / parseInt(aktVCS.GBV.schritt.versicherteSumme);
 
@@ -435,6 +451,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 if ((euro || euro === 0) && this.vcs) {
                     let ergebnis = (parseInt(this.vcs.GBV.schritt.versicherteSumme) * euro) / parseInt(this.vcs.GBV.schritt.beitrag);
                     if (parseInt(this.vc.GBV.schritt.versicherteSumme) !== ergebnis) {
+                        console.log('CALL setGBVSchrittVS ergebnis' + ergebnis)
                         this.set('vc.GBV.schritt.versicherteSumme', ergebnis);
                     }
                 }
@@ -445,6 +462,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 if (this.vcs) {
                     let ergebnis = (versSumme / parseInt(this.vcs.GBV.schritt.versicherteSumme)) * parseInt(this.vcs.GBV.schritt.beitrag);
                     if (parseInt(this.vc.GBV.schritt.beitrag) !== ergebnis) {
+                        console.log('CALL setGBVSchrittEURO' + ergebnis)
                         this.set('vc.GBV.schritt.beitrag', ergebnis);
                     }
                 }
@@ -454,6 +472,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 e.stopPropagation();
                 console.log('CALL _gbvEuroChanged')
                 let nv = (parseInt(e.target.value) || 0);
+                console.log('CALL _gbvEuroChanged nv' + nv)
                 this.set('vc.GBV.schritt.beitrag', nv);
                 this.setGBVSchrittVS(nv);
             }
@@ -462,6 +481,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 e.stopPropagation();
                 console.log('CALL _gbvVSChanged')
                 let nv = (parseInt(e.target.value) || 0);
+                console.log('CALL _gbvVSChanged nv' + nv)
                 this.set('vc.GBV.schritt.versicherteSumme', nv);
                 this.setGBVSchrittEURO(nv);
             }
@@ -584,7 +604,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             getGesamtGBVVS(a, b) {
                 console.log('CALL getGesamtGBVVS')
                 if (this.vc) {
-                    let res = parseInt(a) + parseInt(b);
+                    let res = (parseInt(a) || 0) + (parseInt(b) || 0);
                     this.set('gesamtGBVVS', res);
 
                     return res;
@@ -594,7 +614,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             getGesamtGBVEUR(a, b) {
                 console.log('CALL getGesamtGBVEUR')
                 if (this.vc) {
-                    let res = parseInt(a) + parseInt(b);
+                    let res = (parseInt(a) || 0) + (parseInt(b) || 0);
                     this.set('gesamtGBVEUR', res);
                     return res;
                 }
@@ -606,7 +626,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 if (this.vc && changed && changed.base) {
                     sum = 0;
                     changed.base.forEach((zusatz) => {
-                        sum += parseInt(zusatz.schritt.versicherteSumme);
+                        sum += (parseInt(zusatz.schritt.versicherteSumme) || 0);
                     })
                     sum += parseInt(a) + parseInt(b);
                 }
@@ -639,6 +659,53 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     let gbeitrag = parseInt(this.gesamtGBVEUR) + parseInt(this.gesamtFEDEUR) + parseInt(this.vc.UV.grundbeitrag.beitrag);
                     return gbeitrag;
                 }
+            }
+
+            saveChangedItem(newV, oldV) {
+                let self = this;
+                let thisId = parseInt(self.id.substring(3));
+                console.log('self.id' + self.id + 'saveChangedItem saveversicherter newV ' + newV + 'oldV' + oldV + ' thisId' + thisId + 'typeof newV' + (typeof newV) + 'typeof thisId' + (typeof thisId))
+                if ((newV || newV === 0) && newV === thisId) {
+                    console.log('saveChangedItem changedSavedData saveversicherter' + JSON.stringify(self.vc) + ' savedData' + JSON.stringify(self.savedData))
+                    //let origSaved = this.savedData;
+                
+                    let toSave = self.transferVCToSavedData(self.vc, JSON.parse(JSON.stringify(self.savedData)));
+                    
+                    self.$.firstclient.postOneVersicherter(toSave).then(() => {
+                        self.set('originaldata', self.vc);
+                       // self.set('savedData', toSave);
+                        self.dispatchEvent(new CustomEvent('savedversicherter', { detail: {data: toSave, index: self.dosave} }));
+                        showToast(self, 'Die Änderungen des Versicherten wurden erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
+                        this.set('dosave', null);
+                    }).catch((error) => {
+                        //self.set('savedData', origSaved);
+                        showToast(self, 'Fehler bei der Speicherung der Änderungen', TOAST_TYPE.ERROR);
+                       this.set('dosave', null);
+                    })
+                }
+            }
+
+            transferVCToSavedData(vdata, savedDataCopy) {
+                savedDataCopy.GBV = this.gesamtGBVVS;
+                console.log('transferVCToSavedData _insertChangedVersicherter versicherter changed ' + this.gesamtGBVVS+ ' id:' + this.id + ' vdata' + JSON.stringify(vdata))
+                savedDataCopy.FED = vdata.FED.grundbeitrag.versicherteSumme;
+                savedDataCopy.HoeV = vdata.FED.schritt.versicherteSumme;
+                savedDataCopy.SA = vdata.FED.zusatzversicherungen[0].schritt.versicherteSumme;
+                savedDataCopy.A73 = vdata.FED.zusatzversicherungen[1].schritt.versicherteSumme;
+                savedDataCopy.Solar = vdata.FED.zusatzversicherungen[2].schritt.versicherteSumme;
+                savedDataCopy.UV = vdata.UV.grundbeitrag.beitrag
+                savedDataCopy.Beitrag = this.getGesamtKOSTEN();
+                if (!savedDataCopy.changes) {
+                    savedDataCopy['changes'] = [];
+                }
+                if (savedDataCopy.changes.length >= 5) {
+                    savedDataCopy.changes.pop();
+                }
+                let usr = document.querySelector('my-app').getAttribute('user')
+                usr = JSON.parse(usr);
+                const lastChange = { user: usr.name, datum: moment().format('YYYYMMDD_HHmm') }
+                savedDataCopy.changes.unshift(lastChange);
+                return savedDataCopy;
             }
 
         }

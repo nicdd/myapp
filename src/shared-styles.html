@@ -25,10 +25,10 @@
         margin: 0px 16px;
       }
 
-      .cardtitle{
+      /* .cardtitle{
           background-color: var(--app-secondary-light-color);
           padding: 0px 16px;
-      }
+      } */
 
       .labelgroup{
         padding: 5px 5px 10px 0px;
@@ -61,7 +61,7 @@
       }
 
       .pagebutton {
-        background-color: var(--app-secondary-color);
+        background-color: var(--app-primary-color);
         border: none;
         color: white;
         text-align: center;
@@ -78,8 +78,44 @@
         background-color: RoyalBlue;
       }
 
+      .first-domain-pagebutton {
+        background-color: var(--app-primary-color);
+        border: none;
+        color: white;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        width: 27px;
+        height: 27px;
+        line-height: 27px;
+        border-radius: 50%;
+      }
+
+      .first-domain-pagebutton:hover:enabled {
+        background-color: var(--app-primary-light-color);
+      }
+
+      .second-domain-pagebutton {
+        background-color: var(--second-domain-primary-color);
+        border: none;
+        color: white;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        width: 27px;
+        height: 27px;
+        line-height: 27px;
+        border-radius: 50%;
+      }
+
+      .second-domain-pagebutton:hover:enabled {
+        background-color: var(--second-domain-light-color);
+      }
+
       .endpagebutton {
-        background-color: var(--app-secondary-color);
+        background-color: var(--app-primary-color);
         color: white;
         line-height: 27px;
         border-radius: 20%;
@@ -88,6 +124,30 @@
 
       .endpagebutton:hover:enabled {
         background-color: RoyalBlue;
+      }
+
+      .first-domain-endpagebutton {
+        background-color: var(--app-primary-color);
+        color: white;
+        line-height: 27px;
+        border-radius: 20%;
+        border: none;
+      }
+
+      .first-domain-endpagebutton:hover:enabled {
+        background-color: var(--app-primary-light-color);
+      }
+
+      .second-domain-endpagebutton {
+        background-color: var(--second-domain-primary-color);
+        color: white;
+        line-height: 27px;
+        border-radius: 20%;
+        border: none;
+      }
+
+      .second-domain-endpagebutton:hover:enabled {
+        background-color: var(--second-domain-light-color);
       }
 
       /* .opened {background-color:gray;} */
@@ -103,10 +163,17 @@
 
       :root {
         --app-primary-color: #21293c;
+        --app-primary-dark-color: #000017;
+        --app-primary-light-color: #4a5166;
        
         --app-primary-contrast-text-color: white;
-        --app-secondary-color: var(--paper-light-blue-500);
-        --app-secondary-light-color: var(--paper-light-blue-50);
+
+        --app-secondary-color: #2d0399;
+        --app-secondary-dark-color:#000069;
+        --app-secondary-light-color: #6737cb;
+        
+        /* --app-secondary-color: var(--paper-light-blue-500);
+        --app-secondary-light-color: var(--paper-light-blue-50); */
 
         --app-primary-text-color: black;
         --app-secondary-text-color: rgba(0, 0, 0, 0.54);
@@ -115,7 +182,11 @@
         --app-warning-color: var(--paper-amber-900);
         --app-error-color: var(--paper-red-500);
 
-        --app-my-color: rgb(45, 48, 56);
+        --second-domain-primary-color: #2D3038;
+        --second-domain-dark-color: #020712;
+        --second-domain-light-color: #565962;
+        
+        
       }
 
       h1 {
@@ -136,18 +207,6 @@
         font-weight: bold;
       }
 
-      paper-button {
-        transition: opacity 0.2s ease-in-out;
-        background-color: var(--app-primary-color);
-        background: var(--app-primary-color);
-        color: var(--app-primary-contrast-text-color);
-      }
-
-      paper-button.flat {
-        background-color: transparent;
-        color: var(--app-primary-color);
-      }
-
       paper-button.delete {
         background-color: var(--app-warning-color);
         color: white;
@@ -166,13 +225,6 @@
         margin: 16px;
       }
 
-
-
-      paper-button[raised] {
-        background-color: var(--app-primary-color);
-        color: var(--app-primary-contrast-text-color);
-      }
-
       .state.finished {
         color: var(--app-success-color);
         --paper-item-body-secondary-color: var(--app-success-color);
@@ -182,53 +234,7 @@
         color: var(--app-warning-color);
         --paper-item-body-secondary-color: var(--app-warning-color);
       }
-
-      paper-progress-button {
-        --paper-progress-active-color: var(--app-primary-color);
-        --paper-progress-container-color: #00000000;
-
-        --paper-button-mixin: {
-          color: var(--app-primary-color);
-        }
-
-        --paper-button-disabled-mixin: {
-          background-color: var(--app-primary-color);
-          color: white;
-          opacity: 0.4;
-        }
-
-        --paper-progress-mixin: {
-          background-color: white;
-        }
-      }
-
-      paper-progress-button[raised] {
-
-        --paper-button-mixin: {
-          background-color: var(--app-primary-color);
-          color: var(--app-primary-contrast-text-color);
-          padding: 0.5rem 1rem;
-        }
-      }
-
-      /* paper-progress-button[raised] {
-        --paper-button-mixin: {
-          background-color: var(--app-primary-color);
-          color: white;
-        }
-      } */
-
-      paper-spinner {
-        --paper-spinner-layer-1-color: var(--app-primary-color);
-        --paper-spinner-layer-2-color: var(--app-primary-color);
-        --paper-spinner-layer-3-color: var(--app-primary-color);
-        --paper-spinner-layer-4-color: var(--app-primary-color);
-      }
-
-      paper-checkbox {
-        --paper-checkbox-checked-color: var(--app-primary-color);
-        --paper-checkbox-checked-ink-color: var(--app-primary-color);
-      }
+      
     </style>
   </template>
 </dom-module>

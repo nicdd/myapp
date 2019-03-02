@@ -17,30 +17,25 @@ Pagination Element for Vaadin-Grid Tables
                 flex-wrap: wrap;
                 margin: 20px;
             } */
-
-           
         </style>
         <div class="layout horizontal center-justified">
-
-
             <div class="layout horizontal center-justified">
                 <div style="padding: 0rem 0.3rem;" class="layout horizontal center-justified">
                     <div style="padding: 0rem 0.1rem;">
-                        <button id="first" class="endpagebutton" on-click="firstPage">
-                            <<</button> <button id="previous" class="pagebutton" on-click="previousPage">
-                                <</button> </div>
-                     <div style="padding: 0rem 0.1rem;">
-                        <label style="color:#999; font-size:14px;">Seite:</label>
-                        <select id="sp" value="{{selPage::change}}">
+                        <button id="first" class$="[[endpagebuttonClass]]" on-click="firstPage">
+                            <<</button> <button id="previous" class$="[[pagebuttonClass]]" on-click="previousPage">
+                                <</button> </div> <div style="padding: 0rem 0.1rem;">
+                                    <label style="color:#999; font-size:14px;">Seite:</label>
+                                    <select id="sp" value="{{selPage::change}}">
 
-                            <template is="dom-repeat" items="[[_pages]]">
-                                <option value="[[item]]">[[item]] von [[_pages.length]]</option>
-                            </template>
-                        </select>
+                                        <template is="dom-repeat" items="[[_pages]]">
+                                            <option value="[[item]]">[[item]] von [[_pages.length]]</option>
+                                        </template>
+                                    </select>
                     </div>
                     <div style="padding: 0rem 0.1rem;">
-                        <button id="next" class="pagebutton" on-click="nextPage">></button>
-                        <button id="last" class="endpagebutton" on-click="lastPage">>></button>
+                        <button id="next" class$="[[pagebuttonClass]]" on-click="nextPage">></button>
+                        <button id="last" class$="[[endpagebuttonClass]]" on-click="lastPage">>></button>
                     </div>
                 </div>
                 <div style="padding: 0rem 0.3rem;">
@@ -70,18 +65,20 @@ Pagination Element for Vaadin-Grid Tables
 
                     },
 
-                    rowsperPage: {
-                        type: Array,
-                        value: [{ key: "5", val: 5 }, { key: "10", val: 10 }, { key: "15", val: 15 }, { key: "20", val: 20 }],
-                        notify: true
-                    },
-
                     datalength: {
                         type: Number,
                         value: 0,
                         observer: 'doOnDataLengthChanged'
                         //notify: true
                     },
+
+                    rowsperPage: {
+                        type: Array,
+                        value: [{ key: "5", val: 5 }, { key: "10", val: 10 }, { key: "15", val: 15 }, { key: "20", val: 20 }],
+                        notify: true
+                    },
+
+
                     _pages: {
                         type: Array,
                         value: [],
@@ -104,6 +101,22 @@ Pagination Element for Vaadin-Grid Tables
                         type: Number,
                         value: 0,
                         notify: true
+                    },
+
+                    styleDomain : {
+                        type: String,
+                        value: '',
+                        notify: true
+                    },
+
+                    endpagebuttonClass:{
+                        type: String,
+                        computed: "getStyleClass(styleDomain, 'endpagebutton')"
+                    },
+
+                    pagebuttonClass:{
+                        type: String,
+                        computed: "getStyleClass(styleDomain, 'pagebutton')"
                     }
                 }
             }
@@ -117,6 +130,10 @@ Pagination Element for Vaadin-Grid Tables
                     '_isButtonDisabled(pstart)'
                 ]
 
+            }
+
+            getStyleClass(domainName, name){
+                return domainName + '-' + name;
             }
 
             _isButtonDisabled() {
@@ -203,6 +220,9 @@ Pagination Element for Vaadin-Grid Tables
             }
 
             doOnDataLengthChanged(newV, oldV) {
+                if (!oldV && newV && !this.rowsperPage.some((el) => el.key === 'Alle')) {
+                    this.unshift('rowsperPage', { key: "Alle", val: parseInt(newV) })
+                }
                 if (newV && newV !== oldV && this.pageSize) {
                     this.doPagination(this.selPage);
                 }

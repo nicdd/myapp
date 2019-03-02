@@ -57,6 +57,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../clients/firstclient.html">
 <link rel="import" href="../clients/basicclient.html">
 <link rel="import" href="../shared-styles.html">
+<link rel="import" href="../second-domain-styles.html">
 <link rel="import" href="../utils/grt-grid-pagination.html">
 <link rel="import" href="../utils/create-versicherter-antrag.html">
 <link rel="import" href="../general/my-versicherungrechner.html">
@@ -66,7 +67,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <dom-module id="my-versicherte">
   <template>
-    <style include="shared-styles">
+    <style include="second-domain-styles">
       :host {
         /* Stretch this element to fill viewport */
         height: 85vh;
@@ -130,24 +131,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
 
-      .demo {
+      /*.demo {
         --paper-progress-active-color: #1875d1;
         --paper-progress-container-icolor: #00000000;
 
-        --paper-button-mixin: {
+        /*--paper-button-mixin: {
           padding: 0.2em 0.5em 0.2em 0.5em !important;
           background-color: #1976d2;
           color: white;
-        }
+        }*/
 
-        --paper-button-disabled-mixin: {
-          /* background: #efefef; */
+      /* --paper-button-disabled-mixin: {
           background-color: var(--app-primary-color);
           color: white;
-          opacity: 0.4; 
-         
-        }
-      }
+          opacity: 0.4;
+        } */
+      /* }*/
 
       .vaadin-demo-input[readonly] {
         border: 2px solid transparent;
@@ -178,17 +177,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         margin-right: -12px;
       }
 
-      .mcolapstrigger {}
-
-      .lastelement {
-
-        /* border-style: solid;
-         border-width: 0.5px; */
-        border-radius: 1%;
-        padding: 0px 5px;
-        margin: 0px 5px 10px 25px;
-        background-color: var(--app-secondary-light-color);
-        box-shadow: 0px 0px 8px 5px #888888;
+      paper-button {
+        padding: 0.2em 0.5em 0.2em 0.5em !important;
       }
 
       /* .header {
@@ -199,30 +189,36 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <first-client id="firstclient"></first-client>
     <basic-client id="bclient"></basic-client>
     <create-versicherter-antrag id="adddialog" cancel-name="Abbrechen" confirmation-name="Hinzufügen"></create-versicherter-antrag>
-    <grt-dialog id="grtinfodialog" dialog-type="info"></grt-dialog>
-    <export-chooser id="exportdialog" dialog-type="info" confirmation-name="Schließen" on-export-versicherte="exportVersicherte"></export-chooser>
+
 
     <div class="toolbar layout horizontal justified" flex>
       <template is="dom-if" if="[[columnNames.length]]">
         <grt-grid-pagination id="pages" datalength="[[mvdata.length]]" page-size="{{pageSize}}" pstart="{{_pageStart}}"
-          on-pagechanged="changePage"></grt-grid-pagination>
+          on-pagechanged="changePage" style-domain="second-domain"></grt-grid-pagination>
       </template>
-     
       <div class="layout horizontal justified" flex="50">
-        <paper-progress-button class="demo" bottom raised on-click="addVersicherter" loading-label="Nicht so hecktisch ..."
-          loading="[[_loading]]" disabled="[[isAddDisabled(openeddetails.*)]]">Antrag erfassen <iron-icon icon="add-circle-outline" slot="item-icon"></iron-icon>
+        <paper-button bottom raised on-click="addVersicherter" disabled="[[isAddDisabled(openeddetails.*)]]">Antrag
+          erfassen <iron-icon icon="add-circle-outline" slot="item-icon"></iron-icon>
+        </paper-button>
+        <paper-button bottom raised on-click="postVersicherte" disabled="[[isSaveDisabled(mvdata.*, openeddetails.*)]]">Speichern</paper-button>
+        <paper-button disabled="[[isExportDisabled(mvdata.*, openeddetails.*)]]" bottom raised on-click="_showExportDialog">Exportieren</paper-button>
+        <!-- <paper-progress-button class="demo" bottom raised on-click="addVersicherter" loading-label="Nicht so hecktisch ..."
+          loading="[[_loading]]" deaktiviert="[[isAddDisabled(openeddetails.*)]]">Antrag erfassen <iron-icon icon="add-circle-outline"
+            slot="item-icon"></iron-icon>
         </paper-progress-button>
         <paper-progress-button class="demo" bottom raised on-click="postVersicherte" loading-label="Nicht so hecktisch ..."
-          loading="[[_loading]]" disabled="[[openeddetails.length]]">Speichern</paper-progress-button>
-        <paper-progress-button class="demo" disabled="[[!mvdata]]" bottom raised on-click="_showExportDialog"
-          loading-label="Nicht so hecktisch ..." loading="[[_loading]]">Exportieren</paper-progress-button>
+          loading="[[_loading]]" deaktiviert="[[openeddetails.length]]">Speichern</paper-progress-button>
+        <paper-progress-button class="demo" deaktiviert="[[!mvdata]]" bottom raised on-click="_showExportDialog"
+          loading-label="Nicht so hecktisch ..." loading="[[_loading]]">Exportieren</paper-progress-button> -->
       </div>
     </div>
+    <grt-dialog id="grtinfodialog" dialog-type="info"></grt-dialog>
+    <export-chooser id="exportdialog" dialog-type="info" confirmation-name="Schließen" on-export-versicherte="exportVersicherte"></export-chooser>
     <div class="page">
       <vaadin-grid id="mygrid" page-size="{{pageSize}}" active-item="{{activeItem}}" aria-label="Basic Binding Example"
         items="[[mvdata]]" column-reordering-allowed>
-        <template class="row-details" >
-          <div class="details" >
+        <template class="row-details">
+          <div class="details">
 
             <!-- <p>
               <span>Anschrift</span><br>
@@ -232,7 +228,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             </p> -->
 
             <iron-collapse-button expand-icon="add-circle-outline" collapse-icon="remove-circle-outline"
-              on-opened-changed="isTrue" class="lastelement flex">
+              on-opened-changed="isTrue" class="lastelement light-element flex">
               <div slot="collapse-trigger" class="flex">
                 <span>Anschrift</span>
               </div>
@@ -245,13 +241,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               </div>
             </iron-collapse-button>
             <iron-collapse-button expand-icon="add-circle-outline" collapse-icon="remove-circle-outline"
-              on-opened-changed="isTrue" class="lastelement flex">
+              on-opened-changed="isTrue" class="lastelement light-element flex">
               <template is="dom-if" if="[[detailsOpened]]">
                 <div slot="collapse-trigger" class="flex">
-                  Versicherungsdaten 
+                  <div class="layout horizontal justified">
+                    Versicherungsdaten <button id="sbt[[index]]" on-click="_saveItemData" disabled="[[!dc]]">
+                      <iron-icon icon="save" id="sic[[index]]" slot="item-icon" on-click="_saveItemData"></iron-icon>
+                    </button>
+                  </div>
                 </div>
                 <div slot="collapse-content">
-                  <my-versicherungrechner id="vrd[[index]]" vcs="[[vconfig]]" saved-data="[[item]]" ></my-versicherungrechner>
+                  <my-versicherungrechner id="[[getVRDID(index, _pageStart)]]" vcs="[[vconfig]]" saved-data="[[item]]"
+                    dosave="{{dosave}}" changed-saved-data="{{dc}}" on-savedversicherter="_insertChangedVersicherter"></my-versicherungrechner>
                 </div>
               </template>
             </iron-collapse-button>
@@ -360,12 +361,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <vaadin-grid-column width="100px">
           <template class="header"></template>
           <template>
-            <button id="bt[[item.GaNr]]" on-click="_openDetails" class="endpagebutton">
+            <button id="bt[[item.GaNr]]" on-click="_openDetails" class="second-domain-endpagebutton">
               <slot>
                 <iron-icon id="cr[[item.GaNr]]" icon="[[getIcon(detailsOpened)]]" slot="item-icon" on-click="_openDetails"></iron-icon>
               </slot>
             </button>
-            <button id="bt[[item.GaNr]]" on-click="_removeItem" class="endpagebutton" disabled="[[detailsOpened]]">
+            <button id="bt[[item.GaNr]]" on-click="_removeItem" class="second-domain-endpagebutton" disabled="[[detailsOpened]]">
               <iron-icon id="rm[[item.GaNr]]" icon="delete" slot="item-icon" on-click="_removeItem"></iron-icon>
             </button>
             <!-- <vaadin-checkbox aria-label$="Show Details for [[NAME]]" checked="{{detailsOpened}}">Details</vaadin-checkbox> -->
@@ -441,23 +442,44 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           dtls: {
             type: Array,
             value: []
-          }, 
+          },
 
-          vconfig : {
+          vconfig: {
             type: Object,
             value: null,
             notify: true
           },
 
-          openeddetails:{
+          openeddetails: {
             type: Array,
             value: []
+          },
+
+          dosave: {
+            type: Boolean,
+            value: null,
+            notify: true
           }
         }
       }
 
-      isAddDisabled(){
-        return true;
+      isAddDisabled() {
+        if (this.openeddetails && this.openeddetails.length) {
+          return true;
+        } else return false;
+
+      }
+
+      isSaveDisabled() {
+        if ((this.openeddetails && this.openeddetails.length) || !this.mvdata || !this.mvdata.length) {
+          return true;
+        } else return false;
+      }
+
+      isExportDisabled() {
+        if ((this.openeddetails && this.openeddetails.length) || !this.mvdata || !this.mvdata.length) {
+          return true;
+        } else return false;
       }
 
 
@@ -486,13 +508,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         //wichtig weil sonst der scroll balken rechts aktiv bleibt auch nach der Fensterreduzierung 
         this.$.mygrid.notifyResize()
-        if(e.model.detailsOpened){
+        if (e.model.detailsOpened) {
           this.push('openeddetails', true);
         } else {
           this.shift('openeddetails');
         }
         e.stopPropagation();
-        
+
       }
 
       _keepDetailsOpen(e) {
@@ -689,7 +711,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           let end = parseInt(this._pageStart) + parseInt(this.pageSize);
           let newItems = this.mvdata.slice(this._pageStart, end);
           this.$.mygrid.items = newItems;
-          this.$.mygrid.clearCache();
+          this.set('openeddetails', [])
         }
 
       }
@@ -745,7 +767,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         window.addEventListener('vconfigchanged', (e) => {
           console.log('vconfigchanged in versicherte' + JSON.stringify(e.detail))
-                    this.set('vconfig', e.detail);
+          this.set('vconfig', e.detail);
         })
       }
 
@@ -870,9 +892,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           //debugger;
           showToast(this, 'Der Datenexport der Versicherten ist fehlgeschlagen', TOAST_TYPE.ERROR);
         });
+      }
 
+      _saveItemData(e) {
+        if (e && e.target && e.target.id) {
+          let idx = parseInt(e.target.id.substring(3)) + (parseInt(this._pageStart) || 0);
+          this.set('dosave', idx);
+        }
+        e.stopPropagation();
+      }
 
+      _insertChangedVersicherter(e) {
+        this.splice('mvdata', e.detail.index, 1, e.detail.data)
+        this.changePage();
+      }
 
+      getVRDID(index, _pageStart) {
+        let realIndex = (parseInt(index) + parseInt(_pageStart));
+        return 'vrd' + realIndex;
       }
     }
 
