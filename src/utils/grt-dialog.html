@@ -76,6 +76,11 @@
                         value: null
                     },
 
+                    origData: {
+                        type: Object,
+                        value: null
+                    },
+
                     defaultConfirmName: {
                         type: String,
                         value: 'Ok'
@@ -100,18 +105,22 @@
             }
 
             showDialog(textsObjekt) {
+
                 this.set('title', textsObjekt.title);
                 this.set('message', textsObjekt.message);
+                this.set('origData', textsObjekt.origData);
+                //debugger;
                 this.$.vdialog.opened = true;
             }
 
             _closeDialog() {
-                this.dispatchEvent(new CustomEvent('grt-cancel'));
+                this.dispatchEvent(new CustomEvent('grtcancel'));
                 this.$.vdialog.opened = false;
             }
 
             _confirm() {
-                this.dispatchEvent(new CustomEvent('grt-confirm'));
+               //debugger;
+                this.dispatchEvent(new CustomEvent('grtconfirm', { detail: this.origData }));
                 this._closeDialog();
             }
 

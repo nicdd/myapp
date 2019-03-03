@@ -188,8 +188,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <first-client id="firstclient"></first-client>
     <basic-client id="bclient"></basic-client>
-    <create-versicherter-antrag id="adddialog" cancel-name="Abbrechen" confirmation-name="Hinzufügen"></create-versicherter-antrag>
-
+    <grt-dialog id="deletedialog" dialog-type="confirmation" confirmation-name="Löschen" cancel-name="Abbrechen"
+      on-grtconfirm="_removeItem"></grt-dialog>
+    <grt-dialog id="grtinfodialog" dialog-type="info"></grt-dialog>
 
     <div class="toolbar layout horizontal justified" flex>
       <template is="dom-if" if="[[columnNames.length]]">
@@ -197,6 +198,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           on-pagechanged="changePage" style-domain="second-domain"></grt-grid-pagination>
       </template>
       <div class="layout horizontal justified" flex="50">
+
+          <button id="appsbutton" on-click="_showApps" disabled="[[_noOneSelected(mvdata.*)]]">
+              <iron-icon icon="apps" id="appsicon" slot="item-icon" on-click="_showApps"></iron-icon>
+            </button>
+        
         <paper-button bottom raised on-click="addVersicherter" disabled="[[isAddDisabled(openeddetails.*)]]">Antrag
           erfassen <iron-icon icon="add-circle-outline" slot="item-icon"></iron-icon>
         </paper-button>
@@ -212,21 +218,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           loading-label="Nicht so hecktisch ..." loading="[[_loading]]">Exportieren</paper-progress-button> -->
       </div>
     </div>
-    <grt-dialog id="grtinfodialog" dialog-type="info"></grt-dialog>
+    <create-versicherter-antrag id="adddialog" cancel-name="Abbrechen" confirmation-name="Hinzufügen" on-add-v="_postOneVersicherter"></create-versicherter-antrag>
     <export-chooser id="exportdialog" dialog-type="info" confirmation-name="Schließen" on-export-versicherte="exportVersicherte"></export-chooser>
     <div class="page">
       <vaadin-grid id="mygrid" page-size="{{pageSize}}" active-item="{{activeItem}}" aria-label="Basic Binding Example"
         items="[[mvdata]]" column-reordering-allowed>
         <template class="row-details">
           <div class="details">
-
-            <!-- <p>
-              <span>Anschrift</span><br>
-              <small>[[columnNames.3]]:[[item.STRASSE]]</small><br>
-              <small>[[columnNames.4]]:[[item.PLZ]]</small><br>
-              <small>[[columnNames.5]]:[[item.ORT]]</small><br>
-            </p> -->
-
             <iron-collapse-button expand-icon="add-circle-outline" collapse-icon="remove-circle-outline"
               on-opened-changed="isTrue" class="lastelement light-element flex">
               <div slot="collapse-trigger" class="flex">
@@ -251,8 +249,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                   </div>
                 </div>
                 <div slot="collapse-content">
-                  <my-versicherungrechner id="[[getVRDID(index, _pageStart)]]" vcs="[[vconfig]]" saved-data="[[item]]"
-                    dosave="{{dosave}}" changed-saved-data="{{dc}}" on-savedversicherter="_insertChangedVersicherter"></my-versicherungrechner>
+                  <my-versicherungrechner id="[[getGridElementID(index, _pageStart, 'vrd')]]" vcs="[[vconfig]]" saved-data="[[item]]"
+                    dosave="{{dosave}}" changed-saved-data="{{dc}}" on-savedversicherter="_postOneVersicherter"></my-versicherungrechner>
                 </div>
               </template>
             </iron-collapse-button>
@@ -260,8 +258,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           </div>
         </template>
         <!--auto-select wenn man will dass man auch über das anklicken in der zeile nicht nur in der box selektieren kann-->
-        <vaadin-grid-selection-column auto-select width="40px"></vaadin-grid-selection-column>
-
+        <!-- <vaadin-grid-column path="selected">
+          <template class="header">
+            <vaadin-checkbox path="selected"></vaadin-checkbox>
+          </template>
+        </vaadin-grid-column> -->
+        <vaadin-grid-column width="100px" frozen>
+          <template class="header">
+            <vaadin-checkbox on-change="_checkAll" checked="[[_areAllSelected(mvdata.*)]]"></vaadin-checkbox>
+          </template>
+          <template>
+            <vaadin-checkbox id="[[getGridElementID(index, _pageStart, 'scb')]]" on-change="_checkOne" checked="[[item.selected]]"></vaadin-checkbox>
+          </template>
+        </vaadin-grid-column>
         <vaadin-grid-column path="GaNr" header="GaNr" width="75px" flex-grow="0" text-align="end">
           <template class="header">
             <vaadin-grid-sorter path="GaNr" on-sorter-changed="_sortChange">
@@ -366,8 +375,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 <iron-icon id="cr[[item.GaNr]]" icon="[[getIcon(detailsOpened)]]" slot="item-icon" on-click="_openDetails"></iron-icon>
               </slot>
             </button>
-            <button id="bt[[item.GaNr]]" on-click="_removeItem" class="second-domain-endpagebutton" disabled="[[detailsOpened]]">
-              <iron-icon id="rm[[item.GaNr]]" icon="delete" slot="item-icon" on-click="_removeItem"></iron-icon>
+            <button id="bt[[item.GaNr]]" on-click="_confirmRemove" class="second-domain-endpagebutton" disabled="[[detailsOpened]]">
+              <iron-icon id="rm[[item.GaNr]]" icon="delete" slot="item-icon" on-click="_confirmRemove"></iron-icon>
             </button>
             <!-- <vaadin-checkbox aria-label$="Show Details for [[NAME]]" checked="{{detailsOpened}}">Details</vaadin-checkbox> -->
           </template>
@@ -463,6 +472,41 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       }
 
+      _noOneSelected(){
+        return !this.mvdata.some((data) => data.selected);
+      }
+      _areAllSelected(){
+        return !this.mvdata.some((data) => !data.selected);
+      }
+      _checkAll(e) {
+        console.log('_checkAll _checkOne ')
+        if (e.currentTarget.checked) {
+          this.mvdata.forEach((mv, idx) => {
+            let path = 'mvdata.' + idx + '.selected'
+            this.set(path, true)
+          })
+        } else {
+          this.mvdata.forEach((mv, idx) => {
+            let path = 'mvdata.' + idx + '.selected'
+            this.set(path, false)
+          })
+        }
+      }
+
+      _checkOne(e){
+        console.log('_checkOne _checkAll aselectedchanged changed _checkOne')
+        let realIndex = e.target.id.substring(3);
+        if (e.currentTarget.checked) {
+            let path = 'mvdata.' + realIndex + '.selected'
+            this.set(path, true)
+        } else {
+            let path = 'mvdata.' + realIndex + '.selected'
+            this.set(path, false)
+        }
+      }
+
+      
+
       isAddDisabled() {
         if (this.openeddetails && this.openeddetails.length) {
           return true;
@@ -537,10 +581,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this.set('gartenNrSelections', gNrOptions);
       }
 
-      _removeItem(e) {
+      _confirmRemove(e) {
         e.preventDefault();
-        let id = e.target.id.substring(2);
-        console.log('id ist' + id);
+        this.$.deletedialog.showDialog(
+          {
+            "title": "Versicherter Löschen",
+            "message": "Bitte bestätigen Sie, dass Sie den Versicherter wirklich entfernen möchten.",
+            "origData": e.target.id.substring(2)
+          })
+        e.stopPropagation();
+      }
+
+      _removeItem(confirmEvent) {
+        //debugger;
+        let id = confirmEvent.detail;
+        console.log('idddd ist' + id);
         let elem = this.mvdata.find((v) => {
           return v.GaNr === id
         });
@@ -548,9 +603,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         let idx = this.mvdata.indexOf(elem);
         console.log('index ist' + idx);
         if (idx >= 0) {
-          this.splice('mvdata', idx, 1);
+          //ToDo - noch ein Bestätigungsdialog zeigen
+          this.$.firstclient.deleteOneVersicherter(elem.GaNr).then(() => {
+            this.splice('mvdata', idx, 1);
+            showToast(this, 'Der Versicherte wurde erfolgreich gelöscht', TOAST_TYPE.SUCCESS);
+          }).catch(() => {
+            showToast(this, 'Fehler bei der Löschung des Versicherten. Verschen Sie später noch einmal.', TOAST_TYPE.ERROR);
+          })
         }
-        e.stopPropagation();
+
 
       }
 
@@ -722,6 +783,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         super.ready();
         this.$.firstclient.getVersicherteAsJSON().then((resp) => {
           if (resp) {
+            resp.data.forEach((vd) => {
+              vd['selected'] = false;
+            })
             this.splitToObjects(resp);
           } else {
             showToast(this, 'Bei der Initialisierung der Seite wurden keine Versichertendaten gefunden', TOAST_TYPE.ERROR);
@@ -739,18 +803,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         // })
 
         let self = this;
-        this.$.adddialog.addEventListener('add-v', (e) => {
-          console.debug('adddialog gedruckt' + JSON.stringify(e.detail))
-          console.debug('mvdataadd davor' + JSON.stringify(self.mvdata))
-          self.splice('mvdata', self._pageStart, 0, e.detail);
-          console.debug('mvdataadd danach' + JSON.stringify(self.mvdata))
-          //e.stopPropagation()
-          //this.push('mvdata', e.detail);
-        });
+        // this.$.adddialog.addEventListener('add-v', (e) => {
+        //   console.debug('adddialog gedruckt' + JSON.stringify(e.detail))
+        //   console.debug('mvdataadd davor' + JSON.stringify(self.mvdata))
+        //   self.splice('mvdata', self._pageStart, 0, e.detail);
+        //   console.debug('mvdataadd danach' + JSON.stringify(self.mvdata))
+        //   //e.stopPropagation()
+        //   //this.push('mvdata', e.detail);
+        // });
 
-        this.$.mygrid.addEventListener('selected-items-changed', (e) => {
-          this.doOnSelection(e);
-        })
+
         /**
          *  When a row is clicked or the space key is pressed while a row cell is in focus, the related item object is assigned as the grid's activeItem.
       
@@ -772,10 +834,25 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       doOnSelection(e) {
-
-        console.log('selectiert sind' + JSON.stringify(e.target.selectedItems));
-
-
+        //debugger;
+        console.log('selectiert sind')
+        let nodeList = e.target.children// e.target.childNodes;
+        console.log('selectiert sind nodeList' + nodeList.length + ' typeof nodeList array' + Array.isArray(nodeList))
+        let areAllSelected = false;
+        for (let i = 0; i < nodeList.length; i++) {
+          if (nodeList[i].nodeName === 'VAADIN-GRID-SELECTION-COLUMN') {
+            console.log('selectiert sind selectAll:' + nodeList[i].selectAll)
+            areAllSelected = nodeList[i].selectAll;
+            break;
+          }
+        }
+        if (areAllSelected) {
+          this.$.mygrid.selectedItems = this.mvdata;
+        } else {
+          //this.$.mygrid.selectedItems = []
+        }
+        //this.$.mygrid.selectedItems = this.mvdata;
+        console.log('selectiert sind ANZAHl' + this.$.mygrid.selectedItems.length);
       }
 
 
@@ -784,6 +861,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         let columns = resp.columns;
 
         this.set('columnNames', columns);
+
 
         this.set('mvdata', versichertenData);
         this.set('pageSize', 10);
@@ -903,13 +981,43 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       _insertChangedVersicherter(e) {
+
         this.splice('mvdata', e.detail.index, 1, e.detail.data)
+        // self.set('originaldata', self.vc);
+        this.set('dosave', null);
         this.changePage();
       }
 
-      getVRDID(index, _pageStart) {
+      _insertNewVersicherter(e) {
+        let self = this;
+        self.splice('mvdata', self._pageStart, 0, e.detail);
+      }
+
+      _postOneVersicherter(e) {
+        let toSave = null;
+        if (e.type && e.type === 'add-v') {
+          toSave = e.detail;
+        } else if (e.type && e.type === 'savedversicherter') {
+          toSave = e.detail.data;
+        }
+        this.$.firstclient.postOneVersicherter(toSave).then(() => {
+          if (e.type && e.type === 'add-v') {
+            this._insertNewVersicherter(e);
+          } else if (e.type && e.type === 'savedversicherter') {
+            this._insertChangedVersicherter(e);
+          }
+          showToast(this, 'Die Änderungen des Versicherten wurden erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
+
+        }).catch((error) => {
+          showToast(this, 'Fehler bei der Speicherung der Änderungen', TOAST_TYPE.ERROR);
+          this.set('dosave', null);
+        })
+
+      }
+
+      getGridElementID(index, _pageStart, prefix) {
         let realIndex = (parseInt(index) + parseInt(_pageStart));
-        return 'vrd' + realIndex;
+        return prefix + realIndex;
       }
     }
 

@@ -670,18 +670,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     //let origSaved = this.savedData;
                 
                     let toSave = self.transferVCToSavedData(self.vc, JSON.parse(JSON.stringify(self.savedData)));
+                    self.dispatchEvent(new CustomEvent('savedversicherter', { detail: {data: toSave, index: self.dosave} }));
                     
-                    self.$.firstclient.postOneVersicherter(toSave).then(() => {
-                        self.set('originaldata', self.vc);
-                       // self.set('savedData', toSave);
-                        self.dispatchEvent(new CustomEvent('savedversicherter', { detail: {data: toSave, index: self.dosave} }));
-                        showToast(self, 'Die Änderungen des Versicherten wurden erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
-                        this.set('dosave', null);
-                    }).catch((error) => {
-                        //self.set('savedData', origSaved);
-                        showToast(self, 'Fehler bei der Speicherung der Änderungen', TOAST_TYPE.ERROR);
-                       this.set('dosave', null);
-                    })
+                    
                 }
             }
 

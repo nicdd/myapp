@@ -190,6 +190,7 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
       }
 
       _importRemoteVersichertePressed() {
+        //toDo make a backup from the existing data if some, because they will be overridden
         this.$.firstclient.getVersicherteCSV().then((resp) => {
           if (resp) {
             this.mapToJSON(resp);
@@ -206,6 +207,7 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
       }
 
       saveToDB(dataAndColumns) {
+        //toDo make a backup from the existing data if some, because they will be overridden
         this.$.firstclient.postVersicherteAsJSON(dataAndColumns);
       }
 
