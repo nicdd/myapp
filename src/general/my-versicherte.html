@@ -198,11 +198,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           on-pagechanged="changePage" style-domain="second-domain"></grt-grid-pagination>
       </template>
       <div class="layout horizontal justified" flex="50">
-
           <button id="appsbutton" on-click="_showApps" disabled="[[_noOneSelected(mvdata.*)]]">
               <iron-icon icon="apps" id="appsicon" slot="item-icon" on-click="_showApps"></iron-icon>
-            </button>
-        
+          </button>
         <paper-button bottom raised on-click="addVersicherter" disabled="[[isAddDisabled(openeddetails.*)]]">Antrag
           erfassen <iron-icon icon="add-circle-outline" slot="item-icon"></iron-icon>
         </paper-button>
@@ -257,13 +255,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
           </div>
         </template>
-        <!--auto-select wenn man will dass man auch über das anklicken in der zeile nicht nur in der box selektieren kann-->
-        <!-- <vaadin-grid-column path="selected">
-          <template class="header">
-            <vaadin-checkbox path="selected"></vaadin-checkbox>
-          </template>
-        </vaadin-grid-column> -->
-        <vaadin-grid-column width="100px" frozen>
+        <vaadin-grid-column width="20px" >
           <template class="header">
             <vaadin-checkbox on-change="_checkAll" checked="[[_areAllSelected(mvdata.*)]]"></vaadin-checkbox>
           </template>
@@ -783,9 +775,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         super.ready();
         this.$.firstclient.getVersicherteAsJSON().then((resp) => {
           if (resp) {
-            resp.data.forEach((vd) => {
-              vd['selected'] = false;
-            })
+            // resp.data.forEach((vd) => {
+            //   vd['selected'] = false;
+            // })
             this.splitToObjects(resp);
           } else {
             showToast(this, 'Bei der Initialisierung der Seite wurden keine Versichertendaten gefunden', TOAST_TYPE.ERROR);
