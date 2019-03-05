@@ -63,6 +63,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../general/my-versicherungrechner.html">
 <link rel="import" href="../utils/export-chooser.html">
 <link rel="import" href="../utils/grt-dialog.html">
+<link rel="import" href="../utils/apps-dialog.html">
+
 
 
 <dom-module id="my-versicherte">
@@ -198,9 +200,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           on-pagechanged="changePage" style-domain="second-domain"></grt-grid-pagination>
       </template>
       <div class="layout horizontal justified" flex="50">
-          <button id="appsbutton" on-click="_showApps" disabled="[[_noOneSelected(mvdata.*)]]">
-              <iron-icon icon="apps" id="appsicon" slot="item-icon" on-click="_showApps"></iron-icon>
-          </button>
+        <button id="appsbutton" on-click="_showApps" disabled="[[_noOneSelected(mvdata.*)]]">
+          <iron-icon icon="apps" id="appsicon" slot="item-icon" on-click="_showApps"></iron-icon>
+        </button>
         <paper-button bottom raised on-click="addVersicherter" disabled="[[isAddDisabled(openeddetails.*)]]">Antrag
           erfassen <iron-icon icon="add-circle-outline" slot="item-icon"></iron-icon>
         </paper-button>
@@ -247,15 +249,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                   </div>
                 </div>
                 <div slot="collapse-content">
-                  <my-versicherungrechner id="[[getGridElementID(index, _pageStart, 'vrd')]]" vcs="[[vconfig]]" saved-data="[[item]]"
-                    dosave="{{dosave}}" changed-saved-data="{{dc}}" on-savedversicherter="_postOneVersicherter"></my-versicherungrechner>
+                  <my-versicherungrechner id="[[getGridElementID(index, _pageStart, 'vrd')]]" vcs="[[vconfig]]"
+                    saved-data="[[item]]" dosave="{{dosave}}" changed-saved-data="{{dc}}" on-savedversicherter="_postOneVersicherter"></my-versicherungrechner>
                 </div>
               </template>
             </iron-collapse-button>
 
           </div>
         </template>
-        <vaadin-grid-column width="20px" >
+        <vaadin-grid-column width="20px">
           <template class="header">
             <vaadin-checkbox on-change="_checkAll" checked="[[_areAllSelected(mvdata.*)]]"></vaadin-checkbox>
           </template>
@@ -376,14 +378,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       </vaadin-grid>
 
     </div>
-    <!-- <div id="pages"></div> -->
+    <apps-dialog id="appsdialog" action-buttons="[[actionButtons]]" tasks="[[getSelected(mvdata.*)]]"></apps-dialog>
+    
 
 
   </template>
-
-
-
-
 
   <script>
     class MyVersicherte extends Polymer.Element {
@@ -391,6 +390,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       static get properties() {
         return {
+          actionButtons:{
+            type: Array,
+            value: ['email', 'rechnung', 'meldung','brief']
+          },
+
           pageSize: {
             type: Number,
             value: null,
@@ -464,10 +468,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       }
 
-      _noOneSelected(){
+      _noOneSelected() {
         return !this.mvdata.some((data) => data.selected);
       }
-      _areAllSelected(){
+      _areAllSelected() {
         return !this.mvdata.some((data) => !data.selected);
       }
       _checkAll(e) {
@@ -485,19 +489,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       }
 
-      _checkOne(e){
+      getSelected(){
+        let thetasks = this.mvdata.filter((el)=> el.selected === true);
+        return thetasks;
+      }
+
+      _checkOne(e) {
         console.log('_checkOne _checkAll aselectedchanged changed _checkOne')
         let realIndex = e.target.id.substring(3);
         if (e.currentTarget.checked) {
-            let path = 'mvdata.' + realIndex + '.selected'
-            this.set(path, true)
+          let path = 'mvdata.' + realIndex + '.selected'
+          this.set(path, true)
         } else {
-            let path = 'mvdata.' + realIndex + '.selected'
-            this.set(path, false)
+          let path = 'mvdata.' + realIndex + '.selected'
+          this.set(path, false)
         }
       }
 
-      
+
 
       isAddDisabled() {
         if (this.openeddetails && this.openeddetails.length) {
@@ -823,6 +832,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           console.log('vconfigchanged in versicherte' + JSON.stringify(e.detail))
           this.set('vconfig', e.detail);
         })
+
+        
       }
 
       doOnSelection(e) {
@@ -1010,6 +1021,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       getGridElementID(index, _pageStart, prefix) {
         let realIndex = (parseInt(index) + parseInt(_pageStart));
         return prefix + realIndex;
+      }
+
+      _showApps(e) {
+        this.$.appsdialog.showDialog()
+
+        
+        // iziToast.show({
+        //   position: "center",
+        //   title: 'Hey',
+        //   message: 'What would you like to add?',
+        // })
       }
     }
 

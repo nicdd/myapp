@@ -1,0 +1,137 @@
+<!--
+Pagination Element for Vaadin-Grid Tables
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/vaadin-dialog/vaadin-dialog.html">
+<link rel="import" href="../utils/close-icon-button.html">
+<link rel="import" href="../utils/email-action.html">
+<link rel="import" href="../utils/rechnung-action.html">
+<link rel="import" href="../utils/meldung-action.html">
+<link rel="import" href="../utils/brief-action.html">
+
+
+<dom-module id="apps-dialog">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: inline-block;
+
+                padding: 3px;
+            }
+
+            .circlebutton {
+                --mbutton-mixin: {
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50% !important;
+                }
+            }
+
+            .flexcontainer {
+                position: relative;
+                padding: 0;
+                margin-bottom: 4rem;
+                display: flex;
+                flex-direction: row;
+                justify-content: center;
+                align-items: center;
+                width: 100%;
+            }
+
+            .itemcenter {
+                display: flex;
+                margin: 1px;
+                padding: 5px;
+            }
+
+            .itemright {
+                top: 0;
+                right: 0;
+                position: absolute;
+            }
+
+            .mdialog {
+                display: flex;
+                min-width: 1000px !important;
+            }
+        </style>
+
+        <vaadin-dialog id="pdialog" class="mdialog">
+            <template>
+                <div class="layout vertical center">
+
+                    <div class="layout vertical">
+                        <template is="dom-repeat" items="[[splittedActionButtons]]" as="arow">
+                            <div class="layout horizontal center">
+                                <template is="dom-repeat" items="[[arow]]">
+                                    <div  inner-h-t-m-l="[[getHtmlElementFor(item, atest, tasks.*)]]"></div>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </template>
+        </vaadin-dialog>
+    </template>
+
+    <script>
+        class AppsDialog extends Polymer.Element {
+            static get is() { return 'apps-dialog'; }
+
+            static get properties() {
+                return {
+                    actionButtons: {
+                        type: Array,
+                        value: [],
+                        observer: 'splitActions'
+                    },
+                    splittedActionButtons: {
+                        type: Array,
+                        value: [],
+                        notify: true
+                    },
+                    tasks: {
+                        type: Array,
+                        value: null
+                    }
+                }
+            }
+
+            showDialog() {
+                this.$.pdialog.opened = true;
+            }
+
+            _closeDialog() {
+                this.$.pdialog.opened = false;
+            }
+
+            _doAdd(e) {
+
+
+                this._closeDialog();
+            }
+
+            getHtmlElementFor(item, atest, tasks) {
+                return "<" + item + "-action id='" + item + "' tasks='" + JSON.stringify(this.tasks) + "'>" + "</" + item + "-action>";
+            }
+
+            splitActions() {
+                this.actionButtons.forEach((a, index) => {
+                    let splitIndex = index % 3;
+                    let arrayIndex = parseInt(index / 3);
+                    let path = 'splittedActionButtons.' + arrayIndex;
+                    if (!Array.isArray(this.get('splittedActionButtons.' + arrayIndex))) {
+                        this.push('splittedActionButtons', []);
+                    }
+                    this.push(path, a);
+                })
+            }
+
+
+
+        }
+
+        window.customElements.define(AppsDialog.is, AppsDialog);
+    </script>
+</dom-module>

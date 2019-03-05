@@ -1,0 +1,57 @@
+<!--
+Pagination Element for Vaadin-Grid Tables
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../shared-styles.html">
+
+<dom-module id="meldung-action">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: inline-block;
+                padding: 3px;
+            }
+
+            button {
+                background-color: white;
+            }
+
+            .actions {
+                --iron-icon-width: 48px;
+                --iron-icon-height: 48px;
+                --iron-icon-fill-color : var(--second-domain-primary-color); 
+                --iron-icon-stroke-color: var(--app-error-color);
+            }
+        </style>
+
+        <button id="meldung_btn_icn" title="Meldung an den Verein senden">
+            <div class="layout vertical actions">
+                <iron-icon id="meldung_icn" icon="announcement" slot="item-icon"></iron-icon>
+                <label>Meldung</label>
+            </div>
+        </button>
+
+    </template>
+
+    <script>
+        class MeldungAction extends Polymer.Element {
+            static get is() { return 'meldung-action'; }
+
+            static get properties() {
+                return {
+                    tasks: {
+                        type: Array,
+                        value: null
+                    }
+                }
+            }
+
+            
+
+        }
+
+        window.customElements.define(MeldungAction.is, MeldungAction);
+    </script>
+</dom-module>

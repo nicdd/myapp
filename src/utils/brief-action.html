@@ -1,0 +1,54 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../shared-styles.html">
+
+<dom-module id="brief-action">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: inline-block;
+                padding: 3px;
+            }
+
+            button {
+                background-color: white;
+            }
+
+            .actions {
+                --iron-icon-width: 48px;
+                --iron-icon-height: 48px;
+                --iron-icon-fill-color : var(--second-domain-primary-color); 
+                --iron-icon-stroke-color: var(--app-error-color);
+            }
+
+            
+        </style>
+
+        <button id="brief_btn_icn" title="Brief an die selektierten Pächter senden">
+            <div class="layout vertical actions">
+                <iron-icon id="brief_icn" icon="drafts" slot="item-icon"></iron-icon>
+                <label>Brief</label>
+            </div>
+        </button>
+
+    </template>
+
+    <script>
+        class BriefAction extends Polymer.Element {
+            static get is() { return 'brief-action'; }
+
+            static get properties() {
+                return {
+                    tasks: {
+                        type: Array,
+                        value: null
+                    }
+                }
+            }
+
+            
+        }
+
+        window.customElements.define(BriefAction.is, BriefAction);
+    </script>
+</dom-module>
