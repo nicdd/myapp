@@ -1,0 +1,138 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../shared-styles.html">
+
+<dom-module id="grt-dropdown-input">
+    <template>
+        <style include="shared-styles">
+            .dropdown-content{
+                overflow-x:hidden;
+            }
+            paper-item{
+                cursor:pointer;
+            }
+
+            paper-item.hover{
+               background-color: var(--app-primary-light-color);
+            }
+
+            
+        </style>
+
+        <paper-dropdown-menu disabled="[[disabled]]" label="[[label]]" invalid="[[invalid]]" on-iron-select="_itemSelected" errorMessage="test">
+            <paper-listbox slot="dropdown-content" class="dropdown-content" selected="{{selectedindex}}">
+                <template is="dom-repeat" items="[[items]]">
+                    <paper-item>[[_getDisplayText(item)]]</paper-item>
+                </template>
+            </paper-listbox>
+        </paper-dropdown-menu>
+
+    </template>
+
+    <script>
+        class GrtDropdownInput extends Polymer.Element {
+            static get is() { return 'grt-dropdown-input'; }
+
+            static get properties() {
+                return {
+                    items:{
+                        type: Array
+                    },
+                    label:{
+                        type: String
+                    },
+                    disabled:{
+                        type: Boolean
+                    },
+                    required:{
+                        type: Boolean,
+                        value: false
+                    },
+                    invalid: {
+                        type: Boolean,
+                        value: true,
+                        notify: true
+                    },
+                    selected:{
+                        type: Object,
+                        notify: true
+                    },
+                    // um die auswahl zurückzusetzen, setze es auf null
+                    selectedindex: {
+                        type: Object,
+                        notify: true
+                    },
+
+                    displayProperties: {
+                        type: String,
+                        value: null
+                    },
+                    separator: {
+                        type: String,
+                        value: null
+                    }
+                }
+            }
+
+            ready(){
+                super.ready();
+                let isInvalid= this.selected === undefined;
+                if(this.required === true){
+                    this.set("invalid", isInvalid)
+                } else {
+                    this.set("invalid", false);
+                }
+
+                if(!isInvalid){
+                    let preselectedIndex = this.items.findIndex((value)=> value === this.selected);
+                    this.set('selectedindex', preselectedIndex);
+                }
+            }
+
+            _itemSelected(e){
+                this.set("invalid", false);
+                this.set("selected", this.items[e.target.selected]);
+            }
+
+            _getDisplayText(item){
+                if(null === this.displayProperties){
+                    return item;
+                } else {
+                    let itemTextToDisplay = "";
+                    let prarray = [];
+                    if (this.displayProperties.indexOf(",") >= 0){
+                        prarray = this.displayProperties.split(",").map(elem => elem.trim());
+                    } else {
+                        prarray.push(this.displayProperties);
+                    }
+
+                    prarray.forEach((property)=>{
+                        if(item[property]){
+                            itemTextToDisplay += item[property];
+                            if(this.separator){
+                                itemTextToDisplay += this.separator;
+                            }
+                            itemTextToDisplay += " ";
+                        }
+                    })
+                    itemTextToDisplay = itemTextToDisplay.trim();
+                    if(this.separator)
+                    itemTextToDisplay = itemTextToDisplay.substring(0, itemTextToDisplay.length -1);
+
+                    return itemTextToDisplay;
+                }
+            }
+
+            resetItem(invalid){
+                invalid = invalid || false;
+                this.set("invalid", invalid);
+                this.set("selectedindex", null)
+            }
+
+        }
+
+        window.customElements.define(GrtDropdownInput.is, GrtDropdownInput);
+    </script>
+</dom-module>

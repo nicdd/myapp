@@ -21,8 +21,14 @@
                     URLS: {
                         type: Object,
                         value: {
+
                             VERSICHERUNG_CONFIG: {
                                 path: '/api/versicherungconfig',
+                                port: '8000'
+                            },
+
+                            GENERAL_COLUMN_CONFIG: {
+                                path: '/api/generalcolumnconfig',
                                 port: '8000'
                             }
                         }
@@ -145,6 +151,67 @@
             getLocalVersicherungconfig() {
                 console.log('getLocalVersicherungconfig basicclient + ' + JSON.stringify(this.versicherungconfig))
                 return this.versicherungconfig;
+            }
+
+            getGeneralColumnConfig() {
+                let self = this;
+                let sourceURL = self._getSourceURL(self.actualLocation, self.URLS.GENERAL_COLUMN_CONFIG.path, self.URLS.GENERAL_COLUMN_CONFIG.port);
+                let myHeaders = new Headers();
+
+                let myInit = {
+                    method: 'GET',
+                    headers: myHeaders,
+                    mode: 'cors',
+                    cache: 'default',
+                    credentials: 'omit'
+                };
+
+                let myRequest = new Request(sourceURL, myInit);
+
+                return fetch(myRequest).then((response) => {
+                    if (response.status && response.status === 204) {
+                        console.log("getGeneralColumnConfig status 204")
+                        return undefined;
+                    } else {
+                        return response.json();
+                    }
+                }).catch((err) => {
+                        console.log('getGeneralColumnConfig die Anfrage an api/generalcolumnconfig war nicht erfolgreich' + JSON.stringify(error))
+                    });
+            }
+
+            postGeneralColumnConfig(theConfig) {
+                let tosend = JSON.stringify(theConfig);
+                console.log('theconfigtosave' + JSON.stringify(theConfig))
+                let self = this;
+                let sourceURL = self._getSourceURL(self.actualLocation, self.URLS.GENERAL_COLUMN_CONFIG.path, self.URLS.GENERAL_COLUMN_CONFIG.port);
+                let myHeaders = new Headers();
+                myHeaders.set("Content-Type", "application/json");
+
+                let myInit = {
+                    method: 'POST',
+                    headers: myHeaders,
+                    mode: 'cors',
+                    cache: 'default',
+                    credentials: 'omit',
+                    body: tosend
+                };
+
+                let myRequest = new Request(sourceURL, myInit);
+
+                return fetch(myRequest).then((response) => {
+                    if (response.ok) {
+                        console.log("postVersicherungconfig antwort")
+                        return response.json();
+                    } else {
+                        throw Error(`Anfrage fehlgeschlagen mit status ${response.status}`);
+                    }
+                    
+                }).catch((err) => {
+                    console.log('postGeneralColumnConfig die Anfrage an api/versicherungconfig war nicht erfolgreich')
+                    return Promise.reject(err);
+                });
+
             }
 
         }

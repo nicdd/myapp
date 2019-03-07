@@ -1,0 +1,263 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../../bower_components/paper-dropdown-input/paper-dropdown-input.html">
+<link rel="import" href="../clients/basicclient.html">
+<link rel="import" href="../first-domain-styles.html">
+
+<dom-module id="general-column-configuration">
+    <template>
+        <style include="first-domain-styles">
+            :host {
+                display: block;
+
+                padding: 10px 20px;
+            }
+            paper-input { padding-right:20px }
+
+            .page {
+                /* Stretch this element in the parent flex */
+                flex: 1;
+                /* Make a flex column layout of children */
+                display: flex;
+                flex-direction: column;
+                /*
+            Let the page contents scroll. Unnecessary for <vaadin-grid>,
+            but could be useful for other pages.
+          */
+                overflow: auto;
+                -webkit-overflow-scrolling: touch;
+                padding: 3rem;
+            }
+
+            .metacol{
+                width: 7rem;
+                text-align:center;
+            }
+            .contentcol{
+                text-align:start;
+            }
+            
+        </style>
+        <basic-client id="bclient"></basic-client>
+        <div class="layout vertical card">
+            <div class="layout horizontal ">
+                <paper-input class="labelgroup" min="1" max="100" always-float-label label="Anzahl der Spalten" type="number"
+                    required value="{{tempAnzahlSpalten}}" disabled="[[!editing]]"></paper-input>
+                <paper-button bottom raised disabled="[[isUebernehmenDisabled(tempAnzahlSpalten, colConf.length, editing)]]"
+                    on-click="_addReduceColumns">[[getUebernehmenButtonName(tempAnzahlSpalten, colConf.length)]]</paper-button>
+                <template is="dom-if" if="[[colConf.length]]">
+                    <paper-checkbox checked="{{editing}}" style="margin-bottom: 20px">Editieren</paper-checkbox>
+                </template>
+            </div>
+
+            <template is="dom-if" if="[[colConf.length]]">
+                <div class="page">
+                    <table>
+                        <thead>
+                            <th class="metacol">#</th>
+                            <th class="contentcol">Spaltenname</th>
+                            <th class="contentcol">Datentyp</th>
+                            <th class="metacol">Entfernen</th>
+                        </thead>
+                        <tbody>
+                            <template is="dom-repeat" items="[[colConf]]">
+                                <tr>
+                                    <td class="metacol">
+                                        [[getOrdnungsnummer(index)]]
+                                    </td>
+                                    <td class="contentcol">
+
+                                        <paper-input id="cnm[[index]]" auto-validate error-message="Eingabe erforderlich."
+                                            value="[[item.colname]]" readonly$="[[!editing]]" required minlength="1"
+                                            on-value-changed="_doOnColnameChanged"></paper-input>
+
+
+                                    </td>
+                                    <td class="contentcol">
+                                            <paper-dropdown-input id="ctp[[index]]" items='["number","string","object","boolean"]'
+                                            value$="[[item.coltype]]" readonly$="[[!editing]]" required minlength="1"
+                                            on-iron-select="_doOnSelect" no-search></paper-dropdown-input>
+
+                                    </td>
+                                    <td class="metacol">
+                                            <button id="dlb[[index]]" on-click="_removeColumn" class="first-domain-endpagebutton"
+                                            disabled="[[!editing]]">
+                                            <iron-icon id="dli[[index]]" icon="delete" slot="item-icon" on-click="_removeColumn"></iron-icon>
+                                        </button>
+
+                                    </td>
+                                </tr>
+                            </template>
+
+                        </tbody>
+                    </table>
+                    
+                </div>
+                <paper-button disabled="[[formInvalid]]" on-click="_saveColumnConfig">Speichern</paper-button>
+            </template>
+        </div>
+
+
+
+    </template>
+
+    <script>
+        class GeneralColumnConfiguration extends Polymer.Element {
+            static get is() { return 'general-column-configuration'; }
+            static get properties() {
+                return {
+                    tempAnzahlSpalten: {
+                        type: Number,
+                        value: null,
+                        notify: true
+                    },
+                    colConf: {
+                        type: Array,
+                        value: null,
+                        notify: true
+                    },
+                    formInvalid: {
+                        type: Boolean,
+                        notify: true
+                    },
+
+                    completed: {
+                        type: Boolean,
+                        value: false,
+                        notify: true
+                    },
+
+                    editing: {
+                        type: Boolean,
+                        value: false,
+                        notify: true
+                    }
+                };
+            }
+
+            ready() {
+                super.ready();
+                this.$.bclient.getGeneralColumnConfig().then((colConf) => {
+                    if (colConf && Array.isArray(colConf)) {
+                        let anzC = colConf.length;
+                        this.set('tempAnzahlSpalten', anzC)
+                        this.set('colConf', colConf);
+                        this.set('completed', true)
+                    }
+                }).catch(() => {
+                    this.set('completed', false)
+                }).finally(() => {
+                    this.validate()
+                })
+
+            }
+
+            _addReduceColumns() {
+                if (!this.colConf) {
+                    this.colConf = [];
+                }
+                if (this.tempAnzahlSpalten > this.colConf.length) {
+                    let diff = this.tempAnzahlSpalten - this.colConf.length;
+                    while (diff) {
+                        this._addColumn();
+                        diff--;
+                    }
+                } else if (this.tempAnzahlSpalten < this.colConf.length) {
+                    let diff = this.colConf.length - this.tempAnzahlSpalten;
+                    while (diff) {
+                        this._removeColumn(this.colConf.length - 1);
+                        diff--;
+                    }
+                }
+                this.validate();
+            }
+
+
+            _addColumn() {
+                this.push('colConf', { colname: null, coltype: null })
+            }
+
+            _removeColumn(indexParam) {
+                let index = null;
+                if ((typeof indexParam === 'number')) {
+                    index = indexParam;
+                } else if (indexParam.target && indexParam.target.id) {
+                    index = parseInt(indexParam.target.id.substring(3));
+                }
+                if (index || index === 0) {
+                    this.splice('colConf', index, 1)
+                }
+                this.set('tempAnzahlSpalten', this.colConf.length)
+            }
+
+            isUebernehmenDisabled(tempAnzahlSpalten, anzahlColumns, editing) {
+                if (tempAnzahlSpalten && anzahlColumns && (parseInt(tempAnzahlSpalten) === parseInt(anzahlColumns)) || !this.editing) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+            getUebernehmenButtonName(tempAnzahlSpalten, anzahlColumns) {
+                if (!tempAnzahlSpalten) {
+                    return "Übernehmen";
+                } else {
+                    if (parseInt(tempAnzahlSpalten) > (parseInt(anzahlColumns) || 0)) {
+                        return "Erhöhen";
+                    } else if (parseInt(tempAnzahlSpalten) < (parseInt(anzahlColumns) || 0)) {
+                        return "Reduzieren";
+                    } else return "Ändern"
+                }
+            }
+
+            getOrdnungsnummer(index) {
+                return index + 1;
+            }
+
+            validate(e) {
+                console.log('validate called')
+                let invalidFound = true;
+                if (this.colConf) {
+                    invalidFound = this.colConf.some((elem) => {
+                        console.log('elem ist ' + JSON.stringify(elem))
+                        return (!elem.colname || !elem.colname.length || !elem.coltype || !elem.coltype.length)
+                    })
+                }
+                this.set('formInvalid', invalidFound);
+            }
+
+            _saveColumnConfig() {
+
+                this.$.bclient.postGeneralColumnConfig(this.colConf).then(() => {
+                    this.set('completed', false)
+                    this.set('completed', true)
+                    showToast(this, 'Die Konfiguration der Spalten wurde erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
+                }).catch(() => {
+                    showToast(this, 'Fehler bei der Speicherung der Spaltenkonfiguration', TOAST_TYPE.ERROR);
+                });
+            }
+
+            _doOnColnameChanged(e) {
+                if (e && e.target) {
+                    let realIdx = e.target.id.substring(3);
+                    let path = 'colConf.' + realIdx + '.colname';
+                    this.set(path, e.target.__data.value)
+                    this.validate();
+                }
+            }
+
+            _doOnSelect(e) {
+                if (e && e.target) {
+                    let realIdx = e.target.id.substring(3);
+                    let path = 'colConf.' + realIdx + '.coltype';
+                    this.set(path, e.target.__data.value)
+                    this.validate();
+                }
+            }
+        }
+
+        window.customElements.define(GeneralColumnConfiguration.is, GeneralColumnConfiguration);
+    </script>
+</dom-module>

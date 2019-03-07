@@ -33,7 +33,8 @@
     "jQuery": "^3.3.1",
     "paper-dialog": "PolymerElements/paper-dialog#2.1.1",
     "file-saver": "^2.0.0",
-    "granite-file-reader": "LostInBrittany/granite-file-reader#^1.3.1"
+    "granite-file-reader": "LostInBrittany/granite-file-reader#^1.3.1",
+    "ud-stepper": "urdeveloper/ud-stepper#^0.5.0"
   },
   "resolutions": {
     "polymer": "^2.0.0",

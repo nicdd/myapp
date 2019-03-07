@@ -1,7 +1,9 @@
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/paper-progress-button/paper-progress-button.html">
 <link rel="import" href="../../bower_components/granite-file-reader/granite-file-reader.html">
+<link rel="import" href="../utils/grt-dropdown-input.html">
 <link rel="import" href="../clients/firstclient.html">
+<link rel="import" href="../clients/basicclient.html">
 <link rel="import" href="../first-domain-styles.html">
 <!-- <script src="../../bower_components/webcomponentsjs/webcomponents-lite.js"></script> -->
 
@@ -22,17 +24,76 @@
         color: white;
         padding: 0.5rem 1rem;
       }
+
+      .page {
+        /* Stretch this element in the parent flex */
+        flex: 1;
+        /* Make a flex column layout of children */
+        display: flex;
+        flex-direction: column;
+        /*
+            Let the page contents scroll. Unnecessary for <vaadin-grid>,
+            but could be useful for other pages.
+          */
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 3rem;
+      }
+
+      .metacol {
+        width: 7rem;
+        text-align: center;
+      }
+
+      .contentcol {
+        text-align: start;
+      }
     </style>
 
     <first-client id="firstclient"></first-client>
+    <basic-client id="bclient"></basic-client>
     <div class="toolbar layout horizontal center-justified" flex>
       <paper-progress-button bottom raised on-click="_importRemotePaechterPressed" loading-label="Nicht so hecktisch ..."
-        loading="[[_loading]]">Pächter-Daten aus CSV-Datei vom Server importieren <iron-icon icon="add-circle-outline" slot="item-icon"></iron-icon>
+        loading="[[_loading]]">Pächter-Daten aus CSV-Datei vom Server importieren <iron-icon icon="add-circle-outline"
+          slot="item-icon"></iron-icon>
       </paper-progress-button>
       <granite-file-reader read-as="dataURL" accept=".csv" on-file-read="_doOnFileRead">
         <div class="clickHere">Pächter-Daten aus lokaler CSV-Datei importieren</div>
       </granite-file-reader>
     </div>
+    <template is="dom-if" if="[[generalConf.length]]">
+      <div class="page">
+        <table>
+          <thead>
+            <th class="metacol">#</th>
+            <th class="contentcol">Spaltenname</th>
+            <th class="contentcol">Entsprechung</th>
+          </thead>
+          <tbody>
+            <template is="dom-repeat" items="[[generalConf]]">
+              <tr>
+                <td class="metacol">
+                  [[getOrdnungsnummer(index)]]
+                </td>
+                <td class="contentcol">
+                  <paper-input id="cnm[[index]]" value="[[item.colname]]" readonly></paper-input>
+                </td>
+                <td class="contentcol">
+                  <!-- <paper-dropdown-input id="ctp[[index]]" items="[[secondColumns]]" required minlength="1"
+                    on-iron-select="_doOnSelect" value$="[[entPaars.index.right]]"></paper-dropdown-input> -->
+                  <grt-dropdown-input id="ctp[[index]]" items="[[secondColumns]]" selected="{{entPaars.index.right}}"
+                    on-iron-select="_doOnSelect"></grt-dropdown-input>
+                </td>
+
+              </tr>
+            </template>
+
+          </tbody>
+        </table>
+
+      </div>
+      <paper-button disabled="[[formInvalid]]" on-click="_saveColumnConfig">Speichern</paper-button>
+    </template>
   </template>
 
   <script>
@@ -59,7 +120,29 @@
             value: null,
             notify: true,
             observer: '_transformCSVToArray'
+          },
 
+          secondColumns: {
+            type: Array,
+            value: null
+          },
+
+          entPaars: {
+            type: Object,
+            value: [],
+            notify: true,
+            reflectToAttribute: true
+          },
+
+          dataAndColumns: {
+            type: Object,
+            value: null
+          },
+
+          generalConf: {
+            type: Array,
+            value: null,
+            notify: true
           }
         }
       }
@@ -82,7 +165,7 @@
         return (fetch(url)
           .then(function (res) { return res.arrayBuffer(); })
           .then(function (buf) { return new File([buf], filename, { type: mimeType }); })
-          .catch((err)=>{
+          .catch((err) => {
             showToast(self, 'Fehler bei der Importierung der Pächter-Daten aus der lokalen Datei', TOAST_TYPE.ERROR);
           })
         );
@@ -92,7 +175,7 @@
         let usr = document.querySelector('my-app').getAttribute('user')
         console.log('andtheuseris app' + usr + " type of usr" + (typeof usr));
         usr = JSON.parse(usr);
-        
+
         let transformedResult = [];
         let columns = resp[0];//.filter((elem) => elem.length > 0);
         console.log('das sind die columns' + columns.toString())
@@ -107,7 +190,7 @@
               let attrValue = (attrName === "GBV" || attrName === "FED" || attrName === "Beitrag" || attrName === "UV" || attrName === "HoeV") ? (isFinite(resp[i][j]) && !isNaN(resp[i][j]) ? (parseInt(resp[i][j]) || 0) : 0) : resp[i][j];
               myRowObj[attrName] = attrValue;
             }
-            myRowObj['created'] = {user: usr.name, datum: moment().format('YYYYMMDD_HHmm'), source: 'csv'};
+            myRowObj['created'] = { user: usr.name, datum: moment().format('YYYYMMDD_HHmm'), source: 'csv' };
             transformedResult.push(myRowObj);
           } else {
             break;
@@ -138,11 +221,23 @@
           if (resp) {
             this.mapToJSON(resp);
             let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
-            this.saveToDB(dataAndColumns);
+            this.set('dataAndColumns', dataAndColumns)
+            let secondColumns = JSON.parse(JSON.stringify(dataAndColumns.columns));
+            secondColumns.unshift('**Keine**');
+
+            this.set('secondColumns', secondColumns);
+
+            // this.saveToDB(dataAndColumns);
             showToast(this, 'Die Pächter-Daten wurden erfolgreich vom Server importiert', TOAST_TYPE.SUCCESS);
           } else {
             showToast(this, 'Bei der Importierung der Vereinsdaten wurden keine Paechterdaten gefunden', TOAST_TYPE.ERROR);
           }
+        }).then(() => {
+          return this.$.bclient.getGeneralColumnConfig().then((generalConf) => {
+            if (generalConf && Array.isArray(generalConf)) {
+              this.set('generalConf', generalConf);
+            }
+          })
         }).catch((err) => {
           showToast(this, 'Fehler bei der Importierung der Pächter-Daten vom Server', TOAST_TYPE.ERROR);
           console.log("Fehler beim ImportPaechter fuer paechter  kam:" + JSON.stringify(err))
@@ -155,17 +250,57 @@
 
       _importLocalPaechterPressed(localPaechterFromCSVAsArray) {
         if (localPaechterFromCSVAsArray && localPaechterFromCSVAsArray.length) {
-            this.mapToJSON(localPaechterFromCSVAsArray);
-            let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
-            this.saveToDB(dataAndColumns);
-           showToast(this, 'Die Pächter-Daten wurden aus der lokalen Datei erfolgreich importiert', TOAST_TYPE.SUCCESS);
-          } else {
-            showToast(this, 'Bei der Importierung der Vereinsdaten wurden keine Paechterdaten gefunden', TOAST_TYPE.ERROR);
-          }
+          this.mapToJSON(localPaechterFromCSVAsArray);
+          let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
+          this.set('dataAndColumns', dataAndColumns)
+          //this.saveToDB(dataAndColumns);
+          showToast(this, 'Die Pächter-Daten wurden aus der lokalen Datei erfolgreich importiert', TOAST_TYPE.SUCCESS);
+        } else {
+          showToast(this, 'Bei der Importierung der Vereinsdaten wurden keine Paechterdaten gefunden', TOAST_TYPE.ERROR);
+        }
       }
 
       _setLoading(val) {
         this.set('_loading', val);
+      }
+
+      getOrdnungsnummer(index) {
+        return index + 1;
+      }
+
+      _doOnSelect(e) {
+        let self = this;
+        if (e && e.target) {
+          let myelemId = e.target.id;
+          let realIndex = myelemId.substring(3);
+          let wertLinks = self.generalConf[realIndex].colname;
+          let wertRechts = e.target.selected;
+          console.log('paare wertrechts' + wertRechts)
+          let path = 'entPaars.' + realIndex;
+
+          let bereitsBelegt = self.entPaars.some((elem) => (elem.right === wertRechts) && (wertRechts !== self.secondColumns[0]));
+          if (bereitsBelegt) {
+            self.splice('entPaars', realIndex, 1, { left: wertLinks, right: null });
+            console.log('paare melemid' + myelemId);
+            
+            let thehashid = '#' + myelemId;
+            let melem = self.shadowRoot.querySelector(thehashid);
+
+            melem.resetItem(true);
+            melem.selected = null;
+            if (!melem) {
+              console.log('paare melem undefined or null')
+            } else {
+              console.log('paare melem weder undefined or null')
+            }
+            console.log('paare bereitsbelegt:' + bereitsBelegt + 'myelemId' + myelemId);
+
+          } else {
+            self.set(path, { left: wertLinks, right: wertRechts });
+          }
+
+          console.log('paare:' + JSON.stringify(self.entPaars))
+        }
       }
 
     }

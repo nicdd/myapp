@@ -9,6 +9,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/ud-stepper/ud-stepper.html">
+<link rel="import" href="../../bower_components/ud-stepper/ud-step.html">
+<link rel="import" href="../administrator/general-column-configuration.html">
 <link rel="import" href="../administrator/import-paechter.html">
 
 <dom-module id="my-paechter-imports">
@@ -20,8 +23,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         padding: 10px 20px;
       }
     </style>
-
-    <import-paechter></import-paechter>
+    
+    <ud-stepper id="stepper" vertical linear>
+        <ud-step title="Allgemeine Spaltenkonfiguration" completed="[[stepsCompletion.gencols]]" editable hide-actions>
+          <div >
+            <general-column-configuration completed="{{stepsCompletion.gencols}}"></general-column-configuration>
+          </div>
+        </ud-step>
+        <ud-step title="Pächter importieren" completed="[[stepsCompletion.importing]]" editable="[[stepsCompletion.gencols]]" 
+        optional="[[stepsCompletion.gencols]]" optional-text="" hide-actions>
+          <div >
+            <import-paechter></import-paechter>
+          </div>
+        </ud-step>
+        
+    </ud-stepper>
     
   </template>
 
@@ -30,8 +46,40 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       static get is() { return 'my-paechter-imports'; }
       static get properties() {
         return {
-         etwas: Boolean
+         stepsCompletion:{
+           type: Object,
+           value:{
+             gencols: false,
+             importing: false
+           },
+           notify: true
+         }
         };
+      }
+
+      static get observers() {
+        return [
+          'onStepsCompletionChanged(stepsCompletion.*)'
+        ];
+      }
+
+      onStepsCompletionChanged(){
+        console.log('onStepsCompletionChanged')
+        let firstNotCompleted = null;
+        Object.keys(this.stepsCompletion).forEach((step, index)=>{
+          if (!this.stepsCompletion[step] && (null === firstNotCompleted)){
+            firstNotCompleted = index;
+          }
+        })
+        console.log('onStepsCompletionChanged firstNotCompleted' + firstNotCompleted)
+        if (firstNotCompleted || firstNotCompleted === 0){
+          this.$.stepper.selected = firstNotCompleted;
+        }
+        this.$.stepper.notifyPath('_steps');
+      }
+
+      getstepcompletion(){
+        return JSON.stringify(this.stepsCompletion)
       }
     }
 
