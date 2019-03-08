@@ -4,6 +4,7 @@
 <link rel="import" href="../../bower_components/ud-stepper/ud-step.html">
 <link rel="import" href="../administrator/general-column-configuration.html">
 <link rel="import" href="../administrator/import-paechter.html">
+<link rel="import" href="../administrator/import-versicherte.html">
 
 <dom-module id="my-paechter-imports">
   <template>
@@ -21,10 +22,16 @@
             <general-column-configuration completed="{{stepsCompletion.gencols}}"></general-column-configuration>
           </div>
         </ud-step>
-        <ud-step title="Pächter importieren" completed="[[stepsCompletion.importing]]" editable="[[stepsCompletion.gencols]]" 
+        <ud-step title="Pächter importieren" completed="[[stepsCompletion.importingpaechter]]" editable="[[stepsCompletion.gencols]]" 
         optional="[[stepsCompletion.gencols]]" optional-text="" hide-actions>
           <div >
-            <import-paechter></import-paechter>
+            <import-paechter completed="{{stepsCompletion.importingpaechter}}"></import-paechter>
+          </div>
+        </ud-step>
+        <ud-step title="Versicherte importieren" completed="[[stepsCompletion.importingversicherte]]" editable="[[stepsCompletion.importingpaechter]]" 
+        optional="[[stepsCompletion.importingpaechter]]" optional-text="" hide-actions>
+          <div >
+            <import-versicherte completed="{{stepsCompletion.importingversicherte}}"></import-versicherte>
           </div>
         </ud-step>
         
@@ -41,7 +48,8 @@
            type: Object,
            value:{
              gencols: false,
-             importing: false
+             importingpaechter: false,
+             importingversicherte: false
            },
            notify: true
          }

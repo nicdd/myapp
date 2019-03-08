@@ -57,6 +57,7 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
 <link rel="import" href="../../bower_components/paper-progress-button/paper-progress-button.html">
 <link rel="import" href="../../bower_components/granite-file-reader/granite-file-reader.html">
 <link rel="import" href="../clients/firstclient.html">
+<link rel="import" href="../clients/basicclient.html">
 <link rel="import" href="../second-domain-styles.html">
 <!-- <script src="../../bower_components/webcomponentsjs/webcomponents-lite.js"></script> -->
 
@@ -81,6 +82,7 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
     </style>
 
     <first-client id="firstclient"></first-client>
+    <basic-client id="bclient"></basic-client>
     <div class="toolbar layout horizontal center-justified" flex>
       <paper-progress-button bottom raised on-click="_importRemoteVersichertePressed" loading-label="Nicht so hecktisch ..."
         loading="[[_loading]]">KVD Daten aus CSV-Datei vom Server importieren <iron-icon icon="add-circle-outline" slot="item-icon"></iron-icon>
@@ -89,6 +91,38 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
         <div class="clickHere">KVD Daten aus lokaler CSV-Datei importieren</div>
       </granite-file-reader>
     </div>
+    <template is="dom-if" if="[[generalConf.length]]">
+      <div class="page">
+        <table>
+          <thead>
+            <th class="metacol">#</th>
+            <th class="contentcol">Spaltenname</th>
+            <th class="contentcol" title="Die Entsprechung in der zu importierenden Versichertentabelle">Entsprechung
+              Versicherte</th>
+          </thead>
+          <tbody>
+            <template is="dom-repeat" items="[[generalConf]]">
+              <tr>
+                <td class="metacol">
+                  [[getOrdnungsnummer(index)]]
+                </td>
+                <td class="contentcol">
+                  <paper-input id="cnm[[index]]" value="[[item.colname]]" readonly></paper-input>
+                </td>
+                <td class="contentcol">
+                  <grt-dropdown-input id="ctp[[index]]" items="[[secondColumns]]" selected="{{entPaars.index.right}}"
+                    on-iron-select="_doOnSelect"></grt-dropdown-input>
+                </td>
+
+              </tr>
+            </template>
+
+          </tbody>
+        </table>
+
+      </div>
+      <paper-button disabled="[[formInvalid]]" on-click="_mergeImportedAndSave">Weiter</paper-button>
+    </template>
   </template>
 
   <script>
@@ -116,6 +150,40 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
             notify: true,
             observer: '_transformCSVToArray'
 
+          },
+
+          secondColumns: {
+            type: Array,
+            value: null
+          },
+
+          entPaars: {
+            type: Object,
+            value: [],
+            notify: true,
+            reflectToAttribute: true
+          },
+
+          dataAndColumns: {
+            type: Object,
+            value: null
+          },
+
+          generalConf: {
+            type: Array,
+            value: null,
+            notify: true
+          },
+
+          formInvalid: {
+            type: Boolean,
+            notify: true
+          },
+
+          completed: {
+            type: Boolean,
+            value: false,
+            notify: true
           }
         }
       }
@@ -138,7 +206,7 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
         return (fetch(url)
           .then(function (res) { return res.arrayBuffer(); })
           .then(function (buf) { return new File([buf], filename, { type: mimeType }); })
-          .catch((err)=>{
+          .catch((err) => {
             showToast(self, 'Fehler bei der Importierung der KVD-Daten aus der lokalen Datei', TOAST_TYPE.ERROR);
           })
         );
@@ -148,7 +216,7 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
         let usr = document.querySelector('my-app').getAttribute('user')
         console.log('andtheuseris app' + usr + " type of usr" + (typeof usr));
         usr = JSON.parse(usr);
-        
+
         let transformedResult = [];
         let columns = resp[0];//.filter((elem) => elem.length > 0);
         console.log('das sind die columns' + columns.toString())
@@ -163,7 +231,7 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
               let attrValue = (attrName === "GBV" || attrName === "FED" || attrName === "Beitrag" || attrName === "UV" || attrName === "HoeV") ? (isFinite(resp[i][j]) && !isNaN(resp[i][j]) ? (parseInt(resp[i][j]) || 0) : 0) : resp[i][j];
               myRowObj[attrName] = attrValue;
             }
-            myRowObj['created'] = {user: usr.name, datum: moment().format('YYYYMMDD_HHmm'), source: 'csv'};
+            myRowObj['created'] = { user: usr.name, datum: moment().format('YYYYMMDD_HHmm'), source: 'csv' };
             transformedResult.push(myRowObj);
           } else {
             break;
@@ -195,35 +263,180 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
           if (resp) {
             this.mapToJSON(resp);
             let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
-            this.saveToDB(dataAndColumns);
-            showToast(this, 'Die KVD-Daten wurden erfolgreich vom Server importiert', TOAST_TYPE.SUCCESS);
+            this.set('dataAndColumns', dataAndColumns);
+            let secondColumns = JSON.parse(JSON.stringify(dataAndColumns.columns));
+            secondColumns.unshift('**Keine**');
+            this.set('secondColumns', secondColumns);
+            showToast(this, 'Die KVD-Daten wurden erfolgreich vom Server geladen. Damit diese auch dauerhaft importiert werden können, setzen Sie die Konfiguration durch die Zuordnung der Tabellenspalten fort.', TOAST_TYPE.WARN, 'center');
           } else {
             showToast(this, 'Bei der Importierung der KVD-Daten wurden keine Versichertendaten gefunden', TOAST_TYPE.ERROR);
           }
+        }).then(() => {
+          return this.$.bclient.getGeneralColumnConfig().then((generalConf) => {
+            if (generalConf && Array.isArray(generalConf)) {
+              this.set('generalConf', generalConf);
+            }
+          }).then(() => {
+            this.validate();
+          })
         }).catch((err) => {
           showToast(this, 'Fehler bei der Importierung der KVD-Daten vom Server', TOAST_TYPE.ERROR);
           console.log("Fehler beim importVersicherte fuer versicherte  kam:" + JSON.stringify(err))
         })
       }
 
-      saveToDB(dataAndColumns) {
-        //toDo make a backup from the existing data if some, because they will be overridden
-        this.$.firstclient.postVersicherteAsJSON(dataAndColumns);
+      saveToDB(versicherte) {
+
+        return this.$.firstclient.getPaechterAsJSON().then((paechter) => {
+         // debugger;
+          return this.resolveConflicts(paechter, versicherte);
+
+        }).then((conflictFreeData) => {
+          let unklareFaelle = conflictFreeData.unklare;
+          let klareFaelle = conflictFreeData.klare;
+          let promises = [];
+          console.debug('conflictFreeData' + JSON.stringify(conflictFreeData))
+          debugger;
+          // promises.push(this.$.firstclient.postVersicherteAsJSON(klareFaelle));
+          // promises.push(this.$.firstclient.postUnklareVersicherteAsJSON(unklareFaelle))
+          return Promise.all(promises);
+
+        }).catch(() => {
+          return Promise.reject();
+        })
+
       }
 
       _importLocalVersichertePressed(localVersicherteFromCSVAsArray) {
-        if (localVersicherteFromCSVAsArray && localVersicherteFromCSVAsArray.length) {
+        this.$.bclient.getGeneralColumnConfig().then((generalConf) => {
+          if (generalConf && Array.isArray(generalConf) && localVersicherteFromCSVAsArray && localVersicherteFromCSVAsArray.length) {
+            this.set('generalConf', generalConf);
             this.mapToJSON(localVersicherteFromCSVAsArray);
             let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
-            this.saveToDB(dataAndColumns);
-            showToast(this, 'Die KVD-Daten wurden aus der lokalen Datei erfolgreich importiert', TOAST_TYPE.SUCCESS);
+            this.set('dataAndColumns', dataAndColumns);
+            let secondColumns = JSON.parse(JSON.stringify(dataAndColumns.columns));
+            secondColumns.unshift('**Keine**');
+            this.set('secondColumns', secondColumns);
+            showToast(this, 'Die KVD-Daten wurden aus der lokalen Datei erfolgreich geladen. Damit diese auch dauerhaft importiert werden können, setzen Sie die Konfiguration durch die Zuordnung der Tabellenspalten fort.', TOAST_TYPE.WARN, 'center');
           } else {
             showToast(this, 'Bei der Importierung der KVD-Daten wurden keine Versichertendaten gefunden', TOAST_TYPE.ERROR);
           }
+        }).then(() => {
+          this.validate();
+        })
       }
 
       _setLoading(val) {
         this.set('_loading', val);
+      }
+
+      getOrdnungsnummer(index) {
+        return index + 1;
+      }
+
+      _doOnSelect(e) {
+        let self = this;
+        if (e && e.target) {
+          let myelemId = e.target.id;
+          let realIndex = myelemId.substring(3);
+          let wertLinks = self.generalConf[realIndex].colname;
+          let wertRechts = e.target.selected;
+          let path = 'entPaars.' + realIndex;
+          let bereitsBelegt = self.entPaars.some((elem) => (elem.right === wertRechts) && (wertRechts !== self.secondColumns[0]));
+          if (bereitsBelegt) {
+            self.splice('entPaars', realIndex, 1, { left: wertLinks, right: null });
+            let thehashid = '#' + myelemId;
+            let melem = self.shadowRoot.querySelector(thehashid);
+            melem.resetItem(true);
+            melem.selected = null;
+            melem.errorMessage = "Spaltenname bereits zugeordnet"
+          } else {
+            self.set(path, { left: wertLinks, right: wertRechts });
+          }
+        }
+        this.validate();
+      }
+
+      validate(e) {
+        let invalidFound = true;
+        if (this.entPaars && this.entPaars.length === this.generalConf.length) {
+          invalidFound = this.entPaars.some((elem) => {
+            return (!elem.right || !elem.right.length)
+          })
+        }
+        this.set('formInvalid', invalidFound);
+      }
+
+      _mergeImportedAndSave() {
+        let columns = [];
+        this.generalConf.forEach((col) => {
+          columns.push(col.alias);
+        })
+        let data = JSON.parse(JSON.stringify(this.dataAndColumns.data));
+        let newData = [];
+        data.forEach((versichertenData) => {
+          let newVersicherte = new Versicherter(this.entPaars);
+          Object.keys(versichertenData).forEach((key) => {
+            let correspondingPaar = this.entPaars.find((p) => p.right === key);
+            if (correspondingPaar) {
+              newVersicherte[correspondingPaar.left] = versichertenData[key];
+            }
+          })
+          newData.push(newVersicherte);
+        })
+        let newDataAndColumns = { data: newData, columns: columns }
+       //debugger;
+        this.saveToDB(newDataAndColumns).then(() => {
+          showToast(this, 'Sie haben die Pächter-Daten erfolgreich importiert.', TOAST_TYPE.SUCCESS);
+          this.set('completed', true)
+        }).catch(() => {
+          this.set('completed', false)
+          showToast(this, 'Fehler bei der Übertragung der importierten Pächter-Daten in die Datenbank.', TOAST_TYPE.ERROR);
+        })
+      }
+
+      resolveConflicts(paechter, versicherte) {
+       // debugger;
+        console.debug('conflicts paechter' + JSON.stringify(paechter))
+        console.debug('conflicts versicherte' + JSON.stringify(versicherte))
+       
+        let faelle = { 'klare': [], 'unklare': [] }
+        
+        versicherte.data.forEach((v) => {
+          
+          let isInP = paechter.data.find((p) => p.GARTENNUMMER === v.GARTENNUMMER);
+          
+          if (!isInP || (isInP.NACHNAME !== v.NACHNAME || isInP.VORNAME !== v.VORNAME 
+          || isInP.STRASSE !== v.STRASSE || isInP.PLZ !== v.PLZ || isInP.WOHNORT !== v.WOHNORT)){
+            faelle['unklare'].push(v);
+          } else {
+            this.generalConf.forEach((elem)=>{
+              // wenn die Spalte paechter-spezifisch dann vorrangig behandeln,
+              // sprich die entsprechnde aus v überschreiben (sollte null sein)
+              if(elem.rolen.some('paechter')){
+                v[elem.colname] = isInP[elem.colname];
+              }
+            })
+            faelle['klare'].push(v);
+          }
+        })
+        
+        return Promise.resolve(faelle);
+      }
+
+    }
+
+    class Versicherter {
+      constructor(paechterKeys) {
+        if (paechterKeys) {
+          this._createEmptyPaechter(paechterKeys)
+        }
+      }
+
+      _createEmptyPaechter(paechterKeys) {
+        paechterKeys.forEach((paar) => {
+          this[paar.left] = null;
+        })
       }
 
     }

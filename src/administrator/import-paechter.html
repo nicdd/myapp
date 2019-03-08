@@ -67,7 +67,8 @@
           <thead>
             <th class="metacol">#</th>
             <th class="contentcol">Spaltenname</th>
-            <th class="contentcol">Entsprechung</th>
+            <th class="contentcol" title="Die Entsprechung in der zu importierenden Pächtertabelle">Entsprechung
+              Pächtertabelle</th>
           </thead>
           <tbody>
             <template is="dom-repeat" items="[[generalConf]]">
@@ -146,8 +147,25 @@
           formInvalid: {
             type: Boolean,
             notify: true
+          },
+
+          completed: {
+            type: Boolean,
+            value: false,
+            notify: true
           }
         }
+      }
+
+      ready() {
+        super.ready();
+        this.$.firstclient.getPaechterAsJSON().then((paechter) => {
+          if (paechter && paechter.columns && paechter.columns.length && paechter.data && paechter.data.length) {
+            this.set('completed', true)
+          }
+        }).catch(() => {
+          this.set('completed', false)
+        })
       }
 
       _doOnFileRead(e) {
@@ -180,11 +198,11 @@
 
         let transformedResult = [];
         let columns = resp[0];
-        
+
         for (let i = 1; i < resp.length; i++) {
           if (resp[i][0] !== 'Ende der Liste') {
             let myRowObj = {};
-            
+
             for (let j = 0; j < columns.length; j++) {
               let attrName = columns[j];
               let attrValue = (attrName === "GBV" || attrName === "FED" || attrName === "Beitrag" || attrName === "UV" || attrName === "HoeV") ? (isFinite(resp[i][j]) && !isNaN(resp[i][j]) ? (parseInt(resp[i][j]) || 0) : 0) : resp[i][j];
@@ -241,21 +259,26 @@
       }
 
       saveToDB(dataAndColumns) {
-        this.$.firstclient.postPaechterAsJSON(dataAndColumns);
+        return this.$.firstclient.postPaechterAsJSON(dataAndColumns);
       }
 
       _importLocalPaechterPressed(localPaechterFromCSVAsArray) {
-        if (localPaechterFromCSVAsArray && localPaechterFromCSVAsArray.length) {
-          this.mapToJSON(localPaechterFromCSVAsArray);
-          let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
-          this.set('dataAndColumns', dataAndColumns)
-          let secondColumns = JSON.parse(JSON.stringify(dataAndColumns.columns));
-          secondColumns.unshift('**Keine**');
-          this.set('secondColumns', secondColumns);
-          showToast(this, 'Die Pächter-Daten wurden aus der lokalen Datei erfolgreich geladen. Damit diese auch dauerhaft importiert werden können, setzen Sie die Konfiguration durch die Zuordnung der Tabellenspalten fort.', TOAST_TYPE.WARN, 'center');
-        } else {
-          showToast(this, 'Bei der Importierung der Vereinsdaten wurden keine Paechterdaten gefunden', TOAST_TYPE.ERROR);
-        }
+        this.$.bclient.getGeneralColumnConfig().then((generalConf) => {
+          if (generalConf && Array.isArray(generalConf) && localPaechterFromCSVAsArray && localPaechterFromCSVAsArray.length) {
+            this.set('generalConf', generalConf);
+            this.mapToJSON(localPaechterFromCSVAsArray);
+            let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
+            this.set('dataAndColumns', dataAndColumns);
+            let secondColumns = JSON.parse(JSON.stringify(dataAndColumns.columns));
+            secondColumns.unshift('**Keine**');
+            this.set('secondColumns', secondColumns);
+            showToast(this, 'Die Pächter-Daten wurden aus der lokalen Datei erfolgreich geladen. Damit diese auch dauerhaft importiert werden können, setzen Sie die Konfiguration durch die Zuordnung der Tabellenspalten fort.', TOAST_TYPE.WARN, 'center');
+          } else {
+            showToast(this, 'Bei der Importierung der Vereinsdaten wurden keine Paechterdaten gefunden', TOAST_TYPE.ERROR);
+          }
+        }).then(() => {
+          this.validate();
+        })
       }
 
       _setLoading(val) {
@@ -317,7 +340,13 @@
           newData.push(newPaechter);
         })
         let newDataAndColumns = { data: newData, columns: columns }
-        this.saveToDB(newDataAndColumns);
+        this.saveToDB(newDataAndColumns).then(() => {
+          showToast(this, 'Sie haben die Pächter-Daten erfolgreich importiert.', TOAST_TYPE.SUCCESS);
+          this.set('completed', true)
+        }).catch(() => {
+          this.set('completed', false)
+          showToast(this, 'Fehler bei der Übertragung der importierten Pächter-Daten in die Datenbank.', TOAST_TYPE.ERROR);
+        })
 
       }
 
