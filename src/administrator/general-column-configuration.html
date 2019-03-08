@@ -2,7 +2,7 @@
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../../bower_components/paper-checkbox/paper-checkbox.html">
-<link rel="import" href="../../bower_components/paper-dropdown-input/paper-dropdown-input.html">
+<link rel="import" href="../utils/grt-dropdown-input.html">
 <link rel="import" href="../clients/basicclient.html">
 <link rel="import" href="../first-domain-styles.html">
 
@@ -28,7 +28,8 @@
           */
                 overflow: auto;
                 -webkit-overflow-scrolling: touch;
-                padding: 3rem;
+                padding: 3rem 0rem;
+                /* padding-bottom: 3rem; */
             }
 
             .metacol{
@@ -36,7 +37,8 @@
                 text-align:center;
             }
             .contentcol{
-                text-align:start;
+                text-align:center;
+                padding-left: 1rem;
             }
             
         </style>
@@ -44,7 +46,7 @@
         <div class="layout vertical card">
             <div class="layout horizontal ">
                 <paper-input class="labelgroup" min="1" max="100" always-float-label label="Anzahl der Spalten" type="number"
-                    required value="{{tempAnzahlSpalten}}" disabled="[[!editing]]"></paper-input>
+                    required value="{{tempAnzahlSpalten}}" disabled="[[isTempAnzahlDisabled(colConf.*,editing)]]"></paper-input>
                 <paper-button bottom raised disabled="[[isUebernehmenDisabled(tempAnzahlSpalten, colConf.length, editing)]]"
                     on-click="_addReduceColumns">[[getUebernehmenButtonName(tempAnzahlSpalten, colConf.length)]]</paper-button>
                 <template is="dom-if" if="[[colConf.length]]">
@@ -57,8 +59,11 @@
                     <table>
                         <thead>
                             <th class="metacol">#</th>
-                            <th class="contentcol">Spaltenname</th>
-                            <th class="contentcol">Datentyp</th>
+                            <th class="contentcol" title="Technischer Spaltenname (wie in der Datenbank)">T-Spaltenname</th>
+                            <th class="contentcol" title="Erforderlicher Hinweis für die technische Verarbeitung">Datentyp</th>
+                            <th class="contentcol" title="Fachlicher Spaltenname (wie es in der Tabelle angezeigt werden soll)">Alias</th>
+                            <th class="contentcol" title="Darf für den Pächter-Bereich verfügbar sein">Pächter</th>
+                            <th class="contentcol" title="Darf für den Versicherungs-Bereich verfügbar sein">Versicherung</th>
                             <th class="metacol">Entfernen</th>
                         </thead>
                         <tbody>
@@ -68,21 +73,31 @@
                                         [[getOrdnungsnummer(index)]]
                                     </td>
                                     <td class="contentcol">
-
                                         <paper-input id="cnm[[index]]" auto-validate error-message="Eingabe erforderlich."
                                             value="[[item.colname]]" readonly$="[[!editing]]" required minlength="1"
                                             on-value-changed="_doOnColnameChanged"></paper-input>
-
+                                    </td>
+                                    <td class="contentcol">
+                                         <grt-dropdown-input id="ctp[[index]]" items='["number","string","object","boolean"]' required selected="{{item.coltype}}"
+                                            on-iron-select="validate" disabled="[[!editing]]" error-message="Eingabe erfolrderlich"></grt-dropdown-input>
 
                                     </td>
                                     <td class="contentcol">
-                                            <paper-dropdown-input id="ctp[[index]]" items='["number","string","object","boolean"]'
-                                            value$="[[item.coltype]]" readonly$="[[!editing]]" required minlength="1"
-                                            on-iron-select="_doOnSelect" no-search></paper-dropdown-input>
+                                            <paper-input id="cal[[index]]" auto-validate error-message="Eingabe erforderlich."
+                                                value="[[item.alias]]" readonly$="[[!editing]]" required minlength="1"
+                                                on-value-changed="_doOnAliasChanged"></paper-input>
+                                        </td>
+                                    <td class="contentcol">
+                                        <paper-checkbox id="cbp[[index]]" checked="[[hasRole('paechter', item)]]"
+                                            on-change="doOnCbChecked" disabled="[[!editing]]"></paper-checkbox>
+                                    </td>
+                                    <td class="contentcol">
+                                        <paper-checkbox id="cbv[[index]]" checked="[[hasRole('versicherung', item)]]"
+                                            on-change="doOnCbChecked" disabled="[[!editing]]"></paper-checkbox>
 
                                     </td>
                                     <td class="metacol">
-                                            <button id="dlb[[index]]" on-click="_removeColumn" class="first-domain-endpagebutton"
+                                        <button id="dlb[[index]]" on-click="_removeColumn" class="first-domain-endpagebutton"
                                             disabled="[[!editing]]">
                                             <iron-icon id="dli[[index]]" icon="delete" slot="item-icon" on-click="_removeColumn"></iron-icon>
                                         </button>
@@ -93,7 +108,7 @@
 
                         </tbody>
                     </table>
-                    
+
                 </div>
                 <paper-button disabled="[[formInvalid]]" on-click="_saveColumnConfig">Speichern</paper-button>
             </template>
@@ -155,6 +170,7 @@
             }
 
             _addReduceColumns() {
+                this.set('editing', true)
                 if (!this.colConf) {
                     this.colConf = [];
                 }
@@ -176,7 +192,7 @@
 
 
             _addColumn() {
-                this.push('colConf', { colname: null, coltype: null })
+                this.push('colConf', { colname: null, coltype: null, alias: null, rolen : [] })
             }
 
             _removeColumn(indexParam) {
@@ -192,8 +208,14 @@
                 this.set('tempAnzahlSpalten', this.colConf.length)
             }
 
+            isTempAnzahlDisabled(colConf, editing){
+                if (this.colConf && this.colConf.length){
+                    return !editing;
+                } else return false;
+            }
+
             isUebernehmenDisabled(tempAnzahlSpalten, anzahlColumns, editing) {
-                if (tempAnzahlSpalten && anzahlColumns && (parseInt(tempAnzahlSpalten) === parseInt(anzahlColumns)) || !this.editing) {
+                if (tempAnzahlSpalten && anzahlColumns && (parseInt(tempAnzahlSpalten) === parseInt(anzahlColumns)) || (!this.editing && this.colConf && this.colConf.length)) {
                     return true;
                 } else {
                     return false;
@@ -222,7 +244,7 @@
                 if (this.colConf) {
                     invalidFound = this.colConf.some((elem) => {
                         console.log('elem ist ' + JSON.stringify(elem))
-                        return (!elem.colname || !elem.colname.length || !elem.coltype || !elem.coltype.length)
+                        return (!elem.colname || !elem.colname.length || !elem.coltype || !elem.coltype.length || !elem.alias || !elem.alias.length)
                     })
                 }
                 this.set('formInvalid', invalidFound);
@@ -248,13 +270,44 @@
                 }
             }
 
-            _doOnSelect(e) {
+            _doOnAliasChanged(e) {
                 if (e && e.target) {
                     let realIdx = e.target.id.substring(3);
-                    let path = 'colConf.' + realIdx + '.coltype';
+                    let path = 'colConf.' + realIdx + '.alias';
                     this.set(path, e.target.__data.value)
                     this.validate();
                 }
+            }
+
+            hasRole(rolename, item) {
+                return item.rolen && Array.isArray(item.rolen) && item.rolen.indexOf(rolename) >= 0;
+            }
+
+            doOnCbChecked(e) {
+                let idprefix = e.target.id.substring(0, 3);
+                let realIndex = e.target.id.substring(3);
+                let role = null;
+                switch (idprefix) {
+                    case 'cbp':
+                        role = 'paechter';
+                        break;
+                    case 'cbv':
+                        role = 'versicherung';
+                        break;
+                    default:
+                        break;
+                }
+                if (e.currentTarget.checked){
+                        let path = "colConf." + realIndex + ".rolen";
+                        this.push(path, role);
+                } else {
+                        let path = "colConf." + realIndex + ".rolen";
+                        let rolen = this.get(path);
+                        let idx = rolen.indexOf(role);
+                        this.splice(path, idx, 1);
+                }
+                console.log('checkbox checked colConf' + JSON.stringify(this.colConf))
+
             }
         }
 

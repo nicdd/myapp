@@ -79,8 +79,6 @@
                   <paper-input id="cnm[[index]]" value="[[item.colname]]" readonly></paper-input>
                 </td>
                 <td class="contentcol">
-                  <!-- <paper-dropdown-input id="ctp[[index]]" items="[[secondColumns]]" required minlength="1"
-                    on-iron-select="_doOnSelect" value$="[[entPaars.index.right]]"></paper-dropdown-input> -->
                   <grt-dropdown-input id="ctp[[index]]" items="[[secondColumns]]" selected="{{entPaars.index.right}}"
                     on-iron-select="_doOnSelect"></grt-dropdown-input>
                 </td>
@@ -92,7 +90,7 @@
         </table>
 
       </div>
-      <paper-button disabled="[[formInvalid]]" on-click="_saveColumnConfig">Speichern</paper-button>
+      <paper-button disabled="[[formInvalid]]" on-click="_mergeImportedAndSave">Weiter</paper-button>
     </template>
   </template>
 
@@ -143,6 +141,11 @@
             type: Array,
             value: null,
             notify: true
+          },
+
+          formInvalid: {
+            type: Boolean,
+            notify: true
           }
         }
       }
@@ -173,20 +176,17 @@
 
       mapToJSON(resp) {
         let usr = document.querySelector('my-app').getAttribute('user')
-        console.log('andtheuseris app' + usr + " type of usr" + (typeof usr));
         usr = JSON.parse(usr);
 
         let transformedResult = [];
-        let columns = resp[0];//.filter((elem) => elem.length > 0);
-        console.log('das sind die columns' + columns.toString())
+        let columns = resp[0];
+        
         for (let i = 1; i < resp.length; i++) {
           if (resp[i][0] !== 'Ende der Liste') {
             let myRowObj = {};
-            console.log(i + ' resp[i].length ' + resp[i].length)
+            
             for (let j = 0; j < columns.length; j++) {
-              console.log('column j' + j)
-              let attrName = columns[j].replace(/[\. ,:-]+/g, "");
-              attrName = attrName.replace(/ü/g, 'ue').replace(/ö/g, 'oe');
+              let attrName = columns[j];
               let attrValue = (attrName === "GBV" || attrName === "FED" || attrName === "Beitrag" || attrName === "UV" || attrName === "HoeV") ? (isFinite(resp[i][j]) && !isNaN(resp[i][j]) ? (parseInt(resp[i][j]) || 0) : 0) : resp[i][j];
               myRowObj[attrName] = attrValue;
             }
@@ -199,14 +199,12 @@
         }
         this.set('columnNames', columns);
         this.set('mvdata', transformedResult);
-        console.log('transformeddata' + JSON.stringify(this.mvdata))
       }
 
       _transformCSVToArray() {
         let finalArray = [];
         if (this.mfile) {
           let firstArr = this.mfile.split('\n');
-          console.log('firstArray' + JSON.stringify(firstArr))
           let secondArray = null;
           firstArr.forEach((el) => {
             secondArray = el.split(',');
@@ -224,11 +222,8 @@
             this.set('dataAndColumns', dataAndColumns)
             let secondColumns = JSON.parse(JSON.stringify(dataAndColumns.columns));
             secondColumns.unshift('**Keine**');
-
             this.set('secondColumns', secondColumns);
-
-            // this.saveToDB(dataAndColumns);
-            showToast(this, 'Die Pächter-Daten wurden erfolgreich vom Server importiert', TOAST_TYPE.SUCCESS);
+            showToast(this, 'Die Pächter-Daten wurden erfolgreich vom Server geladen. Damit diese auch dauerhaft importiert werden können, setzen Sie die Konfiguration durch die Zuordnung der Tabellenspalten fort.', TOAST_TYPE.WARN, 'center');
           } else {
             showToast(this, 'Bei der Importierung der Vereinsdaten wurden keine Paechterdaten gefunden', TOAST_TYPE.ERROR);
           }
@@ -237,10 +232,11 @@
             if (generalConf && Array.isArray(generalConf)) {
               this.set('generalConf', generalConf);
             }
+          }).then(() => {
+            this.validate();
           })
         }).catch((err) => {
           showToast(this, 'Fehler bei der Importierung der Pächter-Daten vom Server', TOAST_TYPE.ERROR);
-          console.log("Fehler beim ImportPaechter fuer paechter  kam:" + JSON.stringify(err))
         })
       }
 
@@ -253,8 +249,10 @@
           this.mapToJSON(localPaechterFromCSVAsArray);
           let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
           this.set('dataAndColumns', dataAndColumns)
-          //this.saveToDB(dataAndColumns);
-          showToast(this, 'Die Pächter-Daten wurden aus der lokalen Datei erfolgreich importiert', TOAST_TYPE.SUCCESS);
+          let secondColumns = JSON.parse(JSON.stringify(dataAndColumns.columns));
+          secondColumns.unshift('**Keine**');
+          this.set('secondColumns', secondColumns);
+          showToast(this, 'Die Pächter-Daten wurden aus der lokalen Datei erfolgreich geladen. Damit diese auch dauerhaft importiert werden können, setzen Sie die Konfiguration durch die Zuordnung der Tabellenspalten fort.', TOAST_TYPE.WARN, 'center');
         } else {
           showToast(this, 'Bei der Importierung der Vereinsdaten wurden keine Paechterdaten gefunden', TOAST_TYPE.ERROR);
         }
@@ -275,32 +273,67 @@
           let realIndex = myelemId.substring(3);
           let wertLinks = self.generalConf[realIndex].colname;
           let wertRechts = e.target.selected;
-          console.log('paare wertrechts' + wertRechts)
           let path = 'entPaars.' + realIndex;
-
           let bereitsBelegt = self.entPaars.some((elem) => (elem.right === wertRechts) && (wertRechts !== self.secondColumns[0]));
           if (bereitsBelegt) {
             self.splice('entPaars', realIndex, 1, { left: wertLinks, right: null });
-            console.log('paare melemid' + myelemId);
-            
             let thehashid = '#' + myelemId;
             let melem = self.shadowRoot.querySelector(thehashid);
-
             melem.resetItem(true);
             melem.selected = null;
-            if (!melem) {
-              console.log('paare melem undefined or null')
-            } else {
-              console.log('paare melem weder undefined or null')
-            }
-            console.log('paare bereitsbelegt:' + bereitsBelegt + 'myelemId' + myelemId);
-
+            melem.errorMessage = "Spaltenname bereits zugeordnet"
           } else {
             self.set(path, { left: wertLinks, right: wertRechts });
           }
-
-          console.log('paare:' + JSON.stringify(self.entPaars))
         }
+        this.validate();
+      }
+
+      validate(e) {
+        let invalidFound = true;
+        if (this.entPaars && this.entPaars.length === this.generalConf.length) {
+          invalidFound = this.entPaars.some((elem) => {
+            return (!elem.right || !elem.right.length)
+          })
+        }
+        this.set('formInvalid', invalidFound);
+      }
+
+      _mergeImportedAndSave() {
+        let columns = [];
+        this.generalConf.forEach((col) => {
+          columns.push(col.alias);
+        })
+        let data = JSON.parse(JSON.stringify(this.dataAndColumns.data));
+        let newData = [];
+        data.forEach((paechterData) => {
+          let newPaechter = new Paechter(this.entPaars);
+          Object.keys(paechterData).forEach((key) => {
+            let correspondingPaar = this.entPaars.find((p) => p.right === key);
+            if (correspondingPaar) {
+              newPaechter[correspondingPaar.left] = paechterData[key];
+            }
+          })
+          newData.push(newPaechter);
+        })
+        let newDataAndColumns = { data: newData, columns: columns }
+        this.saveToDB(newDataAndColumns);
+
+      }
+
+    }
+
+    class Paechter {
+      constructor(paechterKeys) {
+        if (paechterKeys) {
+          this._createEmptyPaechter(paechterKeys)
+        }
+      }
+
+      _createEmptyPaechter(paechterKeys) {
+        paechterKeys.forEach((paar) => {
+          this[paar.left] = null;
+        })
       }
 
     }

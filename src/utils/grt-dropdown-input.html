@@ -21,13 +21,14 @@
             
         </style>
 
-        <paper-dropdown-menu disabled="[[disabled]]" label="[[label]]" invalid="[[invalid]]" on-iron-select="_itemSelected" errorMessage="test">
+        <paper-dropdown-menu disabled="[[disabled]]" label="[[label]]" invalid="[[invalid]]" on-iron-select="_itemSelected" error-message="[[errorMessage]]">
             <paper-listbox slot="dropdown-content" class="dropdown-content" selected="{{selectedindex}}">
                 <template is="dom-repeat" items="[[items]]">
                     <paper-item>[[_getDisplayText(item)]]</paper-item>
                 </template>
             </paper-listbox>
         </paper-dropdown-menu>
+
 
     </template>
 
@@ -70,6 +71,11 @@
                         value: null
                     },
                     separator: {
+                        type: String,
+                        value: null
+                    },
+
+                    errorMessage:{
                         type: String,
                         value: null
                     }
