@@ -1,0 +1,99 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../shared-styles.html">
+<link rel="import" href="../table-styles.html">
+
+<dom-module id="column-sorter">
+    <template>
+        <style include="table-styles">
+
+            paper-icon-item {
+                --paper-item-icon-width: 3px;
+                padding: 0px;
+
+                display: inline;
+
+                margin: 0px;
+            }
+
+            iron-icon {
+                --iron-icon-width: calc(var(--table-header-font-size)*1.33);
+                --iron-icon-height: auto;
+            }
+
+            .columnname {
+                font-weight: var(--table-header-font-weight);
+                font-size: var(--table-header-font-size);
+                color: var(--table-header-font-color);
+                vertical-align: bottom;
+                white-space: nowrap;
+                display: inline-table;
+            }
+        </style>
+
+
+        <paper-icon-item on-click="_toggleSort" name="sorter">
+            <div >
+                <template is="dom-if" if="[[_isAscending(direction)]]">
+                    <iron-icon icon="arrow-upward" slot="item-icon"></iron-icon>
+                </template>
+                <template is="dom-if" if="[[_isDescending(direction)]]">
+                    <iron-icon icon="arrow-downward" slot="item-icon"></iron-icon>
+                </template>
+                <paper-item-body class="columnname">
+                    <div >[[colname]]</div>
+                </paper-item-body>
+            </div>
+        </paper-icon-item>
+
+    </template>
+
+    <script>
+        class ColumnSorter extends Polymer.Element {
+            static get is() { return 'column-sorter'; }
+
+            static get properties() {
+                return {
+                    path: {
+                        type: String,
+                        value: null
+                    },
+                    direction: {
+                        type: String,
+                        value: null,
+                        observer: '_doSort'
+                    },
+                    colname: {
+                        type: String,
+                        value: null
+                    }
+                }
+            }
+
+            _isAscending(direction) {
+                return direction === 'asc';
+            }
+
+            _isDescending(direction) {
+                return direction === 'desc';
+            }
+
+            _toggleSort() {
+                if (this.direction === 'asc') {
+                    this.set('direction', 'desc')
+                } else if (this.direction === 'desc') {
+                    this.set('direction', 'asc')
+                } else this.set('direction', 'asc')
+            }
+
+            _doSort() {
+                if(this.direction){
+                    this.dispatchEvent(new CustomEvent('sorter-changed'));
+                }
+            }
+
+        }
+
+        window.customElements.define(ColumnSorter.is, ColumnSorter);
+    </script>
+</dom-module>

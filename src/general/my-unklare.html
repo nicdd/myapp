@@ -66,6 +66,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../utils/export-chooser.html">
 <link rel="import" href="../utils/grt-dialog.html">
 <link rel="import" href="../utils/apps-dialog.html">
+<link rel="import" href="../utils/column-sorter.html">
 
 
 
@@ -194,11 +195,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         background-color: red;
       }
 
-      .button{
+      .button {
         padding: 0px 2px 0px 2px !important;
       }
-      
-      
+
+      .rightalign {
+        text-align: right !important;
+      }
+
+
 
       /* .header {
           max-height: 5px !important;
@@ -236,18 +241,42 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <th>
               <paper-checkbox on-change="_checkAll" checked="[[_areAllSelected(mvdata.*)]]"></paper-checkbox>
             </th>
-            <th>[[columnNames.0]]</th>
-            <th>[[columnNames.2]]</th>
-            <th>[[columnNames.3]]</th>
-            <th>[[columnNames.13]]</th>
-            <th>[[columnNames.14]]</th>
-            <th>[[columnNames.15]]</th>
-            <th>[[columnNames.16]]</th>
-            <th>[[columnNames.17]]</th>
-            <th>[[columnNames.18]]</th>
-            <th>[[columnNames.19]]</th>
-            <th>[[columnNames.20]]</th>
-            <th>[[columnNames.21]]</th>
+            <th>
+              <column-sorter colname="[[columnNames.0]]" path="GARTENNUMMER" on-sorter-changed="_sortChange"></column-sorter>
+            </th>
+            <th>
+              <column-sorter colname="[[columnNames.2]]" path="NACHNAME" on-sorter-changed="_sortChange"></column-sorter>
+            </th>
+            <th>
+              <column-sorter colname="[[columnNames.3]]" path="VORNAME" on-sorter-changed="_sortChange"></column-sorter>
+            </th>
+            <th>
+              <column-sorter colname="[[columnNames.13]]" path="GBV" on-sorter-changed="_sortChange"></column-sorter>
+            </th>
+            <th>
+              <column-sorter colname="[[columnNames.14]]" path="FED" on-sorter-changed="_sortChange"></column-sorter>
+            </th>
+            <th>
+              <column-sorter colname="[[columnNames.15]]" path="HOEV" on-sorter-changed="_sortChange"></column-sorter>
+            </th>
+            <th>
+              <column-sorter colname="[[columnNames.16]]" path="A7_1" on-sorter-changed="_sortChange"></column-sorter>
+            </th>
+            <th>
+              <column-sorter colname="[[columnNames.17]]" path="A7_3" on-sorter-changed="_sortChange"></column-sorter>
+            </th>
+            <th>
+              <column-sorter colname="[[columnNames.18]]" path="A7_4" on-sorter-changed="_sortChange"></column-sorter>
+            </th>
+            <th>
+              <column-sorter colname="[[columnNames.19]]" path="UV" on-sorter-changed="_sortChange"></column-sorter>
+            </th>
+            <th>
+              <column-sorter colname="[[columnNames.20]]" path="BEITRAG" on-sorter-changed="_sortChange"></column-sorter>
+            </th>
+            <th>
+              <column-sorter colname="[[columnNames.21]]" path="V_BEMERKUNG" on-sorter-changed="_sortChange"></column-sorter>
+            </th>
             <th class="button"></th>
             <th class="button"></th>
           </thead>
@@ -258,24 +287,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                   <paper-checkbox class="[[getClassByBeitrag(item.BEITRAG)]]" id="[[getGridElementID(index, _pageStart, 'scb')]]"
                     on-change="_checkOne" checked="[[item.selected]]"></paper-checkbox>
                 </td>
-                <td>[[item.GARTENNUMMER]]</td>
+                <td class="rightalign">[[item.GARTENNUMMER]]</td>
                 <td>[[item.NACHNAME]]</td>
                 <td>[[item.VORNAME]]</td>
-                <td>[[item.GBV]]</td>
-                <td>[[item.FED]]</td>
-                <td>[[item.HOEV]]</td>
-                <td>[[item.A7_1]]</td>
-                <td>[[item.A7_3]]</td>
-                <td>[[item.A7_4]]</td>
-                <td>[[item.UV]]</td>
-                <td>[[item.BEITRAG]]</td>
+                <td class="rightalign">[[item.GBV]]</td>
+                <td class="rightalign">[[item.FED]]</td>
+                <td class="rightalign">[[item.HOEV]]</td>
+                <td class="rightalign">[[item.A7_1]]</td>
+                <td class="rightalign">[[item.A7_3]]</td>
+                <td class="rightalign">[[item.A7_4]]</td>
+                <td class="rightalign">[[item.UV]]</td>
+                <td class="rightalign">[[item.BEITRAG]]</td>
                 <td>[[item.V_BEMERKUNG]]</td>
                 <td class="button">
                   <button id="bto[[item.GARTENNUMMER]]" on-click="_openDetails" class="critical-domain-endpagebutton">
-
                     <iron-icon id="cro[[item.GARTENNUMMER]]" icon="[[getIcon(item._detailsOpened)]]" slot="item-icon"
-                      on-click="_openDetails" ></iron-icon>
-
+                      on-click="_openDetails"></iron-icon>
                   </button>
                 </td>
                 <td class="button">
@@ -289,70 +316,69 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               <template is="dom-if" if="[[item._detailsOpened]]">
                 <tr class="details">
                   <td colspan="15">
-                 
-                      <iron-collapse-button expand-icon="add-circle-outline" collapse-icon="remove-circle-outline"
-                        class="detailelement light-element flex" opened>
-                        <div slot="collapse-trigger" class="flex">
-                          <span>Abweichung zwischen dem Versicherten und dem Pächter zu der gleichen Gartennummer</span>
-                        </div>
-                        <div slot="collapse-content">
-                          <div class="card comparepage">
-                            <small>[[columnNames.8]]:[[item.grund]]</small>
-                            <div class="layout horizontal">
-                              <table width="50%">
-                                <thead>
-                                  <th></th>
-                                  <th>Versicherter</th>
-                                  <th>Pächter</th>
-                                </thead>
-                                <tbody>
-                                  <tr>
-                                    <td>[[columnNames.2]]</td>
-                                    <td>[[item.NACHNAME]]</td>
-                                    <td>[[item.entsprechung.NACHNAME]]</td>
-                                  </tr>
+                    <iron-collapse-button expand-icon="add-circle-outline" collapse-icon="remove-circle-outline" class="detailelement light-element flex"
+                      opened>
+                      <div slot="collapse-trigger" class="flex">
+                        <span>Abweichung zwischen dem Versicherten und dem Pächter zu der gleichen Gartennummer</span>
+                      </div>
+                      <div slot="collapse-content">
+                        <div class="card comparepage">
+                          <small>[[columnNames.8]]:[[item.grund]]</small>
+                          <div class="layout horizontal">
+                            <table width="50%">
+                              <thead>
+                  <th></th>
+                  <th>Versicherter</th>
+                  <th>Pächter</th>
+                  </thead>
+          <tbody>
+            <tr>
+              <td>[[columnNames.2]]</td>
+              <td>[[item.NACHNAME]]</td>
+              <td>[[item.entsprechung.NACHNAME]]</td>
+            </tr>
 
-                                  <tr>
-                                    <td>[[columnNames.3]]</td>
-                                    <td>[[item.VORNAME]]</td>
-                                    <td>[[item.entsprechung.VORNAME]]</td>
-                                  </tr>
-                                  <tr>
-                                    <td>[[columnNames.5]]</td>
-                                    <td>[[item.STRASSE]]</td>
-                                    <td>[[item.entsprechung.STRASSE]]</td>
-                                  </tr>
-                                  <tr>
-                                    <td>[[columnNames.7]]</td>
-                                    <td>[[item.PLZ]]</td>
-                                    <td>[[item.entsprechung.PLZ]]</td>
-                                  </tr>
-                                  <tr>
-                                    <td>[[columnNames.8]]</td>
-                                    <td>[[item.WOHNORT]]</td>
-                                    <td>[[item.entsprechung.WOHNORT]]</td>
-                                  </tr>
+            <tr>
+              <td>[[columnNames.3]]</td>
+              <td>[[item.VORNAME]]</td>
+              <td>[[item.entsprechung.VORNAME]]</td>
+            </tr>
+            <tr>
+              <td>[[columnNames.5]]</td>
+              <td>[[item.STRASSE]]</td>
+              <td>[[item.entsprechung.STRASSE]]</td>
+            </tr>
+            <tr>
+              <td>[[columnNames.7]]</td>
+              <td>[[item.PLZ]]</td>
+              <td>[[item.entsprechung.PLZ]]</td>
+            </tr>
+            <tr>
+              <td>[[columnNames.8]]</td>
+              <td>[[item.WOHNORT]]</td>
+              <td>[[item.entsprechung.WOHNORT]]</td>
+            </tr>
 
-                                </tbody>
-                              </table>
-
-                              <div class="layout vertical">
-                                <paper-button id="adb[[index]]" class="under_button" bottom raised on-click="_postOnePaechter">Pächterdaten
-                                  übernehmen und nach Pächter verschieben</paper-button>
-                                <paper-button id="rmb[[item.GARTENNUMMER]]" class="under_button" bottom raised on-click="_confirmRemove">Löschen</paper-button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </iron-collapse-button>
-                    
-                  </td>
-                </tr>
-              </template>
-            </template>
           </tbody>
         </table>
-        <!-- <vaadin-grid id="mygrid" page-size="{{pageSize}}" active-item="{{activeItem}}" aria-label="Basic Binding Example"
+
+        <div class="layout vertical">
+          <paper-button id="adb[[index]]" class="under_button" bottom raised on-click="_postOnePaechter">Pächterdaten
+            übernehmen und nach Pächter verschieben</paper-button>
+          <paper-button id="rmb[[item.GARTENNUMMER]]" class="under_button" bottom raised on-click="_confirmRemove">Löschen</paper-button>
+        </div>
+      </div>
+    </div>
+    </div>
+    </iron-collapse-button>
+
+    </td>
+    </tr>
+  </template>
+  </template>
+  </tbody>
+  </table>
+  <!-- <vaadin-grid id="mygrid" page-size="{{pageSize}}" active-item="{{activeItem}}" aria-label="Basic Binding Example"
         items="[[mvdata]]" column-reordering-allowed>
         <template class="row-details">
           <div class="details">
@@ -534,9 +560,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </vaadin-grid-column>
       </vaadin-grid> -->
 
-      </div>
-    </div>
-    <apps-dialog id="appsdialog" action-buttons="[[actionButtons]]" tasks="[[getSelected(mvdata.*)]]"></apps-dialog>
+  </div>
+  </div>
+  <apps-dialog id="appsdialog" action-buttons="[[actionButtons]]" tasks="[[getSelected(mvdata.*)]]"></apps-dialog>
 
 
 
@@ -548,7 +574,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       static get properties() {
         return {
-          testD:{
+          testD: {
             type: Boolean,
             value: false,
             notify: true
@@ -705,10 +731,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _openDetails(e) {
         e.model.set("item._detailsOpened", !e.model.item._detailsOpened);
         if (e.model.item._detailsOpened) {
-           this.push('openeddetails', true);
-         } else {
-           this.shift('openeddetails');
-         }
+          this.push('openeddetails', true);
+        } else {
+          this.shift('openeddetails');
+        }
         e.stopPropagation();
       }
 
@@ -859,19 +885,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _sortChange(e) {
         let self = this;
-        // Ganz wichtig hier e.stopPropagation, weil sonst der "sorter-changed" Event,
-        // weiter an den vaadin-grid propagiert worden wäre, und dieser würde noch einmal seine eigene 
-        // Sortierung die unsere "überladen"/ ändern würde. Bemerkbar wäre das dann insbesondere bei
-        // der selbst-implementierte "natural-alphanumerischen-Sortierung" (1,2,3,3a,4,4a etc)
-        e.stopPropagation();
-        console.log('sortchange called außer event' + (e.target) + (e.target.path) + (e.target.direction));
+
         if (e.target && e.target.path && e.target.direction) {
+
+          let otherSorter = this.shadowRoot.querySelectorAll('column-sorter');
+          otherSorter.forEach((os) => {
+            if (os.direction && (os.colname !== e.target.colname)) {
+              os.direction = null;
+            }
+          })
+
           let key = e.target.path;
           let direction = e.target.direction;
           let records = JSON.parse(JSON.stringify(self.mvdata));
-          console.log('sortchange called in event');
-
-          console.log('sortchange called e.target.path' + key + ' e.target.direction' + direction + " nritems" + records.length)
           if (key === 'GARTENNUMMER') {
             // For Number-like Strings containing alphanummerical chars
             records = records.sort(function (o1, o2) {
@@ -1167,11 +1193,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         delete unklarerV['grund'];
         delete unklarerV['entsprechung'];
+        delete unklarerV['_detailsOpened'];
 
         let promises = [];
-        
+
         let postPachterPr = this.$.firstclient.postOnePaechter(unklarerV).then(() => {
-          
+
           showToast(this, 'Der ungeklärte Fall wurde erfolgreich in einen neuen Pächter umgespeichert.', TOAST_TYPE.SUCCESS);
         }).catch((error) => {
           showToast(this, 'Fehler bei der Speicherung der Änderungen', TOAST_TYPE.ERROR);
