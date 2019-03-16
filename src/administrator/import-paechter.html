@@ -205,7 +205,7 @@
 
             for (let j = 0; j < columns.length; j++) {
               let attrName = columns[j];
-              let attrValue = (attrName === "GBV" || attrName === "FED" || attrName === "Beitrag" || attrName === "UV" || attrName === "HoeV") ? (isFinite(resp[i][j]) && !isNaN(resp[i][j]) ? (parseInt(resp[i][j]) || 0) : 0) : resp[i][j];
+              let attrValue = (attrName === "GBV" || attrName === "FED" || attrName === "Beitrag" || attrName === "UV" || attrName === "HöV") ? (isFinite(resp[i][j]) && !isNaN(resp[i][j]) ? (parseInt(resp[i][j]) || 0) : 0) : resp[i][j];
               myRowObj[attrName] = attrValue;
             }
             myRowObj['created'] = { user: usr.name, datum: moment().format('YYYYMMDD_HHmm'), source: 'csv' };
@@ -228,8 +228,9 @@
             secondArray = el.split(',');
             finalArray.push(secondArray);
           })
+          this._importLocalPaechterPressed(finalArray);
         }
-        this._importLocalPaechterPressed(finalArray);
+        
       }
 
       _importRemotePaechterPressed() {

@@ -226,9 +226,9 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
             console.log(i + ' resp[i].length ' + resp[i].length)
             for (let j = 0; j < columns.length; j++) {
               console.log('column j' + j)
-              let attrName = columns[j].replace(/[\. ,:-]+/g, "");
-              attrName = attrName.replace(/ü/g, 'ue').replace(/ö/g, 'oe');
-              let attrValue = (attrName === "GBV" || attrName === "FED" || attrName === "Beitrag" || attrName === "UV" || attrName === "HoeV") ? (isFinite(resp[i][j]) && !isNaN(resp[i][j]) ? (parseInt(resp[i][j]) || 0) : 0) : resp[i][j];
+              let attrName = columns[j];//.replace(/[\. ,:-]+/g, "");
+             // attrName = attrName.replace(/ü/g, 'ue').replace(/ö/g, 'oe');
+              let attrValue = (attrName === "GBV" || attrName === "FED" || attrName === "Beitrag" || attrName === "UV" || attrName === "HöV") ? (isFinite(resp[i][j]) && !isNaN(resp[i][j]) ? (parseInt(resp[i][j]) || 0) : 0) : resp[i][j];
               myRowObj[attrName] = attrValue;
             }
             myRowObj['created'] = { user: usr.name, datum: moment().format('YYYYMMDD_HHmm'), source: 'csv' };
@@ -253,8 +253,9 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
             secondArray = el.split(',');
             finalArray.push(secondArray);
           })
+          this._importLocalVersichertePressed(finalArray);
         }
-        this._importLocalVersichertePressed(finalArray);
+        
       }
 
       _importRemoteVersichertePressed() {
@@ -288,17 +289,20 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
       saveToDB(versicherte) {
 
         return this.$.firstclient.getPaechterAsJSON().then((paechter) => {
-         // debugger;
           return this.resolveConflicts(paechter, versicherte);
 
-        }).then((conflictFreeData) => {
-          let unklareFaelle = conflictFreeData.unklare;
-          let klareFaelle = conflictFreeData.klare;
+        }).then((conflictCheckedData) => {
+          let unklareFaelle = { columns: versicherte.columns, data: conflictCheckedData.unklare };
+          let klareFaelle = { columns: versicherte.columns, data: conflictCheckedData.klare };
           let promises = [];
-          console.debug('conflictFreeData' + JSON.stringify(conflictFreeData))
-          debugger;
-          // promises.push(this.$.firstclient.postVersicherteAsJSON(klareFaelle));
-          // promises.push(this.$.firstclient.postUnklareVersicherteAsJSON(unklareFaelle))
+          let klarePr = this.$.firstclient.updatePaechterAsJSON(klareFaelle).catch(()=>{
+            showToast(this, 'Fehler bei der Übertragung der importierten Pächter-Daten in die Datenbank. (klare Fälle) ', TOAST_TYPE.ERROR);
+          });
+          let unklarePr = this.$.firstclient.postUnklareVersicherteAsJSON(unklareFaelle).catch(()=>{
+            showToast(this, 'Fehler bei der Übertragung der importierten Pächter-Daten in die Datenbank. (unklare Fälle) ', TOAST_TYPE.ERROR);
+          })
+          promises.push(klarePr);
+          promises.push(unklarePr);
           return Promise.all(promises);
 
         }).catch(() => {
@@ -319,7 +323,7 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
             this.set('secondColumns', secondColumns);
             showToast(this, 'Die KVD-Daten wurden aus der lokalen Datei erfolgreich geladen. Damit diese auch dauerhaft importiert werden können, setzen Sie die Konfiguration durch die Zuordnung der Tabellenspalten fort.', TOAST_TYPE.WARN, 'center');
           } else {
-            showToast(this, 'Bei der Importierung der KVD-Daten wurden keine Versichertendaten gefunden', TOAST_TYPE.ERROR);
+            showToast(this, '2Bei der Importierung der KVD-Daten wurden keine Versichertendaten gefunden', TOAST_TYPE.ERROR);
           }
         }).then(() => {
           this.validate();
@@ -373,54 +377,53 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
           columns.push(col.alias);
         })
         let data = JSON.parse(JSON.stringify(this.dataAndColumns.data));
+        
         let newData = [];
         data.forEach((versichertenData) => {
           let newVersicherte = new Versicherter(this.entPaars);
+        // debugger;
           Object.keys(versichertenData).forEach((key) => {
             let correspondingPaar = this.entPaars.find((p) => p.right === key);
             if (correspondingPaar) {
               newVersicherte[correspondingPaar.left] = versichertenData[key];
             }
+            
           })
           newData.push(newVersicherte);
+
         })
         let newDataAndColumns = { data: newData, columns: columns }
-       //debugger;
         this.saveToDB(newDataAndColumns).then(() => {
           showToast(this, 'Sie haben die Pächter-Daten erfolgreich importiert.', TOAST_TYPE.SUCCESS);
           this.set('completed', true)
         }).catch(() => {
           this.set('completed', false)
-          showToast(this, 'Fehler bei der Übertragung der importierten Pächter-Daten in die Datenbank.', TOAST_TYPE.ERROR);
+          
         })
       }
 
       resolveConflicts(paechter, versicherte) {
-       // debugger;
-        console.debug('conflicts paechter' + JSON.stringify(paechter))
-        console.debug('conflicts versicherte' + JSON.stringify(versicherte))
-       
         let faelle = { 'klare': [], 'unklare': [] }
-        
         versicherte.data.forEach((v) => {
-          
           let isInP = paechter.data.find((p) => p.GARTENNUMMER === v.GARTENNUMMER);
-          
-          if (!isInP || (isInP.NACHNAME !== v.NACHNAME || isInP.VORNAME !== v.VORNAME 
-          || isInP.STRASSE !== v.STRASSE || isInP.PLZ !== v.PLZ || isInP.WOHNORT !== v.WOHNORT)){
+          let grund = null;
+          (!isInP) ? grund = "Keie Entsprechung" : ((isInP.NACHNAME !== v.NACHNAME) ? grund = "Abweichung - Nachname":(isInP.VORNAME !== v.VORNAME)? grund = "Abweichung - Vorname": (isInP.STRASSE !== v.STRASSE) ? grund = "Abweichung- Strasse" : (isInP.PLZ !== v.PLZ) ? grund = "Abweichung PLZ" : grund = null)
+
+          if (grund) { //|| isInP.WOHNORT !== v.WOHNORT
+            v['grund'] = grund;
             faelle['unklare'].push(v);
           } else {
-            this.generalConf.forEach((elem)=>{
+            this.generalConf.forEach((elem) => {
               // wenn die Spalte paechter-spezifisch dann vorrangig behandeln,
               // sprich die entsprechnde aus v überschreiben (sollte null sein)
-              if(elem.rolen.some('paechter')){
+              if (elem.rolen.some((rolle) => rolle === 'paechter')) {
                 v[elem.colname] = isInP[elem.colname];
               }
             })
             faelle['klare'].push(v);
           }
         })
-        
+
         return Promise.resolve(faelle);
       }
 

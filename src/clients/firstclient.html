@@ -27,24 +27,34 @@
                                 path: '/loadCSV/test',
                                 port: '8000'
                             },
+
                             CSV_PAECHTER: {
                                 path: '/loadCSV/paechter',
                                 port: '8000'
                             },
+
                             JSON_PAECHTER: {
                                 path: '/api/paechter',
                                 port: '8000'
                             },
+
                             CSV_VERSICHERTE: {
                                 path: '/loadCSV/versicherte',
                                 port: '8000'
                             },
+
                             JSON_VERSICHERTE: {
                                 path: '/api/versicherte',
                                 port: '8000'
                             },
+
                             JSON_ONE_VERSICHERTER: {
                                 path: '/api/versicherter',
+                                port: '8000'
+                            },
+
+                            JSON_UNKLARE_VERSICHERTE: {
+                                path: '/api/unklareversicherte',
                                 port: '8000'
                             }
                         }
@@ -173,6 +183,130 @@
                     console.log('postVersicherteAsJSON die Anfrage an' + sourceURL + ' war nicht erfolgreich')
                 });
             }
+
+            getUnklareVersicherteAsJSON() {
+                let self = this;
+                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.JSON_UNKLARE_VERSICHERTE.path, this.URLS.JSON_UNKLARE_VERSICHERTE.port);
+                let myHeaders = new Headers();
+
+                let myInit = {
+                    method: 'GET',
+                    headers: myHeaders,
+                    mode: 'cors',
+                    cache: 'default',
+                    credentials: 'omit'
+                };
+
+                let myRequest = new Request(sourceURL, myInit);
+
+                return fetch(myRequest).then((response) => {
+                    if (response.status && response.status === 204) {
+                        console.log("getUnklareVersicherte as JSON status 204")
+                        return undefined;
+                    } else {
+                        return response.json();
+                    }
+                }).then((data) => {
+                    console.log('firstclient unklare versicherte as json wird gesetzt auf' + JSON.stringify(data))
+                    return Promise.resolve(data);
+                }).catch((err) => {
+                    console.log('getUnklareVersicherteAsJSON die Anfrage war nicht erfolgreich' + JSON.stringify(error))
+                });
+            }
+
+            postUnklareVersicherteAsJSON(unklareFaelle){
+                
+                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.JSON_UNKLARE_VERSICHERTE.path, this.URLS.JSON_UNKLARE_VERSICHERTE.port);
+                let myHeaders = new Headers();
+                myHeaders.set("Content-Type", "application/json");
+
+                let tosend = JSON.stringify(unklareFaelle);
+
+                let myInit = {
+                    method: 'POST',
+                    headers: myHeaders,
+                    mode: 'cors',
+                    cache: 'default',
+                    credentials: 'omit',
+                    body: tosend
+                };
+
+                let myRequest = new Request(sourceURL, myInit);
+
+                return fetch(myRequest).then((response) => {
+                    console.log("postUnklareVersicherteAsJSON antwort" + JSON.stringify(response));
+                    if (response && response.ok) {
+                        return response.json();
+                    } else return undefined;
+
+
+                }).catch(() => {
+                    console.log('postUnklareVersicherteAsJSON die Anfrage an' + sourceURL + ' war nicht erfolgreich')
+                });
+
+            }
+
+            getOnePachter(ganr){
+                let self = this;
+                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.JSON_PAECHTER.path + "/" + ganr, this.URLS.JSON_PAECHTER.port);
+                let myHeaders = new Headers();
+
+                let myInit = {
+                    method: 'GET',
+                    headers: myHeaders,
+                    mode: 'cors',
+                    cache: 'default',
+                    credentials: 'omit'
+                };
+
+                let myRequest = new Request(sourceURL, myInit);
+
+                return fetch(myRequest).then((response) => {
+                    if (response.status && response.status === 204) {
+                        console.log("getOnePaechter as JSON status 204")
+                        return undefined;
+                    } else {
+                        return response.json();
+                    }
+                }).then((data) => {
+                    console.log('firstclient onepaechter wird gesetzt auf' + JSON.stringify(data))
+                    return Promise.resolve(data);
+                }).catch((err) => {
+                    console.log('getOnePaechter die Anfrage an api/paechter war nicht erfolgreich' + JSON.stringify(error))
+                });
+
+            }
+
+            postOnePaechter(theOne){
+                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.JSON_PAECHTER.path + "/" + theOne.GARTENNUMMER, this.URLS.JSON_PAECHTER.port);
+                let myHeaders = new Headers();
+                myHeaders.set("Content-Type", "application/json");
+
+                let tosend = JSON.stringify(theOne);
+
+                let myInit = {
+                    method: 'POST',
+                    headers: myHeaders,
+                    mode: 'cors',
+                    cache: 'default',
+                    credentials: 'omit',
+                    body: tosend
+                };
+
+                let myRequest = new Request(sourceURL, myInit);
+
+                return fetch(myRequest).then((response) => {
+                    console.log("postOnePaechter antwort" + JSON.stringify(response));
+                    if (!response.ok) { 
+                        throw response; 
+                    } else if (response && response.ok) {
+                        return response.json();
+                    } else return undefined;
+                }).catch(() => {
+                    console.log('postOnePaechter die Anfrage an' + sourceURL + ' war nicht erfolgreich')
+                    return Promise.reject();
+                });
+            }
             
             postOneVersicherter(theOne){
                 
@@ -205,6 +339,37 @@
                 }).catch(() => {
                     console.log('postOneVersicherter die Anfrage an' + sourceURL + ' war nicht erfolgreich')
                     return Promise.reject();
+                });
+
+            }
+
+            deleteUngeklaerterVersicherter(gartennummer){
+                let self = this;
+                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.JSON_UNKLARE_VERSICHERTE.path, this.URLS.JSON_UNKLARE_VERSICHERTE.port);
+                let myHeaders = new Headers();
+                
+                let myInit = {
+                    method: 'DELETE',
+                    headers: myHeaders,
+                    mode: 'cors',
+                    cache: 'default',
+                    credentials: 'omit'
+                };
+
+                let myRequest = new Request(sourceURL + '/' + gartennummer, myInit);
+
+                return fetch(myRequest).then((response) => {
+                    if (response.status && response.status === 204) {
+                        console.log("deleteUngeklaerterVersicherter as JSON status 204")
+                        return undefined;
+                    } else {
+                        return response.json();
+                    }
+                }).then((data) => {
+                    console.log('firstclient deleteUngeklaerterVersicherter wird gesetzt auf' + JSON.stringify(data))
+                    return Promise.resolve(data);
+                }).catch((err) => {
+                    console.log('deleteUngeklaerterVersicherter die Anfrage an api/paechter war nicht erfolgreich' + JSON.stringify(error))
                 });
 
             }
@@ -268,6 +433,38 @@
 
                 }).catch(() => {
                     console.log('postVersicherteAsJSON die Anfrage an' + sourceURL + ' war nicht erfolgreich')
+                });
+
+            }
+
+            updatePaechterAsJSON(paechter){
+                console.log('toupdate' + JSON.stringify(paechter))
+                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.JSON_PAECHTER.path, this.URLS.JSON_PAECHTER.port);
+                let myHeaders = new Headers();
+                myHeaders.set("Content-Type", "application/json");
+
+                let tosend = JSON.stringify(paechter);
+
+                let myInit = {
+                    method: 'PUT',
+                    headers: myHeaders,
+                    mode: 'cors',
+                    cache: 'default',
+                    credentials: 'omit',
+                    body: tosend
+                };
+
+                let myRequest = new Request(sourceURL, myInit);
+
+                return fetch(myRequest).then((response) => {
+                    console.log("updatePaechterAsJSON antwort" + JSON.stringify(response));
+                    if (response && response.ok) {
+                        return response.json();
+                    } else return undefined;
+
+
+                }).catch(() => {
+                    console.log('updatePaechterAsJSON die Anfrage an' + sourceURL + ' war nicht erfolgreich')
                 });
 
             }

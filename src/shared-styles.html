@@ -114,6 +114,24 @@
         background-color: var(--second-domain-light-color);
       }
 
+      .critical-domain-pagebutton {
+        background-color: var(--critical-domain-primary-color);
+        border: none;
+        color: white;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        width: 27px;
+        height: 27px;
+        line-height: 27px;
+        border-radius: 50%;
+      }
+
+      .critical-domain-pagebutton:hover:enabled {
+        background-color: var(--critical-domain-light-color);
+      }
+
       .endpagebutton {
         background-color: var(--app-primary-color);
         color: white;
@@ -148,6 +166,18 @@
 
       .second-domain-endpagebutton:hover:enabled {
         background-color: var(--second-domain-light-color);
+      }
+
+      .critical-domain-endpagebutton {
+        background-color: var(--critical-domain-primary-color);
+        color: white;
+        line-height: 27px;
+        border-radius: 20%;
+        border: none;
+      }
+
+      .critical-domain-endpagebutton:hover:enabled {
+        background-color: var(--critical-domain-light-color);
       }
 
       /* .opened {background-color:gray;} */
@@ -185,6 +215,10 @@
         --second-domain-primary-color: #2D3038;
         --second-domain-dark-color: #020712;
         --second-domain-light-color: #565962;
+
+        --critical-domain-primary-color: #00838f;
+        --critical-domain-dark-color: #005662;
+        --critical-domain-light-color: #4fb3bf;
         
         
       }
@@ -209,6 +243,13 @@
 
       paper-button{
         max-height: 57px;
+      }
+
+      paper-button.under_button {
+        padding: 0.5em 0.6em 0.5em 0.6em !important;
+        background-color: #1976d2 !important;
+        color: white;
+        margin: 1rem;
       }
 
       paper-button.delete {

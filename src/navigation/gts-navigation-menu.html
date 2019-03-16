@@ -25,9 +25,10 @@
             }
 
             .drawer-content {
-                margin-top: 52px;
-                height: calc(100% - 52px);
+                margin-top: 48px;
+                height: calc(100% - 48px);
                 overflow: auto;
+                overflow-x:hidden;
             }
 
             .paper-item-link {
@@ -150,7 +151,7 @@
 
         <div class="drawer-content">
             <div class="nav">
-                <iron-selector attr-for-selected="name">
+                <iron-selector selected="[[page]]" attr-for-selected="name">
                     <paper-item on-click="_navigateEvent" name="default" class="nav-item parent haupt" href="#[[rootPath]]default">Home</paper-item>
                     <iron-collapse-button class="erstekategorie" forbidden$='false' closed>
                         <div slot="collapse-trigger" class="nav-item parent flex">
@@ -174,6 +175,7 @@
                         <div slot="collapse-content">
                             <iron-selector attr-for-selected="name" class="drawer-list">
                                 <paper-item on-click="_navigateEvent" name="versicherte" class="nav-item child" href="#[[rootPath]]versicherte">Versicherte</paper-item>
+                                <paper-item on-click="_navigateEvent" name="unklare" class="nav-item child" href="#[[rootPath]]unklare">Ungeklärte Fälle</paper-item>
                                 <paper-item on-click="_navigateEvent" name="versicherungkonfig" class="nav-item child"
                                     href="#[[rootPath]]versicherungkonfig">Konfiguration</paper-item>
                                 <paper-item on-click="_navigateEvent" name="versicherungrechner" class="nav-item child"
@@ -226,9 +228,8 @@
                         </div>
                         <div slot="collapse-content">
                             <iron-selector attr-for-selected="name" class="drawer-list">
-                                <paper-item on-click="_navigateEvent" name="paechterdaten" class="nav-item child" href="#[[rootPath]]paechter-imports">Pächterdaten</paper-item>
-                                <paper-item on-click="_navigateEvent" name="versicherungsdaten" class="nav-item child"
-                                    href="#[[rootPath]]versicherte-imports">Versicherungsdaten</paper-item>
+                                <paper-item on-click="_navigateEvent" name="paechterdaten" class="nav-item child" href="#[[rootPath]]paechter-imports">Daten importieren</paper-item>
+                                
                             </iron-selector>
                         </div>
                     </iron-collapse-button>

@@ -403,17 +403,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         tmpVC.GBV.schritt.versicherteSumme = hoeherGBV;
                         tmpVC.GBV.schritt.beitrag = parseInt(aktVCS.GBV.schritt.beitrag) * hoeherGBV / parseInt(aktVCS.GBV.schritt.versicherteSumme);
 
-                        tmpVC.FED.schritt.versicherteSumme = (parseInt(data.HoeV) || 0);
-                        tmpVC.FED.schritt.beitrag = parseInt(aktVCS.FED.schritt.beitrag) * (parseInt(data.HoeV) || 0) / parseInt(aktVCS.FED.schritt.versicherteSumme);
+                        tmpVC.FED.schritt.versicherteSumme = (parseInt(data.HOEV) || 0);
+                        tmpVC.FED.schritt.beitrag = parseInt(aktVCS.FED.schritt.beitrag) * (parseInt(data.HOEV) || 0) / parseInt(aktVCS.FED.schritt.versicherteSumme);
                         //Geräteschuppen
-                        tmpVC.FED.zusatzversicherungen[0].schritt.versicherteSumme = (parseInt(data.SA) || 0);
-                        tmpVC.FED.zusatzversicherungen[0].schritt.beitrag = parseInt(aktVCS.FED.zusatzversicherungen[0].schritt.beitrag) * (parseInt(data.SA) || 0) / parseInt(aktVCS.FED.zusatzversicherungen[0].schritt.versicherteSumme);
+                        tmpVC.FED.zusatzversicherungen[0].schritt.versicherteSumme = (parseInt(data.A7_1) || 0);
+                        tmpVC.FED.zusatzversicherungen[0].schritt.beitrag = parseInt(aktVCS.FED.zusatzversicherungen[0].schritt.beitrag) * (parseInt(data.A7_1) || 0) / parseInt(aktVCS.FED.zusatzversicherungen[0].schritt.versicherteSumme);
                         //Strommagregate
-                        tmpVC.FED.zusatzversicherungen[1].schritt.versicherteSumme = (parseInt(data.A73) || 0);
-                        tmpVC.FED.zusatzversicherungen[1].schritt.beitrag = parseInt(aktVCS.FED.zusatzversicherungen[1].schritt.beitrag) * (parseInt(data.A73) || 0) / parseInt(aktVCS.FED.zusatzversicherungen[1].schritt.versicherteSumme);
+                        tmpVC.FED.zusatzversicherungen[1].schritt.versicherteSumme = (parseInt(data.A7_3) || 0);
+                        tmpVC.FED.zusatzversicherungen[1].schritt.beitrag = parseInt(aktVCS.FED.zusatzversicherungen[1].schritt.beitrag) * (parseInt(data.A7_3) || 0) / parseInt(aktVCS.FED.zusatzversicherungen[1].schritt.versicherteSumme);
                         //Solaranlage
-                        tmpVC.FED.zusatzversicherungen[2].schritt.versicherteSumme = (parseInt(data.Solar) || 0);
-                        tmpVC.FED.zusatzversicherungen[2].schritt.beitrag = parseInt(aktVCS.FED.zusatzversicherungen[2].schritt.beitrag) * (parseInt(data.Solar) || 0) / parseInt(aktVCS.FED.zusatzversicherungen[2].schritt.versicherteSumme);
+                        tmpVC.FED.zusatzversicherungen[2].schritt.versicherteSumme = (parseInt(data.A7_4) || 0);
+                        tmpVC.FED.zusatzversicherungen[2].schritt.beitrag = parseInt(aktVCS.FED.zusatzversicherungen[2].schritt.beitrag) * (parseInt(data.A7_4) || 0) / parseInt(aktVCS.FED.zusatzversicherungen[2].schritt.versicherteSumme);
 
                         tmpVC.UV.grundbeitrag.beitrag = (parseInt(data.UV) || 0);
 
@@ -680,12 +680,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 savedDataCopy.GBV = this.gesamtGBVVS;
                 console.log('transferVCToSavedData _insertChangedVersicherter versicherter changed ' + this.gesamtGBVVS+ ' id:' + this.id + ' vdata' + JSON.stringify(vdata))
                 savedDataCopy.FED = vdata.FED.grundbeitrag.versicherteSumme;
-                savedDataCopy.HoeV = vdata.FED.schritt.versicherteSumme;
-                savedDataCopy.SA = vdata.FED.zusatzversicherungen[0].schritt.versicherteSumme;
-                savedDataCopy.A73 = vdata.FED.zusatzversicherungen[1].schritt.versicherteSumme;
-                savedDataCopy.Solar = vdata.FED.zusatzversicherungen[2].schritt.versicherteSumme;
+                savedDataCopy.HOEV = vdata.FED.schritt.versicherteSumme;
+                savedDataCopy.A7_1 = vdata.FED.zusatzversicherungen[0].schritt.versicherteSumme;
+                savedDataCopy.A7_3 = vdata.FED.zusatzversicherungen[1].schritt.versicherteSumme;
+                savedDataCopy.A7_4 = vdata.FED.zusatzversicherungen[2].schritt.versicherteSumme;
                 savedDataCopy.UV = vdata.UV.grundbeitrag.beitrag
-                savedDataCopy.Beitrag = this.getGesamtKOSTEN();
+                savedDataCopy.BEITRAG = this.getGesamtKOSTEN();
                 if (!savedDataCopy.changes) {
                     savedDataCopy['changes'] = [];
                 }
