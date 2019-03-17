@@ -218,7 +218,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <div class="toolbar layout horizontal justified" flex>
       <template is="dom-if" if="[[columnNames.length]]">
-        <grt-grid-pagination id="pages" datalength="[[mvdata.length]]" page-size="{{pageSize}}" pstart="{{_pageStart}}"
+        <grt-grid-pagination id="pagesss" datalength="[[mvdata.length]]" page-size="{{pageSize}}" pstart="{{_pageStart}}"
           on-pagechanged="changePage" style-domain="critical-domain"></grt-grid-pagination>
       </template>
       <div class="layout horizontal justified" flex="50">
@@ -285,7 +285,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               <tr>
                 <td>
                   <paper-checkbox class="[[getClassByBeitrag(item.BEITRAG)]]" id="[[getGridElementID(index, _pageStart, 'scb')]]"
-                    on-change="_checkOne" checked="[[item.selected]]"></paper-checkbox>
+                    on-change="_checkOne" checked="[[_isItemSelected(_pageStart, index, mvdata.*)]]"></paper-checkbox>
                 </td>
                 <td class="rightalign">[[item.GARTENNUMMER]]</td>
                 <td>[[item.NACHNAME]]</td>
@@ -378,188 +378,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </template>
   </tbody>
   </table>
-  <!-- <vaadin-grid id="mygrid" page-size="{{pageSize}}" active-item="{{activeItem}}" aria-label="Basic Binding Example"
-        items="[[mvdata]]" column-reordering-allowed>
-        <template class="row-details">
-          <div class="details">
-            <iron-collapse-button expand-icon="add-circle-outline" collapse-icon="remove-circle-outline"
-              on-opened-changed="isTrue" class="lastelement light-element flex">
-              <div slot="collapse-trigger" class="flex">
-                <span>Abweichung zwischen dem Versicherten und dem Pächter zu der gleichen Gartennummer</span>
-              </div>
-              <div slot="collapse-content">
-                <div class="card comparepage">
-                  <small>[[columnNames.8]]:[[item.grund]]</small>
-                  <div class="layout horizontal">
-                    <table width="50%">
-                      <thead>
-                        <th></th>
-                        <th>Versicherter</th>
-                        <th>Pächter</th>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td>[[columnNames.2]]</td>
-                          <td>[[item.NACHNAME]]</td>
-                          <td>[[item.entsprechung.NACHNAME]]</td>
-                        </tr>
-
-                        <tr>
-                          <td>[[columnNames.3]]</td>
-                          <td>[[item.VORNAME]]</td>
-                          <td>[[item.entsprechung.VORNAME]]</td>
-                        </tr>
-                        <tr>
-                          <td>[[columnNames.5]]</td>
-                          <td>[[item.STRASSE]]</td>
-                          <td>[[item.entsprechung.STRASSE]]</td>
-                        </tr>
-                        <tr>
-                          <td>[[columnNames.7]]</td>
-                          <td>[[item.PLZ]]</td>
-                          <td>[[item.entsprechung.PLZ]]</td>
-                        </tr>
-                        <tr>
-                          <td>[[columnNames.8]]</td>
-                          <td>[[item.WOHNORT]]</td>
-                          <td>[[item.entsprechung.WOHNORT]]</td>
-                        </tr>
-
-                      </tbody>
-                    </table>
-
-                    <div class="layout vertical">
-                      <paper-button id="adb[[index]]" class="under_button" bottom raised on-click="_postOnePaechter">Pächterdaten
-                        übernehmen und nach Pächter verschieben</paper-button>
-                      <paper-button id="rmb[[item.GARTENNUMMER]]" class="under_button" bottom raised on-click="_confirmRemove">Löschen</paper-button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </iron-collapse-button>
-          </div>
-        </template>
-        <vaadin-grid-column width="20px">
-          <template class="header">
-            <vaadin-checkbox on-change="_checkAll" checked="[[_areAllSelected(mvdata.*)]]"></vaadin-checkbox>
-          </template>
-          <template>
-            <vaadin-checkbox class="[[getClassByBeitrag(item.BEITRAG)]]" id="[[getGridElementID(index, _pageStart, 'scb')]]"
-              on-change="_checkOne" checked="[[item.selected]]"></vaadin-checkbox>
-          </template>
-        </vaadin-grid-column>
-        <vaadin-grid-column path="GARTENNUMMER" header="GARTENNUMMER" width="75px" flex-grow="0" text-align="end">
-          <template class="header">
-            <vaadin-grid-sorter path="GARTENNUMMER" on-sorter-changed="_sortChange">
-              [[columnNames.0]]
-            </vaadin-grid-sorter>
-          </template>
-        </vaadin-grid-column>
-
-        <vaadin-grid-column path="NACHNAME" width="141px" resizable>
-          <template class="header">
-            <vaadin-grid-sorter path="NACHNAME" on-sorter-changed="_sortChange">
-              [[columnNames.2]]
-            </vaadin-grid-sorter>
-          </template>
-        </vaadin-grid-column>
-
-        <vaadin-grid-column path="VORNAME" width="100px" resizable>
-          <template class="header">
-            <vaadin-grid-sorter path="VORNAME" on-sorter-changed="_sortChange">
-              [[columnNames.3]]
-            </vaadin-grid-sorter>
-          </template>
-        </vaadin-grid-column>
-
-        <vaadin-grid-column path="GBV" width="60px" resizable text-align="end">
-          <template class="header">
-            <vaadin-grid-sorter path="GBV" on-sorter-changed="_sortChange">
-              [[columnNames.13]]
-            </vaadin-grid-sorter>
-          </template>
-        </vaadin-grid-column>
-
-        <vaadin-grid-column path="FED" width="60px" resizable text-align="end">
-          <template class="header">
-            <vaadin-grid-sorter path="FED" on-sorter-changed="_sortChange">
-              [[columnNames.14]]
-            </vaadin-grid-sorter>
-          </template>
-        </vaadin-grid-column>
-
-        <vaadin-grid-column path="HOEV" width="50px" resizable text-align="end">
-          <template class="header">
-            <vaadin-grid-sorter path="HOEV" on-sorter-changed="_sortChange">
-              [[columnNames.15]]
-            </vaadin-grid-sorter>
-          </template>
-        </vaadin-grid-column>
-        <vaadin-grid-column path="A7_1" width="50px" resizable>
-          <template class="header">
-            <vaadin-grid-sorter path="A7_1" on-sorter-changed="_sortChange">
-              [[columnNames.16]]
-            </vaadin-grid-sorter>
-          </template>
-        </vaadin-grid-column>
-
-        <vaadin-grid-column path="A7_3" width="50px" resizable text-align="end">
-          <template class="header">
-            <vaadin-grid-sorter path="A7_3" on-sorter-changed="_sortChange">
-              [[columnNames.17]]
-            </vaadin-grid-sorter>
-          </template>
-        </vaadin-grid-column>
-
-        <vaadin-grid-column path="A7_4" width="70px" resizable text-align="end">
-          <template class="header">
-            <vaadin-grid-sorter path="A7_4" on-sorter-changed="_sortChange">
-              [[columnNames.18]]
-            </vaadin-grid-sorter>
-          </template>
-        </vaadin-grid-column>
-
-        <vaadin-grid-column path="UV" width="50px" resizable text-align="end">
-          <template class="header">
-            <vaadin-grid-sorter path="UV" on-sorter-changed="_sortChange">
-              [[columnNames.19]]
-            </vaadin-grid-sorter>
-          </template>
-        </vaadin-grid-column>
-
-        <vaadin-grid-column path="BEITRAG" width="70px" resizable text-align="end">
-          <template class="header">
-            <vaadin-grid-sorter path="BEITRAG" on-sorter-changed="_sortChange">
-              [[columnNames.20]]
-            </vaadin-grid-sorter>
-          </template>
-        </vaadin-grid-column>
-
-        <vaadin-grid-column path="V_BEMERKUNG" resizable>
-          <template class="header">
-            <vaadin-grid-sorter path="V_BEMERKUNG" on-sorter-changed="_sortChange">
-              [[columnNames.21]]
-            </vaadin-grid-sorter>
-          </template>
-        </vaadin-grid-column>
-
-        <vaadin-grid-column width="100px">
-          <template class="header"></template>
-          <template>
-            <button id="bto[[item.GARTENNUMMER]]" on-click="_openDetails" class="second-domain-endpagebutton">
-              <slot>
-                <iron-icon id="cro[[item.GARTENNUMMER]]" icon="[[getIcon(detailsOpened)]]" slot="item-icon" on-click="_openDetails"></iron-icon>
-              </slot>
-            </button>
-            <button id="btr[[item.GARTENNUMMER]]" on-click="_confirmRemove" class="second-domain-endpagebutton"
-              disabled="[[detailsOpened]]">
-              <iron-icon id="irm[[item.GARTENNUMMER]]" icon="delete" slot="item-icon" on-click="_confirmRemove"></iron-icon>
-            </button>
-           
-          </template>
-        </vaadin-grid-column>
-      </vaadin-grid> -->
-
   </div>
   </div>
   <apps-dialog id="appsdialog" action-buttons="[[actionButtons]]" tasks="[[getSelected(mvdata.*)]]"></apps-dialog>
@@ -590,36 +408,36 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             notify: true,
             observer: 'changePage'
           },
+
           _pageStart: {
             type: Number,
             value: 0
-            //observer: '_setPageEnd'
           },
-          // _pageEnd: {
-          //   type: Number,
-          //   value: 0
-          // },
 
           _loading: {
             type: Boolean,
             value: false
           },
+
           mvdata: {
             type: Array,
             value: [],
             notify: true,
             reflectToAttribute: true
           },
+
           mvpagedata: {
             type: Array,
             value: [],
             notify: true,
             reflectToAttribute: true
           },
+
           _pages: {
             type: Object,
             value: null
           },
+
           selected: {
             type: Boolean,
             value: false,
@@ -706,8 +524,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.set(path, false)
         }
       }
-
-
 
       isAddDisabled() {
         if (this.openeddetails && this.openeddetails.length) {
@@ -1020,6 +836,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       }
 
+      _isItemSelected(_pageStart, index) {
+        console.log('isitemselected typeof _pagestart' + (typeof _pageStart) + ' typeofindex' + (typeof index))
+        let path = 'mvdata.' + (_pageStart + index) + '.selected';
+        return this.get(path);
+      }
+
       doOnSelection(e) {
         //debugger;
         console.log('selectiert sind')
@@ -1190,7 +1012,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         unklarerV.TELEFON = unklarerV.entsprechung.TELEFON;
         unklarerV.EMAIL = unklarerV.entsprechung.EMAIL;
         unklarerV.BEMERKUNGEN = unklarerV.entsprechung.BEMERKUNGEN;
-
+        debugger;
+        delete unklarerV['selected'];
         delete unklarerV['grund'];
         delete unklarerV['entsprechung'];
         delete unklarerV['_detailsOpened'];

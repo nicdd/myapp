@@ -12,11 +12,6 @@ Pagination Element for Vaadin-Grid Tables
                 padding: 3px;
             }
 
-            /* #pagination {
-                display: block;
-                flex-wrap: wrap;
-                margin: 20px;
-            } */
         </style>
         <div class="layout horizontal center-justified">
             <div class="layout horizontal center-justified">
@@ -62,14 +57,12 @@ Pagination Element for Vaadin-Grid Tables
                         value: 1,
                         observer: 'pageChangedViaBox',
                         notify: true
-
                     },
 
                     datalength: {
                         type: Number,
                         value: 0,
                         observer: 'doOnDataLengthChanged'
-                        //notify: true
                     },
 
                     rowsperPage: {
@@ -77,7 +70,6 @@ Pagination Element for Vaadin-Grid Tables
                         value: [{ key: "5", val: 5 }, { key: "10", val: 10 }, { key: "15", val: 15 }, { key: "20", val: 20 }],
                         notify: true
                     },
-
 
                     _pages: {
                         type: Array,
@@ -97,24 +89,18 @@ Pagination Element for Vaadin-Grid Tables
                         notify: true
                     },
 
-                    pend: {
-                        type: Number,
-                        value: 0,
-                        notify: true
-                    },
-
-                    styleDomain : {
+                    styleDomain: {
                         type: String,
                         value: '',
                         notify: true
                     },
 
-                    endpagebuttonClass:{
+                    endpagebuttonClass: {
                         type: String,
                         computed: "getStyleClass(styleDomain, 'endpagebutton')"
                     },
 
-                    pagebuttonClass:{
+                    pagebuttonClass: {
                         type: String,
                         computed: "getStyleClass(styleDomain, 'pagebutton')"
                     }
@@ -127,12 +113,11 @@ Pagination Element for Vaadin-Grid Tables
 
             static get observers() {
                 return [
-                    '_isButtonDisabled(pstart)'
+                    '_isButtonDisabled(pstart, pageSize)'
                 ]
-
             }
 
-            getStyleClass(domainName, name){
+            getStyleClass(domainName, name) {
                 return domainName + '-' + name;
             }
 
@@ -158,21 +143,21 @@ Pagination Element for Vaadin-Grid Tables
                     pp.removeAttribute('disabled');
                     np.removeAttribute('disabled');
                     lp.removeAttribute('disabled');
-
                 }
-
 
             }
 
             firstPage() {
                 if (this.selPage && parseInt(this.selPage) > 1) {
                     this.set('selPage', 1);
+                    this.$.sp['selectedIndex'] = 0;
                 }
             }
 
             lastPage() {
                 if (this.selPage && parseInt(this.selPage) < this._pages.length) {
                     this.set('selPage', this._pages.length);
+                    this.$.sp['selectedIndex'] = this._pages.length - 1;
                 }
             }
 
@@ -180,6 +165,7 @@ Pagination Element for Vaadin-Grid Tables
                 if (this.selPage && parseInt(this.selPage) > 1) {
                     let previous = parseInt(this.selPage) - 1;
                     this.set('selPage', previous);
+                    this.$.sp['selectedIndex'] = previous - 1;
                 }
             }
 
@@ -187,6 +173,7 @@ Pagination Element for Vaadin-Grid Tables
                 if (this.selPage && parseInt(this.selPage) < this._pages.length) {
                     let next = parseInt(this.selPage) + 1;
                     this.set('selPage', next);
+                    this.$.sp['selectedIndex'] = next - 1;
                 }
             }
 
@@ -194,17 +181,17 @@ Pagination Element for Vaadin-Grid Tables
                 let newValue = (newV) ? parseInt(newV) : 0;
                 let oldValue = (oldV) ? parseInt(oldV) : 0;
                 let anzahlSeiten = Math.ceil(this.datalength / parseInt(this.pageSize));
-                //if (newValue && oldValue) { - machte probleme beim von bis
                 if (newValue) {
                     // nur für gültige Seitengrößen behandeln
                     if ((newValue !== oldValue)) {
                         let sel = Math.floor((this.pstart) / parseInt(this.pageSize));
-                        this.doPagination(sel + 1);
+                        this.set('selPage', sel + 1)
+                        this.doPagination(sel + 1, 'doPageSizeChanged');
                     }
                 }
             }
 
-            doPagination(pageToSelect) {
+            doPagination(pageToSelect, caller) {
                 let self = this;
                 if (this.datalength > 0) {
                     let selectedPage = (pageToSelect && !isNaN(pageToSelect)) ? pageToSelect : 1;
@@ -223,15 +210,14 @@ Pagination Element for Vaadin-Grid Tables
                 if (!oldV && newV && !this.rowsperPage.some((el) => el.key === 'Alle')) {
                     this.unshift('rowsperPage', { key: "Alle", val: parseInt(newV) })
                 }
-                if (newV && newV !== oldV && this.pageSize) {
-                    this.doPagination(this.selPage);
+                if (newV && newV !== oldV && oldV !== undefined && this.pageSize ) {
+                    this.doPagination(this.selPage, 'doOnDataLengthChanged');
                 }
             }
 
             pageChangedViaBox(newV, oldV) {
-                if (this.selPage && this.pageSize) {
+                if (this.selPage && this.pageSize && oldV !== undefined) {
                     this.set('pstart', (this.selPage - 1) * parseInt(this.pageSize));
-                    this.set('pend', this.selPage * parseInt(this.pageSize));
                     this.dispatchEvent(new CustomEvent('pagechanged'));
                 }
             }
@@ -242,33 +228,14 @@ Pagination Element for Vaadin-Grid Tables
                 }
                 let self = this;
                 let ps = parseInt(self.pageSize);
-
-                if (self._pages.length === (page + 1)) {
-                    page++;
-                    self.set('selPage', page);
-                    window.setTimeout(function () {
-                        self.$.sp['selectedIndex'] = page - 1;
-
+                
+                window.setTimeout(function () {
+                        self.$.sp['selectedIndex'] = page -1;
                     }, 150);
-
-                } else if (page > self._pages.length) {
-                    page--;
-                    self.set('selPage', page);
-                    this.$.sp['selectedIndex'] = (page - 1);
-
-                } else {
-                    self.set('selPage', page);
-                    window.setTimeout(function () {
-                        self.$.sp['selectedIndex'] = page - 1;
-
-                    }, 150);
-                }
 
                 this.set('pstart', (page - 1) * ps);
-                this.set('pend', page * ps);
                 this.dispatchEvent(new CustomEvent('pagechanged'));
             }
-
 
         }
 
