@@ -221,7 +221,7 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
         let columns = resp[0];//.filter((elem) => elem.length > 0);
         console.log('das sind die columns' + columns.toString())
         for (let i = 1; i < resp.length; i++) {
-          if (resp[i][0] !== 'Ende der Liste') {
+          if (resp[i][0] !== 'Ende der Liste' && resp[i][0].length) {
             let myRowObj = {};
             console.log(i + ' resp[i].length ' + resp[i].length)
             for (let j = 0; j < columns.length; j++) {

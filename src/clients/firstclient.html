@@ -56,6 +56,11 @@
                             JSON_UNKLARE_VERSICHERTE: {
                                 path: '/api/unklareversicherte',
                                 port: '8000'
+                            },
+
+                            CSV_UNKLARE: {
+                                path: '/loadCSV/unklare',
+                                port: '8000'
                             }
                         }
                     }
@@ -214,8 +219,8 @@
                 });
             }
 
-            postUnklareVersicherteAsJSON(unklareFaelle){
-                
+            postUnklareVersicherteAsJSON(unklareFaelle) {
+
                 let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.JSON_UNKLARE_VERSICHERTE.path, this.URLS.JSON_UNKLARE_VERSICHERTE.port);
                 let myHeaders = new Headers();
                 myHeaders.set("Content-Type", "application/json");
@@ -246,7 +251,7 @@
 
             }
 
-            getOnePachter(ganr){
+            getOnePachter(ganr) {
                 let self = this;
                 let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.JSON_PAECHTER.path + "/" + ganr, this.URLS.JSON_PAECHTER.port);
                 let myHeaders = new Headers();
@@ -277,7 +282,7 @@
 
             }
 
-            postOnePaechter(theOne){
+            postOnePaechter(theOne) {
                 let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.JSON_PAECHTER.path + "/" + theOne.GARTENNUMMER, this.URLS.JSON_PAECHTER.port);
                 let myHeaders = new Headers();
                 myHeaders.set("Content-Type", "application/json");
@@ -297,8 +302,8 @@
 
                 return fetch(myRequest).then((response) => {
                     console.log("postOnePaechter antwort" + JSON.stringify(response));
-                    if (!response.ok) { 
-                        throw response; 
+                    if (!response.ok) {
+                        throw response;
                     } else if (response && response.ok) {
                         return response.json();
                     } else return undefined;
@@ -307,9 +312,9 @@
                     return Promise.reject();
                 });
             }
-            
-            postOneVersicherter(theOne){
-                
+
+            postOneVersicherter(theOne) {
+
                 let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.JSON_ONE_VERSICHERTER.path, this.URLS.JSON_ONE_VERSICHERTER.port);
                 let myHeaders = new Headers();
                 myHeaders.set("Content-Type", "application/json");
@@ -329,8 +334,8 @@
 
                 return fetch(myRequest).then((response) => {
                     console.log("postOneVersicherter antwort" + JSON.stringify(response));
-                    if (!response.ok) { 
-                        throw response; 
+                    if (!response.ok) {
+                        throw response;
                     } else if (response && response.ok) {
                         return response.json();
                     } else return undefined;
@@ -343,11 +348,11 @@
 
             }
 
-            deleteUngeklaerterVersicherter(gartennummer){
+            deleteUngeklaerterVersicherter(gartennummer) {
                 let self = this;
                 let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.JSON_UNKLARE_VERSICHERTE.path, this.URLS.JSON_UNKLARE_VERSICHERTE.port);
                 let myHeaders = new Headers();
-                
+
                 let myInit = {
                     method: 'DELETE',
                     headers: myHeaders,
@@ -374,7 +379,7 @@
 
             }
 
-            deleteOneVersicherter(gartennummer){
+            deleteOneVersicherter(gartennummer) {
                 let self = this;
                 let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.JSON_VERSICHERTE.path, this.URLS.JSON_VERSICHERTE.port);
                 let myHeaders = new Headers();
@@ -437,7 +442,7 @@
 
             }
 
-            updatePaechterAsJSON(paechter){
+            updatePaechterAsJSON(paechter) {
                 console.log('toupdate' + JSON.stringify(paechter))
                 let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.JSON_PAECHTER.path, this.URLS.JSON_PAECHTER.port);
                 let myHeaders = new Headers();
@@ -542,6 +547,19 @@
                 }
             }
 
+            exportUnklareAsCSV(unklare, destination) {
+                let asCSV = this.mapToCSV(unklare);
+                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.CSV_UNKLARE.path, this.URLS.CSV_UNKLARE.port);
+                console.log('topost' + JSON.stringify(unklare))
+                if (destination === "server") {
+                    return this._exportRemote(asCSV, sourceURL);
+                } else if (destination === "lokal") {
+                    return this._saveLokalAsCSV(asCSV, "unklare_");
+                } else {
+                    return this._exportRemote(asCSV, sourceURL);
+                }
+            }
+
             exportPaechterAsCSV(paechter, destination) {
                 let asCSV = this.mapToCSV(paechter);
                 let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.CSV_PAECHTER.path, this.URLS.CSV_PAECHTER.port);
@@ -588,7 +606,7 @@
                 let nowMoment = moment().format('YYYYMMDD_HHmm')
                 let blob = new Blob([asCSV], { type: "text/csv;charset=utf-8" });
                 saveAs(blob, saveWas + nowMoment + ".csv")
-                
+
                 return Promise.resolve("dem voreingestellten Download-Verzeichnis Ihres Browsers")
 
             }

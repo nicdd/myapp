@@ -148,6 +148,10 @@
                         type: Boolean,
                         value: false,
                         notify: true
+                    },
+                    _defaultColumnConf:{
+                        type: Array,
+                        value: [{"colname":"GARTENNUMMER","coltype":"string","alias":"GNr","rolen":["paechter","versicherung"]},{"colname":"ANREDE","coltype":"string","alias":"Anrede","rolen":["paechter","versicherung"]},{"colname":"NACHNAME","coltype":"string","alias":"Nachname","rolen":["paechter","versicherung"]},{"colname":"VORNAME","coltype":"string","alias":"Vorname","rolen":["paechter","versicherung"]},{"colname":"STRASSE","coltype":"string","alias":"Strasse","rolen":["paechter","versicherung"]},{"colname":"PLZ","coltype":"string","alias":"PLZ","rolen":["paechter","versicherung"]},{"colname":"WOHNORT","coltype":"string","alias":"Wohnort","rolen":["paechter","versicherung"]},{"colname":"TELEFON","coltype":"string","alias":"Telefon","rolen":["paechter","versicherung"]},{"colname":"WEG","coltype":"string","alias":"Weg","rolen":["paechter","versicherung"]},{"colname":"FLAECHE","coltype":"string","alias":"Fläche","rolen":["paechter","versicherung"]},{"colname":"GEBURTSDATUM","coltype":"string","alias":"Geburtsdatum","rolen":["paechter"]},{"colname":"EMAIL","coltype":"string","alias":"E-Mail","rolen":["paechter","versicherung"]},{"colname":"BEMERKUNGEN","coltype":"string","alias":"Bemerkung (P)","rolen":["paechter"]},{"colname":"V_BEMERKUNG","coltype":"string","alias":"Bemerkung (V)","rolen":["versicherung"]},{"colname":"GBV","coltype":"number","alias":"GBV","rolen":["versicherung"]},{"colname":"FED","coltype":"number","alias":"FED","rolen":["versicherung"]},{"colname":"HOEV","coltype":"number","alias":"HöV","rolen":["versicherung"]},{"colname":"A7_1","coltype":"number","alias":"Solar","rolen":["versicherung"]},{"colname":"A7_3","coltype":"string","alias":"SA","rolen":["versicherung"]},{"colname":"A7_4","coltype":"number","alias":"GS","rolen":["versicherung"]},{"colname":"UV","coltype":"number","alias":"Unfall","rolen":["versicherung"]},{"colname":"BEITRAG","coltype":"number","alias":"Beitrag","rolen":["versicherung"]}]
                     }
                 };
             }
@@ -159,6 +163,11 @@
                         let anzC = colConf.length;
                         this.set('tempAnzahlSpalten', anzC)
                         this.set('colConf', colConf);
+                        this.set('completed', true)
+                    } else {
+                        let anzC = this._defaultColumnConf.length;
+                        this.set('tempAnzahlSpalten', anzC)
+                        this.set('colConf', this._defaultColumnConf);
                         this.set('completed', true)
                     }
                 }).catch(() => {
