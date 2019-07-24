@@ -50,6 +50,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../../bower_components/vaadin-grid/theme/material/all-imports.html">
 <link rel="import" href="../../bower_components/iron-collapse-button/iron-collapse-button.html">
 <link rel="import" href="../../bower_components/iron-icons/editor-icons.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../clients/firstclient.html">
 <link rel="import" href="../clients/basicclient.html">
 <link rel="import" href="../shared-styles.html">
@@ -117,6 +118,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         vertical-align: middle !important;
       }
 
+      .versichert {
+        background-color: #f5f5f5 !important;
+      }
+
+      .abgelaufen {
+        background-color: yellow !important;
+      }
+
+      .nichtversichert {
+        background-color: orangered !important;
+      }
     </style>
 
     <first-client id="firstclient"></first-client>
@@ -143,7 +155,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       </div>
       <div class="demo">
         <div class="table-responsive-vertical shadow-z-1">
-          <table id="table" class="table table-condensed table-hover table-striped">
+          <table id="table" class="table table-condensed table-hover">
             <thead>
               <th class="cb-cell">
                 <paper-checkbox on-change="_checkAll" checked="[[_areAllSelected(mvdata.*)]]"></paper-checkbox>
@@ -193,7 +205,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             </thead>
             <tbody>
               <template is="dom-repeat" items="[[mvpagedata]]">
-                <tr>
+                <tr class$="[[item.versicherung.status]]">
                   <td class="cb-cell">
                     <paper-checkbox class="[[getClassByBeitrag(item.BEITRAG)]]"
                       id="[[getGridElementID(index, _pageStart, 'scb')]]" on-change="_checkOne"
@@ -202,14 +214,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                   <td class="rightalign">[[item.GARTENNUMMER]]</td>
                   <td>[[item.NACHNAME]]</td>
                   <td>[[item.VORNAME]]</td>
-                  <td class="rightalign">[[item.GBV]]</td>
-                  <td class="rightalign">[[item.FED]]</td>
-                  <td class="rightalign">[[item.HOEV]]</td>
-                  <td class="rightalign">[[item.A7_1]]</td>
-                  <td class="rightalign">[[item.A7_3]]</td>
-                  <td class="rightalign">[[item.A7_4]]</td>
-                  <td class="rightalign">[[item.UV]]</td>
-                  <td class="rightalign">[[item.BEITRAG]]</td>
+                  <template is="dom-if" if="[[!_externeVersicherung(item.versicherung.name)]]">
+                      <td class="rightalign">[[item.GBV]]</td>
+                      <td class="rightalign">[[item.FED]]</td>
+                      <td class="rightalign">[[item.HOEV]]</td>
+                      <td class="rightalign">[[item.A7_1]]</td>
+                      <td class="rightalign">[[item.A7_3]]</td>
+                      <td class="rightalign">[[item.A7_4]]</td>
+                      <td class="rightalign">[[item.UV]]</td>
+                      <td class="rightalign">[[item.BEITRAG]]</td>
+                  </template>
+                  <template is="dom-if" if="[[_externeVersicherung(item.versicherung.name)]]">
+                      <td colspan="8">[[item.versicherung.name]]</td>
+                  </template>
+                  
                   <td>[[item.V_BEMERKUNG]]</td>
                   <td class="button">
                     <button id="bto[[item.GARTENNUMMER]]" on-click="_openDetails"
@@ -306,20 +324,35 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         class="detailelement light-element flex" opened>
                         <div slot="collapse-trigger" class="flex">
                           <div class="layout horizontal justified">
-                            <span>Versicherungsdaten</span>
-                            <button id="sbt[[index]]" on-click="_saveItemData" disabled="[[!dc]]">
-                              <iron-icon icon="save" id="sic[[index]]" slot="item-icon" disabled="[[!dc]]"
+                            <span>Versicherungsdaten dc[[dc]] n[[item.versicherung.name]] v[[item.versicherung.von]] b[[item.versicherung.bis]]</span>
+                            <button id="sbt[[index]]" on-click="_saveItemData"
+                              disabled="[[_saveButtonDisabled(dc, item.versicherung.name, item.versicherung.von, item.versicherung.bis)]]">
+                              <iron-icon icon="save" id="sic[[index]]" slot="item-icon"
+                                disabled="[[_saveButtonDisabled(dc, item.versicherung.name, item.versicherung.von, item.versicherung.bis)]]"
                                 on-click="_saveItemData"></iron-icon>
                             </button>
                           </div>
                         </div>
+
                         <div slot="collapse-content" class="corrected-margin">
                           <div class="mcard strong-text-color">
-                            <my-versicherungrechner id="[[getGridElementID(index, _pageStart, 'vrd')]]"
-                              vcs="[[vconfig]]" saved-data="[[item]]" dosave="{{dosave}}" changed-saved-data="{{dc}}"
-                              on-savedversicherter="_postOnePaechter"></my-versicherungrechner>
+                            Versicherer: <paper-input id="versName[[index]]" value="[[item.versicherung.name]]"
+                              on-value-changed="_doOnVersicherungNameChanged"></paper-input>
+                            Von: <paper-input id="versVon[[index]]" value="[[item.versicherung.von]]"
+                              on-value-changed="_doOnVersicherungVonChanged"></paper-input>
+                            Bis: <paper-input id="versBis[[index]]" value="[[item.versicherung.bis]]"
+                              on-value-changed="_doOnVersicherungBisChanged"></paper-input>
                           </div>
                         </div>
+                        <template is="dom-if" if="[[_isKVDVersichert(item.versicherung.name)]]">
+                          <div slot="collapse-content" class="corrected-margin">
+                            <div class="mcard strong-text-color">
+                              <my-versicherungrechner id="[[getGridElementID(index, _pageStart, 'vrd')]]"
+                                vcs="[[vconfig]]" saved-data="[[item]]" dosave="{{dosave}}" changed-saved-data="{{dc}}"
+                                on-savedversicherter="_postOnePaechter"></my-versicherungrechner>
+                            </div>
+                          </div>
+                        </template>
                       </iron-collapse-button>
                     </td>
                   </tr>
@@ -405,15 +438,86 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             type: Boolean,
             value: null,
             notify: true
+          },
+          dc : {
+            type: Boolean,
+            value: null,
+            notify: true
           }
 
         }
       }
 
+      _cleanKVDInfos(versicherter){
+        const keysToReset = ["GBV", "FED", "HOEV", "A7_1", "A7_3", "A7_4", "UV", "BEITRAG"];
+        Object.keys(versicherter).forEach((vkey)=> {
+          if (keysToReset.some((elem) => elem === vkey)){
+            versicherter[vkey] = null;
+          }
+        })
+        return versicherter;
+      }
+
+      _removeMetadata(versicherter){
+        let vToSave = JSON.parse(JSON.stringify(versicherter))
+        const keysToReset = ["_detailsOpened"];
+        Object.keys(vToSave).forEach((vkey)=> {
+          if (keysToReset.some((elem) => elem === vkey)){
+            delete vToSave[vkey];
+          }
+        })
+        return vToSave;
+      }
+
+      _doOnVersicherungNameChanged(e) {
+        debugger;
+        if (e && e.target) {
+          let realIdx = e.target.id.substring(8);
+          let path = 'mvpagedata.' + realIdx + '.versicherung.name';
+          this.set(path, e.target.__data.value)
+          this.set('dc', true)
+        }
+      }
+      _doOnVersicherungVonChanged(e) {
+        if (e && e.target) {
+          let realIdx = e.target.id.substring(7);
+          let path = 'mvpagedata.' + realIdx + '.versicherung.von';
+          this.set(path, e.target.__data.value)
+          this.set('dc', true)
+        }
+      }
+      _doOnVersicherungBisChanged(e) {
+        if (e && e.target) {
+          let realIdx = e.target.id.substring(7);
+          let path = 'mvpagedata.' + realIdx + '.versicherung.bis';
+          this.set(path, e.target.__data.value)
+          this.set('dc', true)
+        }
+      }
+
+      _saveButtonDisabled(dc, versName, von, bis) {
+        return (versName === "KVD" && !dc) || !versName || !von || !bis;
+      }
+
+      _isKVDVersichert(name) {
+        return name === 'KVD';
+      }
+
+      _externeVersicherung(name){
+        if(name && name !== 'KVD'){
+          return true
+        }
+        return false;
+      }
+
+
       ready() {
         super.ready();
         this.$.firstclient.getPaechterAsJSON().then((resp) => {
           if (resp) {
+
+            //console.log('datasind ready' + JSON.stringify(resp))
+            resp.data = this.setVersicherungstatus(resp.data);
             this.splitToObjects(resp).finally(() => {
               //wenn pageSize nur an einer stelle initialisiert wird (in then von splitToObjects)
               // dann der gleiche wert 10 wird nicht noch mal zu der pagination Componente getriggert
@@ -552,6 +656,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         if (newV) {
           this.$.firstclient.getPaechterAsJSON().then((resp) => {
             if (resp) {
+              resp.data = this.setVersicherungstatus(resp.data);
               //this.set('pageSize', 10);
               this.splitToObjects(resp).finally(() => {
                 this.changePage();
@@ -580,6 +685,31 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       }
 
+      setVersicherungstatus(data) {
+        let newData = [];
+        data.forEach((paechter) => {
+          newData.push(this._setStatusForOneVersicherter(paechter));
+        })
+        return newData;
+      }
+
+      _setStatusForOneVersicherter(paechter){
+        paechter['versicherung'] = (paechter['versicherung'] || { 'status': null })
+          if (paechter.GBV && (parseInt(paechter.GBV) > 0)) {
+            if (!(paechter.versicherung.name === "KVD") || moment().isAfter(moment(paechter.versicherung.bis))) {
+              paechter.versicherung['status'] = 'abgelaufen';
+            } else {
+              paechter.versicherung['status'] = 'versichert';
+            }
+          } else if (!paechter.versicherung.name || moment().isAfter(moment(paechter.versicherung.bis))) {
+            paechter.versicherung['status'] = 'nichtversichert';
+          } else {
+            paechter.versicherung['status'] = 'versichert';
+          }
+
+        return paechter
+      }
+
       exportVersicherte(e) {
         let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
         this.$.firstclient.exportVersicherteAsCSV(dataAndColumns, e.detail).then((savePath) => {
@@ -601,9 +731,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _saveItemData(e) {
 
         if (e && e.target && e.target.id && !e.target.disabled) {
-          debugger;
+
           let idx = parseInt(e.target.id.substring(3)) + (parseInt(this._pageStart) || 0);
-          this.set('dosave', idx);
+          if (this.mvdata[idx].versicherung.name !== 'KVD') {
+            let toSave = this._cleanKVDInfos(this.mvdata[idx]);
+            debugger;
+            let elike = { "type": "savedversicherter", "detail": { "data": toSave, "index" : idx} }
+            this._postOnePaechter(elike)
+          } else {
+            debugger;
+            this.set('dosave', idx);
+          }
         }
         e.stopPropagation();
       }
@@ -615,6 +753,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         } else if (e.type && e.type === 'savedversicherter') {
           toSave = e.detail.data;
         }
+        toSave = this._setStatusForOneVersicherter(toSave);
+        toSave = this._removeMetadata(toSave);
         this.$.firstclient.postOnePaechter(toSave).then(() => {
           if (e.type && e.type === 'add-v') {
             this._insertNewVersicherter(e);
