@@ -70,6 +70,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         /* Make a flex column layout of children */
         display: flex;
+
         flex-direction: column;
       }
 
@@ -78,34 +79,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         padding: 5px;
         /*line-height: 32px;*/
         background: #eee;
-      }
-
-      .page {
-        /* Stretch this element in the parent flex */
-        flex: 1;
-
-        /* Make a flex column layout of children */
-        display: flex;
-        flex-direction: column;
-
-        /*
-            Let the page contents scroll. Unnecessary for <vaadin-grid>,
-            but could be useful for other pages.
-          */
-        overflow: auto;
-        -webkit-overflow-scrolling: touch;
-
-      }
-
-      .btn {
-
-        border: none;
-        /* Remove borders */
-
-
-        border-radius: 10%;
-        cursor: pointer;
-        /* Mouse pointer on hover */
       }
 
       iron-collapse-button {
@@ -126,10 +99,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         padding: 0.2em 0.5em 0.2em 0.5em !important;
       }
 
-      .comparepage {
-        color: black;
-      }
-
       .button {
         padding: 0px 2px 0px 2px !important;
       }
@@ -138,11 +107,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         text-align: right !important;
       }
 
-
-
-      /* .header {
-          max-height: 5px !important;
-        } */
+      .cb-cell {
+        text-align: center !important;
+        vertical-align: middle !important;
+      }
+      
     </style>
 
     <first-client id="firstclient"></first-client>
@@ -150,189 +119,195 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <grt-dialog id="deletedialog" dialog-type="confirmation" confirmation-name="Löschen" cancel-name="Abbrechen"
       on-grtconfirm="_removeItem"></grt-dialog>
     <grt-dialog id="grtinfodialog" dialog-type="info"></grt-dialog>
-
-    <div class="toolbar layout horizontal justified" flex>
-      <template is="dom-if" if="[[columnNames.length]]">
-        <grt-grid-pagination id="pagesss" datalength="[[mvdata.length]]" page-size="{{pageSize}}"
-          pstart="{{_pageStart}}" on-pagechanged="changePage" style-domain="critical-domain"></grt-grid-pagination>
-      </template>
-      <div class="layout horizontal justified" flex="50">
-        <button id="appsbutton" on-click="_showApps" disabled="[[_noOneSelected(mvdata.*)]]">
-          <iron-icon icon="apps" id="appsicon" slot="item-icon" on-click="_showApps"></iron-icon>
-        </button>
-        <paper-button disabled="[[isExportDisabled(mvdata.*, openeddetails.*)]]" bottom raised
-          on-click="_showExportDialog">Exportieren</paper-button>
-      </div>
-    </div>
     <export-chooser id="exportdialog" dialog-type="info" confirmation-name="Schließen"
       on-export-versicherte="exportUnklareFaelle"></export-chooser>
-    <div class="demo">
-      <div class="table-responsive-vertical shadow-z-1">
-        <table id="table" class="table table-hover table-striped">
-          <thead>
-            <th>
-              <paper-checkbox on-change="_checkAll" checked="[[_areAllSelected(mvdata.*)]]"></paper-checkbox>
-            </th>
-            <th>
-              <column-sorter colname="[[columnNames.0]]" path="GARTENNUMMER" on-sorter-changed="_sortChange">
-              </column-sorter>
-            </th>
-            <th>
-              <column-sorter colname="[[columnNames.2]]" path="NACHNAME" on-sorter-changed="_sortChange">
-              </column-sorter>
-            </th>
-            <th>
-              <column-sorter colname="[[columnNames.3]]" path="VORNAME" on-sorter-changed="_sortChange"></column-sorter>
-            </th>
-            <th>
-              <column-sorter colname="[[columnNames.14]]" path="GBV" on-sorter-changed="_sortChange"></column-sorter>
-            </th>
-            <th>
-              <column-sorter colname="[[columnNames.15]]" path="FED" on-sorter-changed="_sortChange"></column-sorter>
-            </th>
-            <th>
-              <column-sorter colname="[[columnNames.16]]" path="HOEV" on-sorter-changed="_sortChange"></column-sorter>
-            </th>
-            <th>
-              <column-sorter colname="[[columnNames.17]]" path="A7_1" on-sorter-changed="_sortChange"></column-sorter>
-            </th>
-            <th>
-              <column-sorter colname="[[columnNames.18]]" path="A7_3" on-sorter-changed="_sortChange"></column-sorter>
-            </th>
-            <th>
-              <column-sorter colname="[[columnNames.19]]" path="A7_4" on-sorter-changed="_sortChange"></column-sorter>
-            </th>
-            <th>
-              <column-sorter colname="[[columnNames.20]]" path="UV" on-sorter-changed="_sortChange"></column-sorter>
-            </th>
-            <th>
-              <column-sorter colname="[[columnNames.21]]" path="BEITRAG" on-sorter-changed="_sortChange">
-              </column-sorter>
-            </th>
-            <th>
-              <column-sorter colname="[[columnNames.13]]" path="V_BEMERKUNG" on-sorter-changed="_sortChange">
-              </column-sorter>
-            </th>
-            <th class="button"></th>
-            <th class="button"></th>
-          </thead>
-          <tbody>
-            <template is="dom-repeat" items="[[mvpagedata]]">
-              <tr>
-                <td>
-                  <paper-checkbox class="[[getClassByBeitrag(item.BEITRAG)]]"
-                    id="[[getGridElementID(index, _pageStart, 'scb')]]" on-change="_checkOne"
-                    checked="[[_isItemSelected(_pageStart, index, mvdata.*)]]"></paper-checkbox>
-                </td>
-                <td class="rightalign">[[item.GARTENNUMMER]]</td>
-                <td>[[item.NACHNAME]]</td>
-                <td>[[item.VORNAME]]</td>
-                <td class="rightalign">[[item.GBV]]</td>
-                <td class="rightalign">[[item.FED]]</td>
-                <td class="rightalign">[[item.HOEV]]</td>
-                <td class="rightalign">[[item.A7_1]]</td>
-                <td class="rightalign">[[item.A7_3]]</td>
-                <td class="rightalign">[[item.A7_4]]</td>
-                <td class="rightalign">[[item.UV]]</td>
-                <td class="rightalign">[[item.BEITRAG]]</td>
-                <td>[[item.V_BEMERKUNG]]</td>
-                <td class="button">
-                  <button id="bto[[item.GARTENNUMMER]]" on-click="_openDetails" class="critical-domain-endpagebutton">
-                    <iron-icon id="cro[[item.GARTENNUMMER]]" icon="[[getIcon(item._detailsOpened)]]" slot="item-icon"
-                      on-click="_openDetails"></iron-icon>
-                  </button>
-                </td>
-                <td class="button">
-                  <button id="btr[[item.GARTENNUMMER]]-[[index]]" on-click="_confirmRemove"
-                    class="critical-domain-endpagebutton" disabled="[[item._detailsOpened]]">
-                    <iron-icon id="irm[[item.GARTENNUMMER]]-[[index]]" icon="delete" slot="item-icon"
-                      on-click="_confirmRemove">
-                    </iron-icon>
-                  </button>
-                </td>
-              </tr>
-              <template is="dom-if" if="[[item._detailsOpened]]">
-                <tr class="details">
-                  <td colspan="15">
-                    <iron-collapse-button expand-icon="add-circle-outline" collapse-icon="remove-circle-outline"
-                      class="detailelement light-element flex" opened>
-                      <div slot="collapse-trigger" class="flex">
-                        <span>Abweichung zwischen dem Versicherten und dem Pächter zu der gleichen Gartennummer</span>
-                      </div>
-                      <div slot="collapse-content">
-                        <div class="card comparepage">
-                          <small>[[columnNames.8]]:[[item.grund]]</small>
-                          <div class="layout horizontal">
-                            <table width="50%">
-                              <thead>
-                                <th></th>
-                                <th>Versicherter</th>
-                                <th>Pächter</th>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td>[[columnNames.2]]</td>
-                                  <td>[[item.NACHNAME]]</td>
-                                  <td>[[item.entsprechung.NACHNAME]]</td>
-                                </tr>
+    <apps-dialog id="appsdialog" action-buttons="[[actionButtons]]" tasks="[[getSelected(mvdata.*)]]"></apps-dialog>
+    <div>
+      <div class="toolbar layout horizontal justified" flex>
+        <template is="dom-if" if="[[columnNames.length]]">
+          <grt-grid-pagination id="pagesss" datalength="[[mvdata.length]]" page-size="{{pageSize}}"
+            pstart="{{_pageStart}}" on-pagechanged="changePage" style-domain="critical-domain"></grt-grid-pagination>
+        </template>
+        <div class="layout horizontal justified" flex="50">
+          <button id="appsbutton" on-click="_showApps" disabled="[[_noOneSelected(mvdata.*)]]" class="action-button">
+            <iron-icon icon="apps" id="appsicon" slot="item-icon" on-click="_showApps"></iron-icon>
+          </button>
+          <paper-button disabled="[[isExportDisabled(mvdata.*, openeddetails.*)]]" bottom raised
+            on-click="_showExportDialog">Exportieren</paper-button>
+        </div>
+      </div>
 
-                                <tr>
-                                  <td>[[columnNames.3]]</td>
-                                  <td>[[item.VORNAME]]</td>
-                                  <td>[[item.entsprechung.VORNAME]]</td>
-                                </tr>
-                                <tr>
-                                  <td>[[columnNames.5]]</td>
-                                  <td>[[item.STRASSE]]</td>
-                                  <td>[[item.entsprechung.STRASSE]]</td>
-                                </tr>
-                                <tr>
-                                  <td>[[columnNames.7]]</td>
-                                  <td>[[item.PLZ]]</td>
-                                  <td>[[item.entsprechung.PLZ]]</td>
-                                </tr>
-                                <tr>
-                                  <td>[[columnNames.8]]</td>
-                                  <td>[[item.WOHNORT]]</td>
-                                  <td>[[item.entsprechung.WOHNORT]]</td>
-                                </tr>
+      <div class="demo">
+        <div class="table-responsive-vertical shadow-z-1">
+          <table id="table" class="table table-condensed table-hover table-striped">
+            <thead>
+              <th class="cb-cell">
+                <paper-checkbox on-change="_checkAll" checked="[[_areAllSelected(mvdata.*)]]"></paper-checkbox>
+              </th>
+              <th>
+                <column-sorter colname="[[columnNames.0]]" path="GARTENNUMMER" on-sorter-changed="_sortChange">
+                </column-sorter>
+              </th>
+              <th>
+                <column-sorter colname="[[columnNames.2]]" path="NACHNAME" on-sorter-changed="_sortChange">
+                </column-sorter>
+              </th>
+              <th>
+                <column-sorter colname="[[columnNames.3]]" path="VORNAME" on-sorter-changed="_sortChange">
+                </column-sorter>
+              </th>
+              <th>
+                <column-sorter colname="[[columnNames.14]]" path="GBV" on-sorter-changed="_sortChange"></column-sorter>
+              </th>
+              <th>
+                <column-sorter colname="[[columnNames.15]]" path="FED" on-sorter-changed="_sortChange"></column-sorter>
+              </th>
+              <th>
+                <column-sorter colname="[[columnNames.16]]" path="HOEV" on-sorter-changed="_sortChange"></column-sorter>
+              </th>
+              <th>
+                <column-sorter colname="[[columnNames.17]]" path="A7_1" on-sorter-changed="_sortChange"></column-sorter>
+              </th>
+              <th>
+                <column-sorter colname="[[columnNames.18]]" path="A7_3" on-sorter-changed="_sortChange"></column-sorter>
+              </th>
+              <th>
+                <column-sorter colname="[[columnNames.19]]" path="A7_4" on-sorter-changed="_sortChange"></column-sorter>
+              </th>
+              <th>
+                <column-sorter colname="[[columnNames.20]]" path="UV" on-sorter-changed="_sortChange"></column-sorter>
+              </th>
+              <th>
+                <column-sorter colname="[[columnNames.21]]" path="BEITRAG" on-sorter-changed="_sortChange">
+                </column-sorter>
+              </th>
+              <th>
+                <column-sorter colname="[[columnNames.13]]" path="V_BEMERKUNG" on-sorter-changed="_sortChange">
+                </column-sorter>
+              </th>
+              <th class="button"></th>
+              <th class="button"></th>
+            </thead>
+            <tbody>
+              <template is="dom-repeat" items="[[mvpagedata]]">
+                <tr>
+                  <td class="cb-cell">
+                    <paper-checkbox class="[[getClassByBeitrag(item.BEITRAG)]]"
+                      id="[[getGridElementID(index, _pageStart, 'scb')]]" on-change="_checkOne"
+                      checked="[[_isItemSelected(_pageStart, index, mvdata.*)]]"></paper-checkbox>
+                  </td>
+                  <td class="rightalign">[[item.GARTENNUMMER]]</td>
+                  <td>[[item.NACHNAME]]</td>
+                  <td>[[item.VORNAME]]</td>
+                  <td class="rightalign">[[item.GBV]]</td>
+                  <td class="rightalign">[[item.FED]]</td>
+                  <td class="rightalign">[[item.HOEV]]</td>
+                  <td class="rightalign">[[item.A7_1]]</td>
+                  <td class="rightalign">[[item.A7_3]]</td>
+                  <td class="rightalign">[[item.A7_4]]</td>
+                  <td class="rightalign">[[item.UV]]</td>
+                  <td class="rightalign">[[item.BEITRAG]]</td>
+                  <td>[[item.V_BEMERKUNG]]</td>
+                  <td class="button">
+                    <button id="bto[[item.GARTENNUMMER]]" on-click="_openDetails" class="critical-domain-endpagebutton action-button">
+                      <iron-icon id="cro[[item.GARTENNUMMER]]" icon="[[getIcon(item._detailsOpened)]]" slot="item-icon"
+                        on-click="_openDetails"></iron-icon>
+                    </button>
+                  </td>
+                  <td class="button">
+                    <button id="btr[[item.GARTENNUMMER]]-[[index]]" on-click="_confirmRemove"
+                      class="critical-domain-endpagebutton action-button" disabled="[[item._detailsOpened]]">
+                      <iron-icon id="irm[[item.GARTENNUMMER]]-[[index]]" icon="delete" slot="item-icon"
+                        on-click="_confirmRemove">
+                      </iron-icon>
+                    </button>
+                  </td>
+                </tr>
+                <template is="dom-if" if="[[item._detailsOpened]]">
+                  <tr class="details">
+                    <td colspan="15" class="no-padding">
+                      <iron-collapse-button expand-icon="add-circle-outline" collapse-icon="remove-circle-outline"
+                        class="detailelement light-element flex" opened>
+                        <div slot="collapse-trigger" class="flex">
+                          <span>Abweichung zwischen dem Versicherten und dem Pächter zu der gleichen Gartennummer</span>
+                        </div>
+                        <div slot="collapse-content" class="corrected-margin">
+                          <div class="mcard strong-text-color">
+                            <small>Grund:[[item.grund]]</small>
+                            <div class="layout horizontal">
+                              <table width="50%">
+                                <thead>
+                                  <th></th>
+                                  <th>Versicherter</th>
+                                  <th>Pächter</th>
+                                </thead>
+                                <tbody>
+                                  <tr>
+                                    <td>[[columnNames.2]]</td>
+                                    <td>[[item.NACHNAME]]</td>
+                                    <td>[[item.entsprechung.NACHNAME]]</td>
+                                  </tr>
 
-                              </tbody>
-                            </table>
+                                  <tr>
+                                    <td>[[columnNames.3]]</td>
+                                    <td>[[item.VORNAME]]</td>
+                                    <td>[[item.entsprechung.VORNAME]]</td>
+                                  </tr>
+                                  <tr>
+                                    <td>[[columnNames.5]]</td>
+                                    <td>[[item.STRASSE]]</td>
+                                    <td>[[item.entsprechung.STRASSE]]</td>
+                                  </tr>
+                                  <tr>
+                                    <td>[[columnNames.7]]</td>
+                                    <td>[[item.PLZ]]</td>
+                                    <td>[[item.entsprechung.PLZ]]</td>
+                                  </tr>
+                                  <tr>
+                                    <td>[[columnNames.8]]</td>
+                                    <td>[[item.WOHNORT]]</td>
+                                    <td>[[item.entsprechung.WOHNORT]]</td>
+                                  </tr>
 
-                            <div class="layout vertical">
-                              <template is="dom-if" if="[[!item.entsprechung.found]]">
-                                <paper-icon-item style="color: #d84646">
-                                  <iron-icon icon="warning" slot="item-icon"></iron-icon>
-                                  <paper-item-body two-line>
-                                    <div>Fall nicht zuordnerbar</div>
-                                    <div secondary style="max-width: 25rem; white-space: normal;">Es konnte kein Pächter
-                                      zu diesem Datensatz gefunden werden. Sie können den Fall lediglich löschen. Falls
-                                      Sie den Datensatz trotzdem anlegen wollen, müssen die Daten, insbesondere die
-                                      Gartennummer, zuerst unter "Pächter" erfasst worden sein.</div>
-                                  </paper-item-body>
-                                </paper-icon-item>
-                              </template>
-                              <paper-button id="adb[[index]]" class="under_button" bottom raised
-                                on-click="_postOnePaechter" disabled="[[!item.entsprechung.found]]">Pächterdaten
-                                übernehmen und nach Pächter verschieben</paper-button>
+                                </tbody>
+                              </table>
 
-                              <paper-button id="rmb[[item.GARTENNUMMER]]-[[index]]" class="under_button" bottom raised
-                                on-click="_confirmRemove">Löschen</paper-button>
+                              <div class="layout vertical">
+                                <template is="dom-if" if="[[!item.entsprechung.found]]">
+                                  <paper-icon-item style="color: #d84646">
+                                    <iron-icon icon="warning" slot="item-icon"></iron-icon>
+                                    <paper-item-body two-line>
+                                      <div>Fall nicht zuordnerbar</div>
+                                      <div secondary style="max-width: 25rem; white-space: normal;">Es konnte kein
+                                        Pächter
+                                        zu diesem Datensatz gefunden werden. Sie können den Fall lediglich löschen.
+                                        Falls
+                                        Sie den Datensatz trotzdem anlegen wollen, müssen die Daten, insbesondere die
+                                        Gartennummer, zuerst unter "Pächter" erfasst worden sein.</div>
+                                    </paper-item-body>
+                                  </paper-icon-item>
+                                </template>
+                                <paper-button id="adb[[index]]" class="under_button" bottom raised
+                                  on-click="_postOnePaechter" disabled="[[!item.entsprechung.found]]">Pächterdaten
+                                  übernehmen und nach Pächter verschieben</paper-button>
+
+                                <paper-button id="rmb[[item.GARTENNUMMER]]-[[index]]" class="under_button" bottom raised
+                                  on-click="_confirmRemove">Löschen</paper-button>
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    </iron-collapse-button>
-                  </td>
-                </tr>
+                      </iron-collapse-button>
+                    </td>
+                  </tr>
+                </template>
               </template>
-            </template>
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
-    <apps-dialog id="appsdialog" action-buttons="[[actionButtons]]" tasks="[[getSelected(mvdata.*)]]"></apps-dialog>
+
   </template>
   <script>
     class MyUnklare extends Polymer.Element {
@@ -402,26 +377,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             value: []
           },
 
-          dtls: {
-            type: Array,
-            value: []
-          },
-
-          vconfig: {
-            type: Object,
-            value: null,
-            notify: true
-          },
-
           openeddetails: {
             type: Array,
             value: []
-          },
-
-          dosave: {
-            type: Boolean,
-            value: null,
-            notify: true
           }
         }
       }
@@ -647,7 +605,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             n = a1 - b1;
             if (!isNaN(n)) {
               return n;
-            } 
+            }
             return a1 > b1 ? 1 : -1;
           }
         }

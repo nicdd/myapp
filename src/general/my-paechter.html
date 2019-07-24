@@ -283,12 +283,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 <vaadin-grid-column width="100px">
                     <template class="header"></template>
                     <template>
-                        <button id="bt[[item.GARTENNUMMER]]" on-click="_openDetails" class="first-domain-endpagebutton">
+                        <button id="bt[[item.GARTENNUMMER]]" on-click="_openDetails" class="first-domain-endpagebutton action-button">
                             <slot>
                                 <iron-icon id="cr[[item.GARTENNUMMER]]" icon="create" slot="item-icon" on-click="_openDetails"></iron-icon>
                             </slot>
                         </button>
-                        <button id="bt[[item.GARTENNUMMER]]" on-click="_removeItem" class="first-domain-endpagebutton"
+                        <button id="bt[[item.GARTENNUMMER]]" on-click="_removeItem" class="first-domain-endpagebutton action-button"
                             disabled="[[detailsOpened]]">
                             <iron-icon id="rm[[item.GARTENNUMMER]]" icon="delete" slot="item-icon" on-click="_removeItem"></iron-icon>
                         </button>

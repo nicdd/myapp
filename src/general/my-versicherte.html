@@ -47,10 +47,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/paper-progress-button/paper-progress-button.html">
-<!-- <link rel="import" href="../../bower_components/papa-parse/papa-parse.html">
-<link rel="import" href="../../bower_components/papa-parse/papa-unparse.html"> -->
-
-
 <link rel="import" href="../../bower_components/vaadin-grid/theme/material/all-imports.html">
 <link rel="import" href="../../bower_components/iron-collapse-button/iron-collapse-button.html">
 <link rel="import" href="../../bower_components/iron-icons/editor-icons.html">
@@ -58,18 +54,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../clients/basicclient.html">
 <link rel="import" href="../shared-styles.html">
 <link rel="import" href="../second-domain-styles.html">
-<link rel="import" href="../utils/grt-grid-pagination.html">
+<link rel="import" href="../table-styles.html">
+
 <link rel="import" href="../utils/create-versicherter-antrag.html">
 <link rel="import" href="../general/my-versicherungrechner.html">
+
+<link rel="import" href="../utils/grt-grid-pagination.html">
 <link rel="import" href="../utils/export-chooser.html">
 <link rel="import" href="../utils/grt-dialog.html">
 <link rel="import" href="../utils/apps-dialog.html">
+<link rel="import" href="../utils/column-sorter.html">
 
 
 
 <dom-module id="my-versicherte">
   <template>
-    <style include="second-domain-styles">
+    <style include="second-domain-styles table-styles">
       :host {
         /* Stretch this element to fill viewport */
         height: 85vh;
@@ -79,100 +79,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         flex-direction: column;
       }
 
-      /* iron-pages { */
-      /* Stretch this element in the parent flex */
-      /* flex: 1;  */
-
-      /* Make a flex column layout of children */
-      /* display: flex;
-          flex-direction: column;
-        } */
-
       .toolbar {
         /* height: 40px; */
         padding: 5px;
         /*line-height: 32px;*/
         background: #eee;
-      }
-
-      .page {
-        /* Stretch this element in the parent flex */
-        flex: 1;
-
-        /* Make a flex column layout of children */
-        display: flex;
-        flex-direction: column;
-
-        /*
-            Let the page contents scroll. Unnecessary for <vaadin-grid>,
-            but could be useful for other pages.
-          */
-        overflow: auto;
-        -webkit-overflow-scrolling: touch;
-      }
-
-      /* .content {
-          padding: 8px;
-        } */
-
-      vaadin-grid {
-        /* Stretch this element in the parent flex */
-        flex: 1;
-        
-      }
-      /* vaadin-grid {
-            --default-primary-color: darkgray;
-            --vaadin-grid-row-height: 35px;
-            --vaadin-grid-header-row-height: 40px;
-            --vaadin-grid-footer-row-height: 40px;
-            font-size: 10px;
-            
-            border: 1px #ccc solid;
-        } */
-
-      .btn {
-
-        border: none;
-        /* Remove borders */
-
-
-        border-radius: 10%;
-        cursor: pointer;
-        /* Mouse pointer on hover */
-      }
-
-
-
-      /*.demo {
-        --paper-progress-active-color: #1875d1;
-        --paper-progress-container-icolor: #00000000;
-
-        /*--paper-button-mixin: {
-          padding: 0.2em 0.5em 0.2em 0.5em !important;
-          background-color: #1976d2;
-          color: white;
-        }*/
-
-      /* --paper-button-disabled-mixin: {
-          background-color: var(--app-primary-color);
-          color: white;
-          opacity: 0.4;
-        } */
-      /* }*/
-
-      .vaadin-demo-input[readonly] {
-        border: 2px solid transparent;
-        pointer-events: none;
-      }
-
-      input[vaadin-demo-input] {
-        max-width: 10px !important;
-      }
-
-      .vaadin-demo-input {
-        font: inherit;
-        width: 100%;
-        max-width: 50%;
       }
 
       iron-collapse-button {
@@ -193,205 +104,232 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         padding: 0.2em 0.5em 0.2em 0.5em !important;
       }
 
-      /* .header {
-          max-height: 5px !important;
-        } */
+      .button {
+        padding: 0px 2px 0px 2px !important;
+      }
+
+      .rightalign {
+        text-align: right !important;
+      }
+
+      .cb-cell {
+        text-align: center !important;
+        vertical-align: middle !important;
+      }
+
     </style>
 
     <first-client id="firstclient"></first-client>
     <basic-client id="bclient"></basic-client>
-    <!-- <grt-dialog id="deletedialog" dialog-type="confirmation" confirmation-name="Löschen" cancel-name="Abbrechen"
-      on-grtconfirm="_removeItem"></grt-dialog> -->
+    <grt-dialog id="deletedialog" dialog-type="confirmation" confirmation-name="Löschen" cancel-name="Abbrechen"
+      on-grtconfirm="_removeItem"></grt-dialog>
     <grt-dialog id="grtinfodialog" dialog-type="info"></grt-dialog>
-
-    <div class="toolbar layout horizontal justified" flex>
-      <template is="dom-if" if="[[columnNames.length]]">
-        <grt-grid-pagination id="pages" datalength="[[mvdata.length]]" page-size="{{pageSize}}" pstart="{{_pageStart}}"
-          on-pagechanged="changePage" style-domain="second-domain"></grt-grid-pagination>
-      </template>
-      <div class="layout horizontal justified" flex="50">
-        <button id="appsbutton" on-click="_showApps" disabled="[[_noOneSelected(mvdata.*)]]">
-          <iron-icon icon="apps" id="appsicon" slot="item-icon" on-click="_showApps"></iron-icon>
-        </button>
-        <paper-button bottom raised on-click="addVersicherter" disabled="[[isAddDisabled(openeddetails.*)]]">Antrag
-          erfassen <iron-icon icon="add-circle-outline" slot="item-icon"></iron-icon>
-        </paper-button>
-        <paper-button bottom raised on-click="postVersicherte" disabled="[[isSaveDisabled(mvdata.*, openeddetails.*)]]">Speichern</paper-button>
-        <paper-button disabled="[[isExportDisabled(mvdata.*, openeddetails.*)]]" bottom raised on-click="_showExportDialog">Exportieren</paper-button>
-        <!-- <paper-progress-button class="demo" bottom raised on-click="addVersicherter" loading-label="Nicht so hecktisch ..."
-          loading="[[_loading]]" deaktiviert="[[isAddDisabled(openeddetails.*)]]">Antrag erfassen <iron-icon icon="add-circle-outline"
-            slot="item-icon"></iron-icon>
-        </paper-progress-button>
-        <paper-progress-button class="demo" bottom raised on-click="postVersicherte" loading-label="Nicht so hecktisch ..."
-          loading="[[_loading]]" deaktiviert="[[openeddetails.length]]">Speichern</paper-progress-button>
-        <paper-progress-button class="demo" deaktiviert="[[!mvdata]]" bottom raised on-click="_showExportDialog"
-          loading-label="Nicht so hecktisch ..." loading="[[_loading]]">Exportieren</paper-progress-button> -->
+    <export-chooser id="exportdialog" dialog-type="info" confirmation-name="Schließen"
+      on-export-versicherte="exportVersicherte"></export-chooser>
+    <apps-dialog id="appsdialog" action-buttons="[[actionButtons]]" tasks="[[getSelected(mvdata.*)]]"></apps-dialog>
+    <div>
+      <div class="toolbar layout horizontal justified" flex>
+        <template is="dom-if" if="[[columnNames.length]]">
+          <grt-grid-pagination id="pagesss" datalength="[[mvdata.length]]" page-size="{{pageSize}}"
+            pstart="{{_pageStart}}" on-pagechanged="changePage" style-domain="second-domain"></grt-grid-pagination>
+        </template>
+        <div class="layout horizontal justified" flex="50">
+          <button id="appsbutton" on-click="_showApps" disabled="[[_noOneSelected(mvdata.*)]]" class="action-button">
+            <iron-icon icon="apps" id="appsicon" slot="item-icon" on-click="_showApps"></iron-icon>
+          </button>
+          <paper-button disabled="[[isExportDisabled(mvdata.*, openeddetails.*)]]" bottom raised
+            on-click="_showExportDialog">Exportieren</paper-button>
+        </div>
+      </div>
+      <div class="demo">
+        <div class="table-responsive-vertical shadow-z-1">
+          <table id="table" class="table table-condensed table-hover table-striped">
+            <thead>
+              <th class="cb-cell">
+                <paper-checkbox on-change="_checkAll" checked="[[_areAllSelected(mvdata.*)]]"></paper-checkbox>
+              </th>
+              <th>
+                <column-sorter colname="[[columnNames.0]]" path="GARTENNUMMER" on-sorter-changed="_sortChange">
+                </column-sorter>
+              </th>
+              <th>
+                <column-sorter colname="[[columnNames.2]]" path="NACHNAME" on-sorter-changed="_sortChange">
+                </column-sorter>
+              </th>
+              <th>
+                <column-sorter colname="[[columnNames.3]]" path="VORNAME" on-sorter-changed="_sortChange">
+                </column-sorter>
+              </th>
+              <th>
+                <column-sorter colname="[[columnNames.14]]" path="GBV" on-sorter-changed="_sortChange"></column-sorter>
+              </th>
+              <th>
+                <column-sorter colname="[[columnNames.15]]" path="FED" on-sorter-changed="_sortChange"></column-sorter>
+              </th>
+              <th>
+                <column-sorter colname="[[columnNames.16]]" path="HOEV" on-sorter-changed="_sortChange"></column-sorter>
+              </th>
+              <th>
+                <column-sorter colname="[[columnNames.17]]" path="A7_1" on-sorter-changed="_sortChange"></column-sorter>
+              </th>
+              <th>
+                <column-sorter colname="[[columnNames.18]]" path="A7_3" on-sorter-changed="_sortChange"></column-sorter>
+              </th>
+              <th>
+                <column-sorter colname="[[columnNames.19]]" path="A7_4" on-sorter-changed="_sortChange"></column-sorter>
+              </th>
+              <th>
+                <column-sorter colname="[[columnNames.20]]" path="UV" on-sorter-changed="_sortChange"></column-sorter>
+              </th>
+              <th>
+                <column-sorter colname="[[columnNames.21]]" path="BEITRAG" on-sorter-changed="_sortChange">
+                </column-sorter>
+              </th>
+              <th>
+                <column-sorter colname="[[columnNames.13]]" path="V_BEMERKUNG" on-sorter-changed="_sortChange">
+                </column-sorter>
+              </th>
+              <th class="button"></th>
+            </thead>
+            <tbody>
+              <template is="dom-repeat" items="[[mvpagedata]]">
+                <tr>
+                  <td class="cb-cell">
+                    <paper-checkbox class="[[getClassByBeitrag(item.BEITRAG)]]"
+                      id="[[getGridElementID(index, _pageStart, 'scb')]]" on-change="_checkOne"
+                      checked="[[_isItemSelected(_pageStart, index, mvdata.*)]]"></paper-checkbox>
+                  </td>
+                  <td class="rightalign">[[item.GARTENNUMMER]]</td>
+                  <td>[[item.NACHNAME]]</td>
+                  <td>[[item.VORNAME]]</td>
+                  <td class="rightalign">[[item.GBV]]</td>
+                  <td class="rightalign">[[item.FED]]</td>
+                  <td class="rightalign">[[item.HOEV]]</td>
+                  <td class="rightalign">[[item.A7_1]]</td>
+                  <td class="rightalign">[[item.A7_3]]</td>
+                  <td class="rightalign">[[item.A7_4]]</td>
+                  <td class="rightalign">[[item.UV]]</td>
+                  <td class="rightalign">[[item.BEITRAG]]</td>
+                  <td>[[item.V_BEMERKUNG]]</td>
+                  <td class="button">
+                    <button id="bto[[item.GARTENNUMMER]]" on-click="_openDetails"
+                      class="second-domain-endpagebutton action-button">
+                      <iron-icon id="cro[[item.GARTENNUMMER]]" icon="[[getIcon(item._detailsOpened)]]" slot="item-icon"
+                        on-click="_openDetails"></iron-icon>
+                    </button>
+                  </td>
+                </tr>
+                <template is="dom-if" if="[[item._detailsOpened]]">
+                  <tr class="details">
+                    <td colspan="14" class="no-padding">
+                      <iron-collapse-button expand-icon="add-circle-outline" collapse-icon="remove-circle-outline"
+                        class="detailelement light-element flex" opened>
+                        <div slot="collapse-trigger" class="flex">
+                          <span>Daten des Versicherungsnehmers</span>
+                        </div>
+                        <div slot="collapse-content" class="corrected-margin">
+                          <div class="mcard strong-text-color">
+                            <div class="layout horizontal">
+                              <table width="25%">
+                                <thead>
+                                  <th colspan="2">Garten</th>
+                                </thead>
+                                <tbody>
+                                  <tr>
+                                    <td>[[columnNames.0]]</td>
+                                    <td>[[item.GARTENNUMMER]]</td>
+                                  </tr>
+                                  <tr>
+                                    <td>[[columnNames.8]]</td>
+                                    <td>[[item.WEG]]</td>
+                                  </tr>
+                                  <tr>
+                                    <td>[[columnNames.9]]</td>
+                                    <td>[[item.FLAECHE]]</td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                              <table width="25%">
+                                <thead>
+                                  <th colspan="2">Anschrift</th>
+                                </thead>
+                                <tbody>
+                                  <tr>
+                                    <td>Name</td>
+                                    <td>[[item.ANREDE]] [[item.VORNAME]] [[item.NACHNAME]]</td>
+                                  </tr>
+                                  <tr>
+                                    <td>[[columnNames.4]]</td>
+                                    <td>[[item.STRASSE]]</td>
+                                  </tr>
+                                  <tr>
+                                    <td>[[columnNames.6]]</td>
+                                    <td>[[item.PLZ]] [[item.WOHNORT]]</td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                              <table width="25%">
+                                <thead>
+                                  <th colspan="2">Kontakt</th>
+                                </thead>
+                                <tbody>
+                                  <tr>
+                                    <td>[[columnNames.7]]</td>
+                                    <td><a href="tel:[[item.TELEFON]]">[[item.TELEFON]]</a></td>
+                                  </tr>
+                                  <tr>
+                                    <td>[[columnNames.11]]</td>
+                                    <td><a href="mailto:[[item.EMAIL]]">[[item.EMAIL]]</a></td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                              <table width="25%">
+                                <thead>
+                                  <th colspan="2">Details</th>
+                                </thead>
+                                <tbody>
+                                  <tr>
+                                    <td>[[columnNames.10]]</td>
+                                    <td>[[item.GEBURTSDATUM]]</td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </div>
+                      </iron-collapse-button>
+                    </td>
+                  </tr>
+                  <tr class="details">
+                    <td colspan="14" class="no-padding">
+                      <iron-collapse-button expand-icon="add-circle-outline" collapse-icon="remove-circle-outline"
+                        class="detailelement light-element flex" opened>
+                        <div slot="collapse-trigger" class="flex">
+                          <div class="layout horizontal justified">
+                            <span>Versicherungsdaten</span>
+                            <button id="sbt[[index]]" on-click="_saveItemData" disabled="[[!dc]]">
+                              <iron-icon icon="save" id="sic[[index]]" slot="item-icon" disabled="[[!dc]]"
+                                on-click="_saveItemData"></iron-icon>
+                            </button>
+                          </div>
+                        </div>
+                        <div slot="collapse-content" class="corrected-margin">
+                          <div class="mcard strong-text-color">
+                            <my-versicherungrechner id="[[getGridElementID(index, _pageStart, 'vrd')]]"
+                              vcs="[[vconfig]]" saved-data="[[item]]" dosave="{{dosave}}" changed-saved-data="{{dc}}"
+                              on-savedversicherter="_postOnePaechter"></my-versicherungrechner>
+                          </div>
+                        </div>
+                      </iron-collapse-button>
+                    </td>
+                  </tr>
+                </template>
+              </template>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
-    <create-versicherter-antrag id="adddialog" cancel-name="Abbrechen" confirmation-name="Hinzufügen" on-add-v="_postOnePaechter"></create-versicherter-antrag>
-    <export-chooser id="exportdialog" dialog-type="info" confirmation-name="Schließen" on-export-versicherte="exportVersicherte"></export-chooser>
-    <div class="page">
-      <vaadin-grid id="mygrid" page-size="{{pageSize}}" active-item="{{activeItem}}" aria-label="Basic Binding Example"
-        items="[[mvdata]]" column-reordering-allowed>
-        <template class="row-details">
-          <div class="details">
-            <iron-collapse-button expand-icon="add-circle-outline" collapse-icon="remove-circle-outline"
-              on-opened-changed="isTrue" class="lastelement light-element flex">
-              <div slot="collapse-trigger" class="flex">
-                <span>Anschrift</span>
-              </div>
-              <div slot="collapse-content">
-                <p>
-                  <small>[[columnNames.5]]:[[item.STRASSE]]</small><br>
-                  <small>[[columnNames.7]]:[[item.PLZ]]</small><br>
-                  <small>[[columnNames.8]]:[[item.WOHNORT]]</small><br>
-                </p>
-              </div>
-            </iron-collapse-button>
-            <iron-collapse-button expand-icon="add-circle-outline" collapse-icon="remove-circle-outline"
-              on-opened-changed="isTrue" class="lastelement light-element flex">
-              <template is="dom-if" if="[[detailsOpened]]">
-                <div slot="collapse-trigger" class="flex">
-                  <div class="layout horizontal justified">
-                    Versicherungsdaten <button id="sbt[[index]]" on-click="_saveItemData" disabled="[[!dc]]">
-                      <iron-icon icon="save" id="sic[[index]]" slot="item-icon" on-click="_saveItemData"></iron-icon>
-                    </button>
-                  </div>
-                </div>
-                <div slot="collapse-content">
-                  <my-versicherungrechner id="[[getGridElementID(index, _pageStart, 'vrd')]]" vcs="[[vconfig]]"
-                    saved-data="[[item]]" dosave="{{dosave}}" changed-saved-data="{{dc}}" on-savedversicherter="_postOnePaechter"></my-versicherungrechner>
-                </div>
-              </template>
-            </iron-collapse-button>
-
-          </div>
-        </template>
-        <vaadin-grid-column width="20px">
-          <template class="header">
-            <vaadin-checkbox on-change="_checkAll" checked="[[_areAllSelected(mvdata.*)]]"></vaadin-checkbox>
-          </template>
-          <template>
-            <vaadin-checkbox id="[[getGridElementID(index, _pageStart, 'scb')]]" on-change="_checkOne" checked="[[item.selected]]"></vaadin-checkbox>
-          </template>
-        </vaadin-grid-column>
-        <vaadin-grid-column path="GARTENNUMMER" header="GARTENNUMMER" width="75px" flex-grow="0" text-align="end">
-          <template class="header">
-            <vaadin-grid-sorter path="GARTENNUMMER" on-sorter-changed="_sortChange">
-              [[columnNames.0]]
-            </vaadin-grid-sorter>
-          </template>
-        </vaadin-grid-column>
-
-        <vaadin-grid-column path="NACHNAME" width="141px" resizable>
-          <template class="header">
-            <vaadin-grid-sorter path="NACHNAME" on-sorter-changed="_sortChange">
-              [[columnNames.2]]
-            </vaadin-grid-sorter>
-          </template>
-        </vaadin-grid-column>
-
-        <vaadin-grid-column path="VORNAME" width="100px" resizable>
-          <template class="header">
-            <vaadin-grid-sorter path="VORNAME" on-sorter-changed="_sortChange">
-              [[columnNames.3]]
-            </vaadin-grid-sorter>
-          </template>
-        </vaadin-grid-column>
-
-        <vaadin-grid-column path="GBV" width="60px" resizable text-align="end">
-          <template class="header">
-            <vaadin-grid-sorter path="GBV" on-sorter-changed="_sortChange">
-              [[columnNames.13]]
-            </vaadin-grid-sorter>
-          </template>
-        </vaadin-grid-column>
-
-        <vaadin-grid-column path="FED" width="60px" resizable text-align="end">
-          <template class="header">
-            <vaadin-grid-sorter path="FED" on-sorter-changed="_sortChange">
-              [[columnNames.14]]
-            </vaadin-grid-sorter>
-          </template>
-        </vaadin-grid-column>
-
-        <vaadin-grid-column path="HOEV" width="50px" resizable text-align="end">
-          <template class="header">
-            <vaadin-grid-sorter path="HOEV" on-sorter-changed="_sortChange">
-              [[columnNames.15]]
-            </vaadin-grid-sorter>
-          </template>
-        </vaadin-grid-column>
-        <!-- </vaadin-grid-column-group> -->
-        <vaadin-grid-column path="A7_1" width="50px" resizable>
-          <template class="header">
-            <vaadin-grid-sorter path="A7_1" on-sorter-changed="_sortChange">
-              [[columnNames.16]]
-            </vaadin-grid-sorter>
-          </template>
-        </vaadin-grid-column>
-
-        <vaadin-grid-column path="A7_3" width="50px" resizable text-align="end">
-          <template class="header">
-            <vaadin-grid-sorter path="A7_3" on-sorter-changed="_sortChange">
-              [[columnNames.17]]
-            </vaadin-grid-sorter>
-          </template>
-        </vaadin-grid-column>
-
-        <vaadin-grid-column path="A7_4" width="70px" resizable text-align="end">
-          <template class="header">
-            <vaadin-grid-sorter path="A7_4" on-sorter-changed="_sortChange">
-              [[columnNames.18]]
-            </vaadin-grid-sorter>
-          </template>
-        </vaadin-grid-column>
-
-        <vaadin-grid-column path="UV" width="50px" resizable text-align="end">
-          <template class="header">
-            <vaadin-grid-sorter path="UV" on-sorter-changed="_sortChange">
-              [[columnNames.19]]
-            </vaadin-grid-sorter>
-          </template>
-        </vaadin-grid-column>
-
-        <vaadin-grid-column path="BEITRAG" width="70px" resizable text-align="end">
-          <template class="header">
-            <vaadin-grid-sorter path="BEITRAG" on-sorter-changed="_sortChange">
-              [[columnNames.20]]
-            </vaadin-grid-sorter>
-          </template>
-        </vaadin-grid-column>
-
-        <vaadin-grid-column path="V_BEMERKUNG" resizable>
-          <template class="header">
-            <vaadin-grid-sorter path="V_BEMERKUNG" on-sorter-changed="_sortChange">
-              [[columnNames.21]]
-            </vaadin-grid-sorter>
-          </template>
-        </vaadin-grid-column>
-
-        <vaadin-grid-column width="50px">
-          <template class="header"></template>
-          <template>
-            <button id="bt[[item.GARTENNUMMER]]" on-click="_openDetails" class="second-domain-endpagebutton">
-              <slot>
-                <iron-icon id="cr[[item.GARTENNUMMER]]" icon="[[getIcon(detailsOpened)]]" slot="item-icon" on-click="_openDetails"></iron-icon>
-              </slot>
-            </button>
-            <!-- <button id="bt[[item.GARTENNUMMER]]" on-click="_confirmRemove" class="second-domain-endpagebutton" disabled="[[detailsOpened]]">
-              <iron-icon id="rm[[item.GARTENNUMMER]]" icon="delete" slot="item-icon" on-click="_confirmRemove"></iron-icon>
-            </button> -->
-            <!-- <vaadin-checkbox aria-label$="Show Details for [[NAME]]" checked="{{detailsOpened}}">Details</vaadin-checkbox> -->
-          </template>
-        </vaadin-grid-column>
-      </vaadin-grid>
-
-    </div>
-    <apps-dialog id="appsdialog" action-buttons="[[actionButtons]]" tasks="[[getSelected(mvdata.*)]]"></apps-dialog>
-    
-
-
   </template>
 
   <script>
@@ -400,9 +338,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       static get properties() {
         return {
-          actionButtons:{
+          actionButtons: {
             type: Array,
-            value: ['email', 'rechnung', 'meldung','brief']
+            value: ['email', 'rechnung', 'meldung', 'brief']
           },
 
           pageSize: {
@@ -411,30 +349,36 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             notify: true,
             observer: 'changePage'
           },
+
           _pageStart: {
             type: Number,
             value: 0
-            //observer: '_setPageEnd'
           },
-          // _pageEnd: {
-          //   type: Number,
-          //   value: 0
-          // },
 
           _loading: {
             type: Boolean,
             value: false
           },
+
           mvdata: {
             type: Array,
             value: [],
             notify: true,
             reflectToAttribute: true
           },
+
+          mvpagedata: {
+            type: Array,
+            value: [],
+            notify: true,
+            reflectToAttribute: true
+          },
+
           _pages: {
             type: Object,
             value: null
           },
+
           selected: {
             type: Boolean,
             value: false,
@@ -442,19 +386,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           },
 
           columnNames: {
-            type: Array,
-            value: []
-          },
-
-          paechter: {
-            type: Array,
-            value: [],
-            observer: 'paechterChanged'
-          },
-
-          gartenNrSelections: String,
-
-          dtls: {
             type: Array,
             value: []
           },
@@ -475,262 +406,56 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             value: null,
             notify: true
           }
+
         }
       }
 
-      _noOneSelected() {
-        return !this.mvdata.some((data) => data.selected);
-      }
-      _areAllSelected() {
-        return !this.mvdata.some((data) => !data.selected);
-      }
-      _checkAll(e) {
-        console.log('_checkAll _checkOne ')
-        if (e.currentTarget.checked) {
-          this.mvdata.forEach((mv, idx) => {
-            let path = 'mvdata.' + idx + '.selected'
-            this.set(path, true)
-          })
-        } else {
-          this.mvdata.forEach((mv, idx) => {
-            let path = 'mvdata.' + idx + '.selected'
-            this.set(path, false)
-          })
-        }
-      }
+      ready() {
+        super.ready();
+        this.$.firstclient.getPaechterAsJSON().then((resp) => {
+          if (resp) {
+            this.splitToObjects(resp).finally(() => {
+              //wenn pageSize nur an einer stelle initialisiert wird (in then von splitToObjects)
+              // dann der gleiche wert 10 wird nicht noch mal zu der pagination Componente getriggert
+              // denn er sich noch nicht geändert hatte, die Komp beim ersten mal aber nicht da war
+              this.set('pageSize', parseInt(0));
+              this.changePage();
+            });
+          } else {
+            showToast(this, 'Bei der Initialisierung der Seite wurden keine Versichertendaten gefunden', TOAST_TYPE.ERROR);
+          }
+        }).catch((err) => {
+          console.log("Fehler beim get fuer versicherte  kam:" + JSON.stringify(err))
+        })
 
-      getSelected(){
-        let thetasks = this.mvdata.filter((el)=> el.selected === true);
-        return thetasks;
-      }
-
-      _checkOne(e) {
-        console.log('_checkOne _checkAll aselectedchanged changed _checkOne')
-        let realIndex = e.target.id.substring(3);
-        if (e.currentTarget.checked) {
-          let path = 'mvdata.' + realIndex + '.selected'
-          this.set(path, true)
-        } else {
-          let path = 'mvdata.' + realIndex + '.selected'
-          this.set(path, false)
-        }
-      }
-
-
-
-      isAddDisabled() {
-        if (this.openeddetails && this.openeddetails.length) {
-          return true;
-        } else return false;
-
-      }
-
-      isSaveDisabled() {
-        if ((this.openeddetails && this.openeddetails.length) || !this.mvdata || !this.mvdata.length) {
-          return true;
-        } else return false;
-      }
-
-      isExportDisabled() {
-        if ((this.openeddetails && this.openeddetails.length) || !this.mvdata || !this.mvdata.length) {
-          return true;
-        } else return false;
-      }
-
-
-
-      isTrue(e) {
-        if (e.model.detailsOpened) {
-          //noch einmal detailsOpened propagieren, damit der Grid richtig gerendert wird
-          e.model.detailsOpened = false;
-          e.model.detailsOpened = true;
-        }
-        //Extremlösung
-        // var element = this.$.mygrid;
-        // var n = document.createTextNode(' ');
-        // var disp = element.style.display;  // don't worry about previous display style
-        // element.appendChild(n);
-        // element.style.display = 'none';
-        // setTimeout(function () {
-        //   element.style.display = disp;
-        //   n.parentNode.removeChild(n);
-        // }, 50);
+        window.addEventListener('vconfigchanged', (e) => {
+          console.log('vconfigchanged in versicherte' + JSON.stringify(e.detail))
+          this.set('vconfig', e.detail);
+        })
       }
 
       _openDetails(e) {
-        //e.preventDefault();
-        e.model.detailsOpened = !e.model.detailsOpened;
-
-        //wichtig weil sonst der scroll balken rechts aktiv bleibt auch nach der Fensterreduzierung 
-        this.$.mygrid.notifyResize()
-        if (e.model.detailsOpened) {
+        e.model.set("item._detailsOpened", !e.model.item._detailsOpened);
+        if (e.model.item._detailsOpened) {
           this.push('openeddetails', true);
         } else {
           this.shift('openeddetails');
         }
         e.stopPropagation();
-
-      }
-
-      _keepDetailsOpen(e) {
-        e.model.detailsOpened = true;
-      }
-
-      getIcon(detailsOpened) {
-        if (detailsOpened) {
-          return 'close';
-        } else return 'create';
-      }
-
-      paechterChanged() {
-        let gNrOptions = '<select style:"background-color: white;"><option value="">Auswahl</option>';
-        this.paechter.forEach((p) => {
-          console.log('then p:' + JSON.stringify(p))
-          gNrOptions = gNrOptions + '<option value="' + p.GARTENNUMMER + '">' + p.GARTENNUMMER + '</option>'
-        });
-        gNrOptions += '</select>';
-        this.set('gartenNrSelections', gNrOptions);
-      }
-
-      // _confirmRemove(e) {
-      //   e.preventDefault();
-      //   this.$.deletedialog.showDialog(
-      //     {
-      //       "title": "Versicherter Löschen",
-      //       "message": "Bitte bestätigen Sie, dass Sie den Versicherter wirklich entfernen möchten.",
-      //       "origData": e.target.id.substring(2)
-      //     })
-      //   e.stopPropagation();
-      // }
-
-      // ACHTUNG - zuerst die Funktionalität in my-paechter übernehmen dann löschen
-      // _removeItem(confirmEvent) {
-      //   //debugger;
-      //   let id = confirmEvent.detail;
-      //   console.log('idddd ist' + id);
-      //   let elem = this.mvdata.find((v) => {
-      //     return v.GARTENNUMMER === id
-      //   });
-      //   console.log('elem ist' + JSON.stringify(elem));
-      //   let idx = this.mvdata.indexOf(elem);
-      //   console.log('index ist' + idx);
-      //   if (idx >= 0) {
-      //     //ToDo - noch ein Bestätigungsdialog zeigen
-      //     this.$.firstclient.deleteOneVersicherter(elem.GARTENNUMMER).then(() => {
-      //       this.splice('mvdata', idx, 1);
-      //       showToast(this, 'Der Versicherte wurde erfolgreich gelöscht', TOAST_TYPE.SUCCESS);
-      //     }).catch(() => {
-      //       showToast(this, 'Fehler bei der Löschung des Versicherten. Verschen Sie später noch einmal.', TOAST_TYPE.ERROR);
-      //     })
-      //   }
-      // }
-
-      addVersicherter() {
-        let self = this;
-        //showToast(this, 'Bei der Initialisierung der Seite wurden keine Versichertendaten gefunden', TOAST_TYPE.INPUT);
-        //this.$.adddialog.showDialog();
-        this.$.firstclient.getPaechterAsJSON().then((ps) => {
-          let records = ps.data;
-          // For Number-like Strings containing alphanummerical chars
-          records = records.sort(function (o1, o2) {
-            let sresult = self.naturalSorter((o1.GARTENNUMMER || "0"), (o2.GARTENNUMMER || "0"));
-            return (sresult < 0) ? -1 : 1;
-          });
-          this.set('paechter', records);
-          let toastBGColor = window.getComputedStyle(self).getPropertyValue('--app-primary-color')
-          iziToast.question({
-            theme: 'light',
-            //backgroundColor: toastBGColor,
-            //color: 'white',
-            timeout: false,
-            drag: false,
-            close: false,
-            overlay: true,
-            title: 'Gartennummer',
-            message: 'Wählen Sie bitte eine Gartennummer aus',
-            position: 'center',
-            inputs: [
-              [self.gartenNrSelections, 'change', function (instance, toast, select, e) {
-                console.info(select.options[select.selectedIndex].value);
-              }, true] // true to focus
-            ],
-            buttons: [
-              ['<button><b>Abbrechen</b></button>', function (instance, toast, button, e, inputs) {
-                instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-              }, false],
-              ['<button><b>Bestätigen</b></button>', function (instance, toast, button, e, inputs) {
-                let GARTENNUMMER = inputs[0].options[inputs[0].selectedIndex].value;
-                let pt = self.paechter.find((ap) => ap.GARTENNUMMER === GARTENNUMMER);
-                self.gartenNichtSchonVorhanden(GARTENNUMMER, pt).then(() => {
-
-                  self.$.adddialog.showDialog(pt);
-                  //console.log('Auswahl2' + JSON.stringify(pt))
-                  // alert('Auswahl: ' + JSON.stringify(inputs[0].options[inputs[0].selectedIndex].value))
-                  instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
-                }).catch((aenderungen) => {
-                  if (aenderungen.name || aenderungen.anschrift) {
-                    let gesamtZusatzMessage = "";
-                    if (aenderungen.name) {
-                      gesamtZusatzMessage += " Name";
-                    }
-                    if (aenderungen.anschrift) {
-                      gesamtZusatzMessage += " Anschrift";
-                    }
-                    showToast(self, "Für den Garten Nr. " + GARTENNUMMER +
-                      " existiert bereits einen Versicherung-Datensatz." +
-                      "Die folgenden Änderungen wurden festgestellt:" + gesamtZusatzMessage + ".\nBitte bearbeiten Sie die ungeklärten Fälle.",
-                      TOAST_TYPE.WARN, 'center');
-
-                  } else {
-                    showToast(self, "Für den Garten Nr. " + GARTENNUMMER + " existiert bereits einen Versicherung-Datensatz unter dem gleichen Namen und unter der gleichen Anschrift.", TOAST_TYPE.WARN, 'center');
-                  }
-
-                })
-
-
-              }, false]
-            ]
-          });
-
-        })
-
-      }
-
-      gartenNichtSchonVorhanden(GARTENNUMMER, paechter) {
-        let bereitsVorhandener = this.mvdata.find((versicherter) => {
-          return versicherter.GARTENNUMMER === GARTENNUMMER;
-        })
-        if (bereitsVorhandener) {
-          console.log('vgl paechter' + JSON.stringify(paechter))
-          console.log('vgl bereitsVorhandener' + JSON.stringify(bereitsVorhandener))
-          let namensAenderung = (bereitsVorhandener.NAME !== paechter.Nachname || bereitsVorhandener.VORNAME !== paechter.Vorname);
-          let anschriftsAenderung = (bereitsVorhandener.STRASSE !== paechter.Strasse || bereitsVorhandener.PLZ !== paechter.PLZ || bereitsVorhandener.ORT !== paechter.Wohnort);
-          console.log("vgl bereitsVorhandener.STRASSE.length" + bereitsVorhandener.STRASSE.length + "paechter.Strasse.length" + paechter.Strasse.length)
-          let aenderungen = { name: namensAenderung, anschrift: anschriftsAenderung }
-          console.log('vgl aenderungen' + JSON.stringify(aenderungen))
-
-
-          return Promise.reject(aenderungen);
-        } else {
-          return Promise.resolve();
-        }
       }
 
       _sortChange(e) {
         let self = this;
-        // Ganz wichtig hier e.stopPropagation, weil sonst der "sorter-changed" Event,
-        // weiter an den vaadin-grid propagiert worden wäre, und dieser würde noch einmal seine eigene 
-        // Sortierung die unsere "überladen"/ ändern würde. Bemerkbar wäre das dann insbesondere bei
-        // der selbst-implementierte "natural-alphanumerischen-Sortierung" (1,2,3,3a,4,4a etc)
-        e.stopPropagation();
-        console.log('sortchange called außer event' + (e.target) + (e.target.path) + (e.target.direction));
         if (e.target && e.target.path && e.target.direction) {
+          let otherSorter = this.shadowRoot.querySelectorAll('column-sorter');
+          otherSorter.forEach((os) => {
+            if (os.direction && (os.colname !== e.target.colname)) {
+              os.direction = null;
+            }
+          })
           let key = e.target.path;
           let direction = e.target.direction;
           let records = JSON.parse(JSON.stringify(self.mvdata));
-          console.log('sortchange called in event');
-
-          console.log('sortchange called e.target.path' + key + ' e.target.direction' + direction + " nritems" + records.length)
           if (key === 'GARTENNUMMER') {
             // For Number-like Strings containing alphanummerical chars
             records = records.sort(function (o1, o2) {
@@ -745,7 +470,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           } else if (!isNaN(this.mvdata[0][key])) {
             // for numbers
             records.sort(function (a, b) {
-
               if (direction === 'asc') {
                 if (a[key] < b[key]) return -1;
                 if (a[key] > b[key]) return 1;
@@ -755,17 +479,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               }
               return 0;
             });
-
           } else {
             // for strings
             records.sort(function (a, b) {
-
               if (direction === 'asc') {
-                if (a[key].toLowerCase() < b[key].toLowerCase()) return -1;
-                if (a[key].toLowerCase() > b[key].toLowerCase()) return 1;
+                if ((a[key] || "").toLowerCase() < (b[key] || "").toLowerCase()) return -1;
+                if ((a[key] || "").toLowerCase() > (b[key] || "").toLowerCase()) return 1;
               } else {
-                if (a[key].toLowerCase() < b[key].toLowerCase()) return 1;
-                if (a[key].toLowerCase() > b[key].toLowerCase()) return -1;
+                if ((a[key] || "").toLowerCase() < (b[key] || "").toLowerCase()) return 1;
+                if ((a[key] || "").toLowerCase() > (b[key] || "").toLowerCase()) return -1;
               }
               return 0;
             });
@@ -779,108 +501,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       changePage() {
         if (this._pageStart || this._pageStart === 0) {
-          let end = parseInt(this._pageStart) + parseInt(this.pageSize);
+          let end = parseInt(this._pageStart) + (parseInt(this.pageSize));
           let newItems = this.mvdata.slice(this._pageStart, end);
-          this.$.mygrid.items = newItems;
+          this.set('mvpagedata', newItems)
           this.set('openeddetails', [])
         }
 
       }
 
-
-
-      ready() {
-        super.ready();
-        this.$.firstclient.getPaechterAsJSON().then((resp) => {
-          if (resp) {
-            // resp.data.forEach((vd) => {
-            //   vd['selected'] = false;
-            // })
-            this.splitToObjects(resp);
-          } else {
-            showToast(this, 'Bei der Initialisierung der Seite wurden keine Versichertendaten gefunden', TOAST_TYPE.ERROR);
-          }
-        }).catch((err) => {
-          console.log("Fehler beim get fuer versicherte  kam:" + JSON.stringify(err))
-        })
-
-        // this.$.firstclient.getVersicherteCSV().then((resp) => {
-        //   this.set('pageSize', 10);
-        //   this.mapToJSON(resp);
-
-        // }).catch((err) => {
-        //   console.log("Fehler beim importVersicherte fuer versicherte  kam:" + JSON.stringify(err))
-        // })
-
-        let self = this;
-        // this.$.adddialog.addEventListener('add-v', (e) => {
-        //   console.debug('adddialog gedruckt' + JSON.stringify(e.detail))
-        //   console.debug('mvdataadd davor' + JSON.stringify(self.mvdata))
-        //   self.splice('mvdata', self._pageStart, 0, e.detail);
-        //   console.debug('mvdataadd danach' + JSON.stringify(self.mvdata))
-        //   //e.stopPropagation()
-        //   //this.push('mvdata', e.detail);
-        // });
-
-
-        /**
-         *  When a row is clicked or the space key is pressed while a row cell is in focus, the related item object is assigned as the grid's activeItem.
-      
-      To programmatically select items, the activeItem, for example, could be added to the grid's selectedItems array. The methods selectItem(item) and deselectItem(item) can also be used to select or deselect items.
-      
-      In the example below, the grid's selectedItems array is replaced whenever activeItem changes, making it single-selectable. 
-         * ABER NICHT ZUSAMMEN MIT CHECCKBOX SELECTION sondern nur die akteull selektierte itm zu wissen
-         */
-        this.$.mygrid.addEventListener('active-item-changed', function (event) {
-          const item = event.detail.value;
-          //this.$.mygrid.selectedItems = item ? [item] : [];
-          console.log('active item' + JSON.stringify(event.target.activeItem))
-        });
-
-        window.addEventListener('vconfigchanged', (e) => {
-          console.log('vconfigchanged in versicherte' + JSON.stringify(e.detail))
-          this.set('vconfig', e.detail);
-        })
-
-        
-      }
-
-      doOnSelection(e) {
-        //debugger;
-        console.log('selectiert sind')
-        let nodeList = e.target.children// e.target.childNodes;
-        console.log('selectiert sind nodeList' + nodeList.length + ' typeof nodeList array' + Array.isArray(nodeList))
-        let areAllSelected = false;
-        for (let i = 0; i < nodeList.length; i++) {
-          if (nodeList[i].nodeName === 'VAADIN-GRID-SELECTION-COLUMN') {
-            console.log('selectiert sind selectAll:' + nodeList[i].selectAll)
-            areAllSelected = nodeList[i].selectAll;
-            break;
-          }
-        }
-        if (areAllSelected) {
-          this.$.mygrid.selectedItems = this.mvdata;
-        } else {
-          //this.$.mygrid.selectedItems = []
-        }
-        //this.$.mygrid.selectedItems = this.mvdata;
-        console.log('selectiert sind ANZAHl' + this.$.mygrid.selectedItems.length);
-      }
-
-
       splitToObjects(resp) {
         let versichertenData = resp.data;
         let columns = resp.columns;
+        let promises = [];
 
-        this.set('columnNames', columns);
-
-
-        this.set('mvdata', versichertenData);
-        this.set('pageSize', 10);
-
-
-
-        // this.set('mvdata', versichertenData);
+        return Promise.all(promises).then(() => {
+          this.set('columnNames', columns);
+          this.set('mvdata', versichertenData);
+          this.set('pageSize', parseInt(10));
+        })
       }
 
       naturalSorter(as, bs) {
@@ -889,7 +527,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         if (as === bs) return 0;
         a = as.toLowerCase().match(rx);
         b = bs.toLowerCase().match(rx);
-        console.log('path as:' + as + 'bs:' + bs);
         L = a.length;
         while (i < L) {
           if (!b[i]) return 1;
@@ -898,10 +535,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           if (a1 !== b1) {
             n = a1 - b1;
             if (!isNaN(n)) {
-              console.log('path returned wird' + n + ' for as' + as + 'bs' + bs + 'a1' + a1 + 'b1' + b1);
               return n;
-            } else {
-              console.log('path else')
             }
             return a1 > b1 ? 1 : -1;
           }
@@ -918,9 +552,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         if (newV) {
           this.$.firstclient.getPaechterAsJSON().then((resp) => {
             if (resp) {
-              this.set('pageSize', 10);
-              this.splitToObjects(resp);
-              this.changePage();
+              //this.set('pageSize', 10);
+              this.splitToObjects(resp).finally(() => {
+                this.changePage();
+              });
             } else {
               showToast(this, 'Bei der erneuten Initialisierung der Seite wurden keine Versichertendaten gefunden', TOAST_TYPE.ERROR);
             }
@@ -928,27 +563,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       }
 
-      postVersicherte() {
-        if (!this.mvdata || !this.mvdata.length) {
-          this.$.grtinfodialog.showDialog(
-            {
-              "title": "Keine Daten",
-              "message": "Es gibt keine Versichertendaten, die man speichern könnte."
-            })
-        } else {
-          let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
-
-          this.$.firstclient.postPaechterAsJSON(dataAndColumns).then(() => {
-            console.log('versicherte gespeichert')
-            showToast(this, 'Die Verischerten wurden erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
-          }).catch(() => {
-            showToast(this, 'Fehler beim Speichern der Versichertendaten', TOAST_TYPE.ERROR);
-          });
-        }
-      }
-
       _showExportDialog() {
-
         if (!this.mvdata || !this.mvdata.length) {
           this.$.grtinfodialog.showDialog(
             {
@@ -978,31 +593,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             showToast(this, "Die Daten der Versicheten werden unter " + savePath + " gespeichert.", TOAST_TYPE.WARN, 'topRight');
           }
         }).catch((err) => {
-          console.log('vers err' + err)
-          //debugger;
           showToast(this, 'Der Datenexport der Versicherten ist fehlgeschlagen', TOAST_TYPE.ERROR);
         });
       }
 
+      //versicherungsdata save
       _saveItemData(e) {
-        if (e && e.target && e.target.id) {
+
+        if (e && e.target && e.target.id && !e.target.disabled) {
+          debugger;
           let idx = parseInt(e.target.id.substring(3)) + (parseInt(this._pageStart) || 0);
           this.set('dosave', idx);
         }
         e.stopPropagation();
-      }
-
-      _insertChangedVersicherter(e) {
-
-        this.splice('mvdata', e.detail.index, 1, e.detail.data)
-        // self.set('originaldata', self.vc);
-        this.set('dosave', null);
-        this.changePage();
-      }
-
-      _insertNewVersicherter(e) {
-        let self = this;
-        self.splice('mvdata', self._pageStart, 0, e.detail);
       }
 
       _postOnePaechter(e) {
@@ -1027,20 +630,100 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       }
 
-      getGridElementID(index, _pageStart, prefix) {
-        let realIndex = (parseInt(index) + parseInt(_pageStart));
-        return prefix + realIndex;
+      _insertChangedVersicherter(e) {
+        this.splice('mvdata', e.detail.index, 1, e.detail.data)
+        // self.set('originaldata', self.vc);
+        this.set('dosave', null);
+        this.changePage();
+      }
+
+      _insertNewVersicherter(e) {
+        let self = this;
+        self.splice('mvdata', self._pageStart, 0, e.detail);
+      }
+
+
+      // check-box and apps
+      _isItemSelected(_pageStart, index) {
+        let path = 'mvdata.' + (_pageStart + index) + '.selected';
+        return this.get(path);
+      }
+
+      _noOneSelected() {
+        return !this.mvdata.some((data) => data.selected);
+      }
+
+      _areAllSelected() {
+        return !this.mvdata.some((data) => !data.selected);
+      }
+
+      _checkAll(e) {
+        if (e.currentTarget.checked) {
+          this.mvdata.forEach((mv, idx) => {
+            let path = 'mvdata.' + idx + '.selected'
+            this.set(path, true)
+          })
+        } else {
+          this.mvdata.forEach((mv, idx) => {
+            let path = 'mvdata.' + idx + '.selected'
+            this.set(path, false)
+          })
+        }
+      }
+
+      getSelected() {
+        let thetasks = this.mvdata.filter((el) => el.selected === true);
+        return thetasks;
+      }
+
+      _checkOne(e) {
+        let realIndex = e.target.id.substring(3);
+        if (e.currentTarget.checked) {
+          let path = 'mvdata.' + realIndex + '.selected'
+          this.set(path, true)
+        } else {
+          let path = 'mvdata.' + realIndex + '.selected'
+          this.set(path, false)
+        }
       }
 
       _showApps(e) {
         this.$.appsdialog.showDialog()
-
-        
         // iziToast.show({
         //   position: "center",
         //   title: 'Hey',
         //   message: 'What would you like to add?',
         // })
+      }
+
+      getGridElementID(index, _pageStart, prefix) {
+        let realIndex = (parseInt(index) + parseInt(_pageStart));
+        return prefix + realIndex;
+      }
+
+      //css and dynamic elements
+      isSaveDisabled() {
+        if ((this.openeddetails && this.openeddetails.length) || !this.mvdata || !this.mvdata.length) {
+          return true;
+        } else return false;
+      }
+
+      isExportDisabled() {
+        if ((this.openeddetails && this.openeddetails.length) || !this.mvdata || !this.mvdata.length) {
+          return true;
+        } else return false;
+      }
+
+      getClassByBeitrag(beitrag) {
+        if (!beitrag || beitrag.length === 0) {
+          return ".redc";
+        } else return ".redc";
+      }
+
+      getIcon(detailsOpened) {
+        if (detailsOpened) {
+          return 'close';
+        } else return 'create';
       }
     }
 

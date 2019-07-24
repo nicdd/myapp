@@ -65,7 +65,7 @@ Pagination Element for Vaadin-Grid Tables
                         <template is="dom-repeat" items="[[splittedActionButtons]]" as="arow">
                             <div class="layout horizontal center">
                                 <template is="dom-repeat" items="[[arow]]">
-                                    <div  inner-h-t-m-l="[[getHtmlElementFor(item, atest, tasks.*)]]"></div>
+                                    <div  inner-h-t-m-l="[[getHtmlElementFor(item, tasks.*)]]"></div>
                                 </template>
                             </div>
                         </template>
@@ -88,7 +88,7 @@ Pagination Element for Vaadin-Grid Tables
                     },
                     splittedActionButtons: {
                         type: Array,
-                        value: [],
+                        value: [[]],
                         notify: true
                     },
                     tasks: {
@@ -106,13 +106,8 @@ Pagination Element for Vaadin-Grid Tables
                 this.$.pdialog.opened = false;
             }
 
-            _doAdd(e) {
 
-
-                this._closeDialog();
-            }
-
-            getHtmlElementFor(item, atest, tasks) {
+            getHtmlElementFor(item, tasks) {
                 return "<" + item + "-action id='" + item + "' tasks='" + JSON.stringify(this.tasks) + "'>" + "</" + item + "-action>";
             }
 
@@ -120,11 +115,11 @@ Pagination Element for Vaadin-Grid Tables
                 this.actionButtons.forEach((a, index) => {
                     let splitIndex = index % 3;
                     let arrayIndex = parseInt(index / 3);
-                    let path = 'splittedActionButtons.' + arrayIndex;
+                    let path = 'splittedActionButtons.' + arrayIndex + '.' + splitIndex;
                     if (!Array.isArray(this.get('splittedActionButtons.' + arrayIndex))) {
                         this.push('splittedActionButtons', []);
                     }
-                    this.push(path, a);
+                    this.set(path, a);
                 })
             }
 

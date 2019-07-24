@@ -15,10 +15,17 @@
 
       .mcard {
         margin: 0px;
-        padding: 0px;
+        padding: 10px;
         border-radius: 5px;
         background-color: #fff;
         box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+      }
+
+      /**
+      * Div Elemente mit der Klasse ".collapse-content" haben margin right -12 - Ohne das führt zur Überlappung des Inhalts
+      */
+      .corrected-margin {
+        margin-right: 0px !important;
       }
 
       .cardcontent {
@@ -58,6 +65,10 @@
 
         line-height: 27px;
 
+      }
+
+      .action-button:hover:enabled {
+        cursor: pointer;
       }
 
       .pagebutton {
@@ -278,6 +289,10 @@
       .state.inprogress {
         color: var(--app-warning-color);
         --paper-item-body-secondary-color: var(--app-warning-color);
+      }
+
+      .strong-text-color {
+        color: var(--app-primary-text-color);
       }
       
     </style>

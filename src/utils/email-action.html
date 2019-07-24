@@ -17,14 +17,16 @@
             .actions {
                 --iron-icon-width: 48px;
                 --iron-icon-height: 48px;
-                --iron-icon-fill-color : var(--second-domain-primary-color); 
+                --iron-icon-fill-color: var(--second-domain-primary-color);
                 --iron-icon-stroke-color: var(--app-error-color);
             }
-
-            
         </style>
 
-        <button id="email_btn_icn" title="E-Mail an die selektierten Pächter senden">
+        <template is="dom-if" if="[[_empfaengern.length]]">
+            <a id="maillink" href="mailto:?bcc=[[_empfaengern]]"></a>
+        </template>
+
+        <button id="email_btn_icn" title="E-Mail an die selektierten Pächter senden" on-click="_setEmpfaengern" class="action-button">
             <div class="layout vertical actions">
                 <iron-icon id="email_icn" icon="mail" slot="item-icon"></iron-icon>
                 <label>E-Mail</label>
@@ -42,7 +44,36 @@
                     tasks: {
                         type: Array,
                         value: null
+                    },
+
+                    _empfaengern: {
+                        type: String,
+                        notify: true
                     }
+                }
+            }
+
+            async _setEmpfaengern() {
+                let empfaengern = "";
+                empfaengern = "auskommentiert sicherheitshalber"
+                // if (this.tasks && this.tasks.length) {
+                //     const expression = /\S+@\S+/;
+                //     this.tasks.forEach((task, idx) => {
+                //         let valideEmail = false;
+                //         if (expression.test(String(task.EMAIL).toLowerCase())) {
+                //             empfaengern += String(task.EMAIL).toLowerCase();
+                //             valideEmail = true;
+                //         }
+                //         if (valideEmail && (idx < (this.tasks.length - 1))) {
+                //             empfaengern += ","
+                //         }
+                //     })
+                // }
+                await this.set('_empfaengern', empfaengern);
+                let mailelement = this.shadowRoot.querySelector('#maillink')
+                if (mailelement) {
+                    await mailelement.click();
+                    this.set('_empfaengern', null)
                 }
             }
 
