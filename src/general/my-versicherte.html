@@ -47,19 +47,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/paper-progress-button/paper-progress-button.html">
-<link rel="import" href="../../bower_components/vaadin-grid/theme/material/all-imports.html">
 <link rel="import" href="../../bower_components/iron-collapse-button/iron-collapse-button.html">
 <link rel="import" href="../../bower_components/iron-icons/editor-icons.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
-<link rel="import" href="../clients/firstclient.html">
-<link rel="import" href="../clients/basicclient.html">
 <link rel="import" href="../shared-styles.html">
 <link rel="import" href="../second-domain-styles.html">
 <link rel="import" href="../table-styles.html">
+<link rel="import" href="../clients/firstclient.html">
+<link rel="import" href="../clients/basicclient.html">
 
-<link rel="import" href="../utils/create-versicherter-antrag.html">
 <link rel="import" href="../general/my-versicherungrechner.html">
-
 <link rel="import" href="../utils/grt-grid-pagination.html">
 <link rel="import" href="../utils/export-chooser.html">
 <link rel="import" href="../utils/grt-dialog.html">
@@ -73,11 +70,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <style include="second-domain-styles table-styles">
       :host {
         /* Stretch this element to fill viewport */
-        height: 85vh;
+        /* height: 85vh; */
+        flex: 1;
 
         /* Make a flex column layout of children */
         display: flex;
         flex-direction: column;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
       }
 
       .toolbar {
@@ -137,7 +137,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       on-grtconfirm="_removeItem"></grt-dialog>
     <grt-dialog id="grtinfodialog" dialog-type="info"></grt-dialog>
     <export-chooser id="exportdialog" dialog-type="info" confirmation-name="Schließen"
-      on-export-versicherte="exportVersicherte"></export-chooser>
+      on-export-data="exportVersicherte"></export-chooser>
     <apps-dialog id="appsdialog" action-buttons="[[actionButtons]]" tasks="[[getSelected(mvdata.*)]]"></apps-dialog>
     <div>
       <div class="toolbar layout horizontal justified" flex>
@@ -215,19 +215,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                   <td>[[item.NACHNAME]]</td>
                   <td>[[item.VORNAME]]</td>
                   <template is="dom-if" if="[[!_externeVersicherung(item.versicherung.name)]]">
-                      <td class="rightalign">[[item.GBV]]</td>
-                      <td class="rightalign">[[item.FED]]</td>
-                      <td class="rightalign">[[item.HOEV]]</td>
-                      <td class="rightalign">[[item.A7_1]]</td>
-                      <td class="rightalign">[[item.A7_3]]</td>
-                      <td class="rightalign">[[item.A7_4]]</td>
-                      <td class="rightalign">[[item.UV]]</td>
-                      <td class="rightalign">[[item.BEITRAG]]</td>
+                    <td class="rightalign">[[item.GBV]]</td>
+                    <td class="rightalign">[[item.FED]]</td>
+                    <td class="rightalign">[[item.HOEV]]</td>
+                    <td class="rightalign">[[item.A7_1]]</td>
+                    <td class="rightalign">[[item.A7_3]]</td>
+                    <td class="rightalign">[[item.A7_4]]</td>
+                    <td class="rightalign">[[item.UV]]</td>
+                    <td class="rightalign">[[item.BEITRAG]]</td>
                   </template>
                   <template is="dom-if" if="[[_externeVersicherung(item.versicherung.name)]]">
-                      <th colspan="8" class="centered-cell">[[item.versicherung.name]]</th>
+                    <th colspan="8" class="centered-cell">[[item.versicherung.name]]</th>
                   </template>
-                  
+
                   <td>[[item.V_BEMERKUNG]]</td>
                   <td class="button">
                     <button id="bto[[item.GARTENNUMMER]]" on-click="_openDetails"
@@ -439,7 +439,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             value: null,
             notify: true
           },
-          dc : {
+          dc: {
             type: Boolean,
             value: null,
             notify: true
@@ -448,21 +448,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       }
 
-      _cleanKVDInfos(versicherter){
+      _cleanKVDInfos(versicherter) {
         const keysToReset = ["GBV", "FED", "HOEV", "A7_1", "A7_3", "A7_4", "UV", "BEITRAG"];
-        Object.keys(versicherter).forEach((vkey)=> {
-          if (keysToReset.some((elem) => elem === vkey)){
+        Object.keys(versicherter).forEach((vkey) => {
+          if (keysToReset.some((elem) => elem === vkey)) {
             versicherter[vkey] = null;
           }
         })
         return versicherter;
       }
 
-      _removeMetadata(versicherter){
+      _removeMetadata(versicherter) {
         let vToSave = JSON.parse(JSON.stringify(versicherter))
         const keysToReset = ["_detailsOpened"];
-        Object.keys(vToSave).forEach((vkey)=> {
-          if (keysToReset.some((elem) => elem === vkey)){
+        Object.keys(vToSave).forEach((vkey) => {
+          if (keysToReset.some((elem) => elem === vkey)) {
             delete vToSave[vkey];
           }
         })
@@ -470,7 +470,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       _doOnVersicherungNameChanged(e) {
-        
+
         if (e && e.target) {
           let realIdx = e.target.id.substring(8);
           let path = 'mvpagedata.' + realIdx + '.versicherung.name';
@@ -503,8 +503,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         return name === 'KVD';
       }
 
-      _externeVersicherung(name){
-        if(name && name !== 'KVD'){
+      _externeVersicherung(name) {
+        if (name && name !== 'KVD') {
           return true
         }
         return false;
@@ -610,7 +610,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.set('mvpagedata', newItems);
           this.set('openeddetails', [])
         }
-
       }
 
       splitToObjects(resp) {
@@ -693,15 +692,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         return newData;
       }
 
-      _setStatusForOneVersicherter(paechter){
+      _setStatusForOneVersicherter(paechter) {
         paechter['versicherung'] = (paechter['versicherung'] || { 'status': null })
-        if (!paechter.versicherung.name || !paechter.versicherung.bis || moment().isAfter(moment(paechter.versicherung.bis))){
+        if (!paechter.versicherung.name || !paechter.versicherung.bis || moment().isAfter(moment(paechter.versicherung.bis))) {
           paechter.versicherung['status'] = 'nichtversichert';
-        } else if (moment(paechter.versicherung.bis).diff(moment(), 'days') < 45){
+        } else if (moment(paechter.versicherung.bis).diff(moment(), 'days') < 45) {
           paechter.versicherung['status'] = 'gefaehrdet';
-        } else if (moment().isBefore(moment(paechter.versicherung.bis))){
+        } else if (moment().isBefore(moment(paechter.versicherung.bis))) {
           paechter.versicherung['status'] = 'versichert';
-        } 
+        }
         return paechter
       }
 
@@ -728,10 +727,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         if (e && e.target && e.target.id && !e.target.disabled) {
           let idxActiveTable = parseInt(e.target.id.substring(3));
           let idxOrigTable = idxActiveTable + (parseInt(this._pageStart) || 0);
-          
+
           if (this.mvpagedata[idxActiveTable].versicherung.name !== 'KVD') {
             let toSave = this._cleanKVDInfos(this.mvpagedata[idxActiveTable]);
-            let elike = { "type": "savedversicherter", "detail": { "data": toSave, "index" : idxOrigTable} }
+            let elike = { "type": "savedversicherter", "detail": { "data": toSave, "index": idxOrigTable } }
             this._postOnePaechter(elike)
           } else {
             this.set('dosave', idxOrigTable);
