@@ -113,7 +113,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         text-align: right !important;
       }
 
-      .cb-cell {
+      .centered-cell {
         text-align: center !important;
         vertical-align: middle !important;
       }
@@ -122,7 +122,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         background-color: #f5f5f5 !important;
       }
 
-      .abgelaufen {
+      .gefaehrdet {
         background-color: yellow !important;
       }
 
@@ -157,7 +157,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <div class="table-responsive-vertical shadow-z-1">
           <table id="table" class="table table-condensed table-hover">
             <thead>
-              <th class="cb-cell">
+              <th class="centered-cell">
                 <paper-checkbox on-change="_checkAll" checked="[[_areAllSelected(mvdata.*)]]"></paper-checkbox>
               </th>
               <th>
@@ -206,7 +206,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <tbody>
               <template is="dom-repeat" items="[[mvpagedata]]">
                 <tr class$="[[item.versicherung.status]]">
-                  <td class="cb-cell">
+                  <td class="centered-cell">
                     <paper-checkbox class="[[getClassByBeitrag(item.BEITRAG)]]"
                       id="[[getGridElementID(index, _pageStart, 'scb')]]" on-change="_checkOne"
                       checked="[[_isItemSelected(_pageStart, index, mvdata.*)]]"></paper-checkbox>
@@ -225,7 +225,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                       <td class="rightalign">[[item.BEITRAG]]</td>
                   </template>
                   <template is="dom-if" if="[[_externeVersicherung(item.versicherung.name)]]">
-                      <td colspan="8">[[item.versicherung.name]]</td>
+                      <th colspan="8" class="centered-cell">[[item.versicherung.name]]</th>
                   </template>
                   
                   <td>[[item.V_BEMERKUNG]]</td>
@@ -324,7 +324,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         class="detailelement light-element flex" opened>
                         <div slot="collapse-trigger" class="flex">
                           <div class="layout horizontal justified">
-                            <span>Versicherungsdaten dc[[dc]] n[[item.versicherung.name]] v[[item.versicherung.von]] b[[item.versicherung.bis]]</span>
+                            <span>Versicherungsdaten</span>
                             <button id="sbt[[index]]" on-click="_saveItemData"
                               disabled="[[_saveButtonDisabled(dc, item.versicherung.name, item.versicherung.von, item.versicherung.bis)]]">
                               <iron-icon icon="save" id="sic[[index]]" slot="item-icon"
@@ -470,7 +470,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       _doOnVersicherungNameChanged(e) {
-        debugger;
+        
         if (e && e.target) {
           let realIdx = e.target.id.substring(8);
           let path = 'mvpagedata.' + realIdx + '.versicherung.name';
@@ -607,7 +607,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         if (this._pageStart || this._pageStart === 0) {
           let end = parseInt(this._pageStart) + (parseInt(this.pageSize));
           let newItems = this.mvdata.slice(this._pageStart, end);
-          this.set('mvpagedata', newItems)
+          this.set('mvpagedata', newItems);
           this.set('openeddetails', [])
         }
 
@@ -695,18 +695,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _setStatusForOneVersicherter(paechter){
         paechter['versicherung'] = (paechter['versicherung'] || { 'status': null })
-          if (paechter.GBV && (parseInt(paechter.GBV) > 0)) {
-            if (!(paechter.versicherung.name === "KVD") || moment().isAfter(moment(paechter.versicherung.bis))) {
-              paechter.versicherung['status'] = 'abgelaufen';
-            } else {
-              paechter.versicherung['status'] = 'versichert';
-            }
-          } else if (!paechter.versicherung.name || moment().isAfter(moment(paechter.versicherung.bis))) {
-            paechter.versicherung['status'] = 'nichtversichert';
-          } else {
-            paechter.versicherung['status'] = 'versichert';
-          }
-
+        if (!paechter.versicherung.name || !paechter.versicherung.bis || moment().isAfter(moment(paechter.versicherung.bis))){
+          paechter.versicherung['status'] = 'nichtversichert';
+        } else if (moment(paechter.versicherung.bis).diff(moment(), 'days') < 45){
+          paechter.versicherung['status'] = 'gefaehrdet';
+        } else if (moment().isBefore(moment(paechter.versicherung.bis))){
+          paechter.versicherung['status'] = 'versichert';
+        } 
         return paechter
       }
 
@@ -731,16 +726,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _saveItemData(e) {
 
         if (e && e.target && e.target.id && !e.target.disabled) {
-
-          let idx = parseInt(e.target.id.substring(3)) + (parseInt(this._pageStart) || 0);
-          if (this.mvdata[idx].versicherung.name !== 'KVD') {
-            let toSave = this._cleanKVDInfos(this.mvdata[idx]);
-            debugger;
-            let elike = { "type": "savedversicherter", "detail": { "data": toSave, "index" : idx} }
+          let idxActiveTable = parseInt(e.target.id.substring(3));
+          let idxOrigTable = idxActiveTable + (parseInt(this._pageStart) || 0);
+          
+          if (this.mvpagedata[idxActiveTable].versicherung.name !== 'KVD') {
+            let toSave = this._cleanKVDInfos(this.mvpagedata[idxActiveTable]);
+            let elike = { "type": "savedversicherter", "detail": { "data": toSave, "index" : idxOrigTable} }
             this._postOnePaechter(elike)
           } else {
-            debugger;
-            this.set('dosave', idx);
+            this.set('dosave', idxOrigTable);
           }
         }
         e.stopPropagation();
@@ -775,6 +769,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         // self.set('originaldata', self.vc);
         this.set('dosave', null);
         this.changePage();
+        this.notifyPath('mvpagedata.' + (parseInt(e.detail.index) - (parseInt(this._pageStart) || 0)) + '.versicherung.status')
       }
 
       _insertNewVersicherter(e) {
