@@ -14,6 +14,8 @@
 <link rel="import" href="../utils/grt-dialog.html">
 <link rel="import" href="../utils/apps-dialog.html">
 <link rel="import" href="../utils/column-sorter.html">
+<link rel="import" href="../utils/grt-sand-clock.html">
+<link rel="import" href="../utils/grt-gartler.html">
 
 <dom-module id="my-paechter">
     <template>
@@ -77,6 +79,7 @@
         <export-chooser id="exportdialog" dialog-type="info" confirmation-name="Schließen"
             on-export-data="exportPaechter"></export-chooser>
         <apps-dialog id="appsdialog" action-buttons="[[actionButtons]]" tasks="[[getSelected(mvdata.*)]]"></apps-dialog>
+        <grt-sand-clock id="sandhour"></grt-sand-clock>
         <div>
             <div class="toolbar layout horizontal justified" flex>
                 <template is="dom-if" if="[[columnNames.length]]">
@@ -89,6 +92,8 @@
                         class="action-button">
                         <iron-icon icon="apps" id="appsicon" slot="item-icon" on-click="_showApps"></iron-icon>
                     </button>
+                    <paper-button disabled="[[isSaveAllDisabled(mvdata.*, openeddetails.*, _isAenderung)]]" bottom
+                        raised on-click="postPaechter">Speichern</paper-button>
                     <paper-button disabled="[[isExportDisabled(mvdata.*, openeddetails.*)]]" bottom raised
                         on-click="_showExportDialog">Exportieren</paper-button>
                 </div>
@@ -122,7 +127,7 @@
                                 </column-sorter>
                             </th>
                             <th>
-                                <column-sorter colname="[[columnNames.8]]" path="WEG" on-sorter-changed="_sortChange">
+                                <column-sorter colname="[[columnNames.8]]" path="WOHNORT" on-sorter-changed="_sortChange">
                                 </column-sorter>
                             </th>
                             <th>
@@ -167,7 +172,7 @@
                                     <td>[[item.ANREDE]]</td>
                                     <td>[[item.NACHNAME]]</td>
                                     <td>[[item.VORNAME]]</td>
-                                    <td>[[item.WEG]]</td>
+                                    <td>[[item.WOHNORT]]</td>
                                     <td class="rightalign">[[item.FLAECHE]]</td>
                                     <td class="rightalign">[[getAlterBy(item.GEBURTSDATUM)]]</td>
                                     <td class="rightalign">[[item.GEBURTSDATUM]]</td>
@@ -197,7 +202,7 @@
                                                 collapse-icon="remove-circle-outline"
                                                 class="detailelement light-element flex" opened>
                                                 <div slot="collapse-trigger" class="flex">
-                                                    <span>Daten des Pächters</span>
+                                                    <span>Pachtvertragsdaten</span>
                                                 </div>
                                                 <div slot="collapse-content" class="corrected-margin">
                                                     <div class="mcard strong-text-color">
@@ -212,7 +217,7 @@
                                                                         <td>[[item.GARTENNUMMER]]</td>
                                                                     </tr>
                                                                     <tr>
-                                                                        <td>[[columnNames.8]]</td>
+                                                                        <td>[[columnNames.22]]</td>
                                                                         <td>[[item.WEG]]</td>
                                                                     </tr>
                                                                     <tr>
@@ -232,11 +237,11 @@
                                                                             [[item.NACHNAME]]</td>
                                                                     </tr>
                                                                     <tr>
-                                                                        <td>[[columnNames.4]]</td>
+                                                                        <td>[[columnNames.5]]</td>
                                                                         <td>[[item.STRASSE]]</td>
                                                                     </tr>
                                                                     <tr>
-                                                                        <td>[[columnNames.6]]</td>
+                                                                        <td>[[columnNames.8]]</td>
                                                                         <td>[[item.PLZ]] [[item.WOHNORT]]</td>
                                                                     </tr>
                                                                 </tbody>
@@ -247,7 +252,7 @@
                                                                 </thead>
                                                                 <tbody>
                                                                     <tr>
-                                                                        <td>[[columnNames.7]]</td>
+                                                                        <td>[[columnNames.10]]</td>
                                                                         <td><a
                                                                                 href="tel:[[item.TELEFON]]">[[item.TELEFON]]</a>
                                                                         </td>
@@ -266,7 +271,7 @@
                                                                 </thead>
                                                                 <tbody>
                                                                     <tr>
-                                                                        <td>[[columnNames.10]]</td>
+                                                                        <td>[[columnNames.4]]</td>
                                                                         <td>[[item.GEBURTSDATUM]]</td>
                                                                     </tr>
                                                                 </tbody>
@@ -284,17 +289,19 @@
                                                 class="detailelement light-element flex" opened>
                                                 <div slot="collapse-trigger" class="flex">
                                                     <div class="layout horizontal justified">
-                                                        <span>Zusatzdaten</span>
+                                                        <span>Datenbearbeitung</span>
                                                         <button id="sbt[[index]]" on-click="_saveItemData"
-                                                            disabled="[[_saveButtonDisabled(dc)]]">
+                                                            disabled="[[_saveOneButtonDisabled(dc)]]">
                                                             <iron-icon icon="save" id="sic[[index]]" slot="item-icon"
-                                                                disabled="[[_saveButtonDisabled(dc)]]"
+                                                                disabled="[[_saveOneButtonDisabled(dc)]]"
                                                                 on-click="_saveItemData"></iron-icon>
                                                         </button>
                                                     </div>
                                                 </div>
                                                 <div slot="collapse-content" class="corrected-margin">
                                                     <div class="mcard strong-text-color">
+                                                        <grt-gartler id="grtl-[[index]]" gartler="{{item}}" >
+                                                        <h4 slot="title">Pächter</h4>></grt-gartler>
 
                                                     </div>
                                                 </div>
@@ -387,6 +394,10 @@
                         type: Boolean,
                         value: null,
                         notify: true
+                    },
+
+                    _isAenderung: {
+                        type: Boolean
                     }
                 }
             }
@@ -413,7 +424,7 @@
                 return vToSave;
             }
 
-            _saveButtonDisabled(dc) {
+            _saveOneButtonDisabled(dc) {
                 return !dc;
             }
 
@@ -706,7 +717,7 @@
 
             }
 
-            postPaecheter() {
+            postPaechter() {
                 if (!this.mvdata || !this.mvdata.length) {
                     this.$.grtinfodialog.showDialog(
                         {
@@ -716,13 +727,16 @@
 
                 } else {
                     let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
-
-                    this.$.firstclient.postPaecheterAsJSON(dataAndColumns).then(() => {
+                    this.$.sandhour.showDialog();
+                    this.$.firstclient.postPaechterAsJSON(dataAndColumns).then(() => {
                         console.log('paechter gespeichert')
                         showToast(this, 'Die Paechter wurden erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
                     }).catch(() => {
                         showToast(this, 'Fehler beim Speichern der Paecheterndaten', TOAST_TYPE.ERROR);
-                    });
+                    }).finally(()=>{
+                        this.$.sandhour._closeDialog();
+                    })
+                    
                 }
             }
 
@@ -785,10 +799,11 @@
             }
 
             //css and dynamic elements
-            isSaveDisabled() {
-                if ((this.openeddetails && this.openeddetails.length) || !this.mvdata || !this.mvdata.length) {
+            isSaveAllDisabled() {
+                if (!this._isAenderung || (this.openeddetails && this.openeddetails.length) || !this.mvdata || !this.mvdata.length) {
                     return true;
-                } else return false;
+                } else 
+                return false;
             }
 
             isExportDisabled() {

@@ -4,6 +4,7 @@ Pagination Element for Vaadin-Grid Tables
 
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
 <link rel="import" href="../shared-styles.html">
 
 <dom-module id="grt-gartler">
@@ -37,29 +38,78 @@ Pagination Element for Vaadin-Grid Tables
                 justify-content: space-between;
             }
         </style>
-
-        <div class="mcard layout vertical justified">
-
-            <p class="cardtitle">
-                <slot name="title"></slot>
-            </p>
-            <div class="cardcontent">
-                <div class="flex-container ">
-                    <paper-input class="labelgroup" always-float-label label="Gartennummer" value="{{gnr::input}}"></paper-input>
-                    <paper-input class="labelgroup" always-float-label label="Vorname" value="{{vorname::input}}"></paper-input>
-                    <paper-input class="labelgroup" always-float-label label="Name" value="{{name::input}}"></paper-input>
-                </div>
-                <div class="layout vertical justified">
-                    <div class="flex-container ">
-                        <paper-input class="labelgroup" always-float-label label="Strasse" value="{{strasse}}"></paper-input>
-                        <paper-input class="labelgroup" always-float-label label="Hausnummer" value="{{hausnr}}"></paper-input>
-                    </div>
-                    <div class="flex-container ">
-                        <paper-input class="labelgroup" always-float-label label="PLZ" value="{{plz}}"></paper-input>
-                        <paper-input class="labelgroup" always-float-label label="Ort" value="{{ort}}"></paper-input>
+        <div class="mcard layout vertical"></div>
+        <div class="flex-container ">
+            <div class="mcard layout vertical">
+                <p class="cardtitle">
+                    Gartendaten
+                </p>
+                <div class="cardcontent">
+                    <div class="layout vertical">
+                        <paper-input class="labelgroup" always-float-label label="Gartennummer" disabled
+                            value="[[gartler.GARTENNUMMER]]"></paper-input>
+                        <paper-input class="labelgroup" always-float-label label="Weg" value="{{gartler.WEG::input}}">
+                        </paper-input>
+                        <paper-input class="labelgroup" always-float-label label="Fläche"
+                            value="{{gartler.FLAECHE::input}}"></paper-input>
                     </div>
                 </div>
             </div>
+            <div class="mcard layout vertical justified">
+                <p class="cardtitle">
+                    Pächterdaten
+                </p>
+                <div class="cardcontent">
+                    <div class="layout vertical">
+                        <div class="flex-container ">
+                            <paper-input class="labelgroup" always-float-label label="Geburtsdatum"
+                                value="{{gartler.GEBURTSDATUM::input}}"></paper-input>
+                            <paper-input class="labelgroup" always-float-label label="Anrede"
+                                value="{{gartler.ANREDE::input}}"></paper-input>
+                        </div>
+                        <div class="flex-container ">
+                            <paper-input class="labelgroup" always-float-label label="Vorname"
+                                value="{{gartler.VORNAME::input}}"></paper-input>
+                            <paper-input class="labelgroup" always-float-label label="Name"
+                                value="{{gartler.NACHNAME::input}}"></paper-input>
+                        </div>
+                        <div class="flex-container ">
+                            <paper-input class="labelgroup" always-float-label label="Strasse"
+                                value="{{gartler.STRASSE}}"></paper-input>
+                            <paper-input class="labelgroup" always-float-label label="Hausnummer"
+                                value="{{gartler.HAUSNUMMER}}"></paper-input>
+                        </div>
+                        <div class="flex-container ">
+                            <paper-input class="labelgroup" always-float-label label="PLZ" value="{{gartler.PLZ}}">
+                            </paper-input>
+                            <paper-input class="labelgroup" always-float-label label="Ort" value="{{gartler.WOHNORT}}">
+                            </paper-input>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mcard layout vertical">
+                <p class="cardtitle">
+                    Kontaktdaten
+                </p>
+                <div class="cardcontent">
+                    <div class="layout vertical">
+                        <paper-input class="labelgroup" always-float-label label="Telefon"
+                            value="{{gartler.TELEFON::input}}"></paper-input>
+                        <paper-input class="labelgroup" always-float-label label="E-Mail"
+                            value="{{gartler.EMAIL::input}}"></paper-input>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="mcard">
+            <p class="cardtitle">
+                Bemerkungen
+            </p>
+            <div class="cardcontent">
+                <paper-textarea label="Textarea label" value="{{gartler.BEMERKUNGEN::input}}"></paper-textarea>
+            </div>
+        </div>
         </div>
 
     </template>
@@ -70,48 +120,8 @@ Pagination Element for Vaadin-Grid Tables
 
             static get properties() {
                 return {
-
-                    gnr: {
-                        type: String,
-                        value: null,
-                        notify: true
-                    },
-
-                    name: {
-                        type: String,
-                        value: null,
-                        notify: true
-                    },
-
-                    vorname: {
-                        type: String,
-                        value: null,
-                        notify: true
-                        
-                    },
-
-                    strasse: {
-                        type: String,
-                        value: null,
-                        notify: true
-                    },
-
-                    hausnr: {
-                        type: String,
-                        value: null,
-                        notify: true
-                    },
-
-                    plz: {
-                        type: String,
-                        value: null,
-                        notify: true
-                    },
-
-                    ort: {
-                        type: String,
-                        value: null,
-                        notify: true
+                    gartler: {
+                        type: Object
                     }
 
                 }
