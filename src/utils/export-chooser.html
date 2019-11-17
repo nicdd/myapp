@@ -180,7 +180,7 @@ Pagination Element for Vaadin-Grid Tables
 
             _saveEvent(e) {
                 let exportType = e.currentTarget.getAttribute('name');
-                this.dispatchEvent(new CustomEvent('export-versicherte', { detail: exportType }));
+                this.dispatchEvent(new CustomEvent('export-data', { detail: exportType }));
             }
 
             getCancelName(cancelName) {

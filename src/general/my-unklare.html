@@ -120,7 +120,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       on-grtconfirm="_removeItem"></grt-dialog>
     <grt-dialog id="grtinfodialog" dialog-type="info"></grt-dialog>
     <export-chooser id="exportdialog" dialog-type="info" confirmation-name="Schließen"
-      on-export-versicherte="exportUnklareFaelle"></export-chooser>
+      on-export-data="exportUnklareFaelle"></export-chooser>
     <apps-dialog id="appsdialog" action-buttons="[[actionButtons]]" tasks="[[getSelected(mvdata.*)]]"></apps-dialog>
     <div>
       <div class="toolbar layout horizontal justified" flex>
@@ -157,32 +157,32 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 </column-sorter>
               </th>
               <th>
-                <column-sorter colname="[[columnNames.14]]" path="GBV" on-sorter-changed="_sortChange"></column-sorter>
+                <column-sorter colname="[[columnNames.13]]" path="GBV" on-sorter-changed="_sortChange"></column-sorter>
               </th>
               <th>
-                <column-sorter colname="[[columnNames.15]]" path="FED" on-sorter-changed="_sortChange"></column-sorter>
+                <column-sorter colname="[[columnNames.14]]" path="FED" on-sorter-changed="_sortChange"></column-sorter>
               </th>
               <th>
-                <column-sorter colname="[[columnNames.16]]" path="HOEV" on-sorter-changed="_sortChange"></column-sorter>
+                <column-sorter colname="[[columnNames.15]]" path="HOEV" on-sorter-changed="_sortChange"></column-sorter>
               </th>
               <th>
-                <column-sorter colname="[[columnNames.17]]" path="A7_1" on-sorter-changed="_sortChange"></column-sorter>
+                <column-sorter colname="[[columnNames.16]]" path="A7_1" on-sorter-changed="_sortChange"></column-sorter>
               </th>
               <th>
-                <column-sorter colname="[[columnNames.18]]" path="A7_3" on-sorter-changed="_sortChange"></column-sorter>
+                <column-sorter colname="[[columnNames.17]]" path="A7_3" on-sorter-changed="_sortChange"></column-sorter>
               </th>
               <th>
-                <column-sorter colname="[[columnNames.19]]" path="A7_4" on-sorter-changed="_sortChange"></column-sorter>
+                <column-sorter colname="[[columnNames.18]]" path="A7_4" on-sorter-changed="_sortChange"></column-sorter>
               </th>
               <th>
-                <column-sorter colname="[[columnNames.20]]" path="UV" on-sorter-changed="_sortChange"></column-sorter>
+                <column-sorter colname="[[columnNames.19]]" path="UV" on-sorter-changed="_sortChange"></column-sorter>
               </th>
               <th>
-                <column-sorter colname="[[columnNames.21]]" path="BEITRAG" on-sorter-changed="_sortChange">
+                <column-sorter colname="[[columnNames.20]]" path="BEITRAG" on-sorter-changed="_sortChange">
                 </column-sorter>
               </th>
               <th>
-                <column-sorter colname="[[columnNames.13]]" path="V_BEMERKUNG" on-sorter-changed="_sortChange">
+                <column-sorter colname="[[columnNames.21]]" path="V_BEMERKUNG" on-sorter-changed="_sortChange">
                 </column-sorter>
               </th>
               <th class="button"></th>
@@ -576,6 +576,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       splitToObjects(resp) {
         let unklareData = resp.data;
         let columns = resp.columns;
+        console.warn('colnames unklare:' + JSON.stringify(resp.columns))
         let promises = [];
         unklareData.forEach((unklarer) => {
           let getpaechterforunklarer = this.getPaechterBy(unklarer.GARTENNUMMER).then((ent) => {

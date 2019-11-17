@@ -379,6 +379,37 @@
 
             }
 
+            deleteOnePaechter(gartennummer) {
+                let self = this;
+                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.JSON_PAECHTER.path, this.URLS.JSON_PAECHTER.port);
+                let myHeaders = new Headers();
+
+                let myInit = {
+                    method: 'DELETE',
+                    headers: myHeaders,
+                    mode: 'cors',
+                    cache: 'default',
+                    credentials: 'omit'
+                };
+
+                let myRequest = new Request(sourceURL + '/' + gartennummer, myInit);
+
+                return fetch(myRequest).then((response) => {
+                    if (response.status && response.status === 204) {
+                        console.log("deleteOnePaechter as JSON status 204")
+                        return undefined;
+                    } else {
+                        return response.json();
+                    }
+                }).then((data) => {
+                    console.log('firstclient delete paechter as json wird gesetzt auf' + JSON.stringify(data))
+                    return Promise.resolve(data);
+                }).catch((err) => {
+                    console.log('deleteOne Paechter - die Anfrage an api/paechter war nicht erfolgreich' + JSON.stringify(error))
+                });
+
+            }
+
             deleteOneVersicherter(gartennummer) {
                 let self = this;
                 let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.JSON_VERSICHERTE.path, this.URLS.JSON_VERSICHERTE.port);

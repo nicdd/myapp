@@ -1,85 +1,36 @@
-<!--
-Die Versicherten-Seite
-Auf dieser Seite werden nur die Pächter dargestellt die eine Versicherung abgeschlossen haben.
-Diese kann beim KVD oder bei einer externen Versicherungsgesellschaft abgeschlossen sein.
-Ein bisher Versicherter der nicht mehr bezahlt hat, wird zuerst telefonisch, per E-Mail oder per Brief erinnert.
-
-Wenn für diesen Pächter keine Zahlung und keinen Versicherungsnachweis erfasst wurden, OBWOHL für ihn die Erinnerungsversuche
-unternommen wurden, wird dieser:
-
-  - authomatisch vom System nach 14 Tagen nach dem Erinnerungskontakt; 
-  - manuell durch den Versicherungsbeauftragten;
-
-in die Liste der "nicht versicherten" verschoben. Die Verschiebung in die Liste der anzumahnenden Pächter setzt
-zwingend voraus, dass der Versicherungsbeauftragter die Erinnerungsversuche unternommen und protokolliert hat.
-
-Für die nicht - versicherten Pächter wird eine Benachrichtigungs-EMail an den Verein samt einem 
-an der E-Mail angehängten Mahnungs-Anschreiben verschickt. Die E-Mail an den Verein enthält zwingend
-die Informationen über die nicht erfolgreichen Versuche, ihn zur Zahlung zu bewegen.
-Der 14-Tage Frist kann vom Versicherungsbeauftragten auf maximal 1 Monat verlängert werden.
-
-***********************************************
-Entstehung und Änderungen der Versichertenliste
-***********************************************
-Die Versichertenliste entsteht initial durch das Importieren der Versichertenbestand aus der CSV-Datei vom KVD.
-Weiterhin, kann der Benutzer, manuell durch die Bearbeitung der "nicht verischerten" Liste, einzelne "nicht Verischerte"
-in die Versichertenliste verschieben. Dabei musste er die Informationen über den letzten gültigen Zahlungseing erfasst haben
-(eingezahlten Zahlungsbetrag, Datum, Vericherungsoptionen(FED usw)).
-
-Man kann Einträge aus dieser Liste in die Nicht-Versicherten-Liste verschieben oder ganz Löschen.
-Eine Löschung aus der Versichertenliste führt nicht zu einer tatsächlichen Löschung, sondern in die Verschiebung der 
-Daten in einer Versicherten-Passivliste, denn es könnte durchaus sein, dass man uach nach einer Kündigung die 
-Daten über die Versicherung noch braucht. Die Einträge in der Passivliste werden vom System nach 2 Jahren aus der Liste entfernt.
-Ab diesem Zeitpunkt kennt das System keine Informationen mehr über die versicherte Person.
-
-
--->
-
-<!--
-@license
-Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
-
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/paper-progress-button/paper-progress-button.html">
-<!-- <link rel="import" href="../../bower_components/papa-parse/papa-parse.html">
-<link rel="import" href="../../bower_components/papa-parse/papa-unparse.html"> -->
-
-
-<link rel="import" href="../../bower_components/vaadin-grid/theme/material/all-imports.html">
-<link rel="import" href="../clients/firstclient.html">
+<link rel="import" href="../../bower_components/iron-collapse-button/iron-collapse-button.html">
+<link rel="import" href="../../bower_components/iron-icons/editor-icons.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../shared-styles.html">
 <link rel="import" href="../first-domain-styles.html">
+<link rel="import" href="../table-styles.html">
+<link rel="import" href="../clients/firstclient.html">
+<link rel="import" href="../clients/basicclient.html">
+
 <link rel="import" href="../utils/grt-grid-pagination.html">
-<!-- <link rel="import" href="../utils/member-select-dialog.html"> -->
 <link rel="import" href="../utils/export-chooser.html">
 <link rel="import" href="../utils/grt-dialog.html">
-
+<link rel="import" href="../utils/apps-dialog.html">
+<link rel="import" href="../utils/column-sorter.html">
+<link rel="import" href="../utils/grt-sand-clock.html">
+<link rel="import" href="../utils/grt-gartler.html">
 
 <dom-module id="my-paechter">
     <template>
-        <style include="first-domain-styles">
+        <style include="first-domain-styles table-styles">
             :host {
                 /* Stretch this element to fill viewport */
-                height: 85vh;
+                /* height: 85vh; */
+                flex: 1;
 
                 /* Make a flex column layout of children */
                 display: flex;
                 flex-direction: column;
+                overflow: auto;
+                -webkit-overflow-scrolling: touch;
             }
-
-            /* iron-pages { */
-            /* Stretch this element in the parent flex */
-            /* flex: 1;  */
-
-            /* Make a flex column layout of children */
-            /* display: flex;
-          flex-direction: column;
-        } */
 
             .toolbar {
                 /* height: 40px; */
@@ -88,219 +39,282 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 background: #eee;
             }
 
-            .page {
-                /* Stretch this element in the parent flex */
-                flex: 1;
-
-                /* Make a flex column layout of children */
-                display: flex;
-                flex-direction: column;
-
-                /*
-            Let the page contents scroll. Unnecessary for <vaadin-grid>,
-            but could be useful for other pages.
-          */
-                overflow: auto;
-                -webkit-overflow-scrolling: touch;
+            iron-collapse-button {
+                cursor: cursor;
+                padding-right: 12px;
             }
 
-            /* .content {
-          padding: 8px;
-        } */
-
-            vaadin-grid {
-                /* Stretch this element in the parent flex */
-                flex: 1;
+            iron-collapse-button div[slot="collapse-trigger"] {
+                height: 48px;
+                line-height: 48px;
             }
 
-            .btn {
-
-                border: none;
-                /* Remove borders */
-
-
-                border-radius: 10%;
-                cursor: pointer;
-                /* Mouse pointer on hover */
+            iron-collapse-button div[slot="collapse-content"] {
+                margin-right: -12px;
             }
 
-
-
-            .demo {
-                --paper-progress-active-color: #1875d1;
-                --paper-progress-container-icolor: #00000000;
-
-                --paper-button-mixin: {
-                    padding: 0.2em 0.5em 0.2em 0.5em !important;
-                    background-color: #1976d2;
-                    color: white;
-                }
-
-                --paper-button-disabled-mixin: {
-                    background: #efefef;
-                    color: black;
-                }
+            paper-button {
+                padding: 0.2em 0.5em 0.2em 0.5em !important;
             }
 
-            .vaadin-demo-input[readonly] {
-                border: 2px solid transparent;
-                pointer-events: none;
+            .button {
+                padding: 0px 2px 0px 2px !important;
             }
 
-            input[vaadin-demo-input] {
-                max-width: 10px !important;
+            .rightalign {
+                text-align: right !important;
             }
 
-            .vaadin-demo-input {
-                font: inherit;
-                width: 100%;
-                max-width: 50%;
+            .centered-cell {
+                text-align: center !important;
+                vertical-align: middle !important;
             }
-
-
-            /* .header {
-          max-height: 5px !important;
-        } */
         </style>
 
         <first-client id="firstclient"></first-client>
-        <!-- <member-select-dialog id="adddialog" cancel-name="Abbrechen" confirmation-name="Hinzufügen"></member-select-dialog> -->
+        <basic-client id="bclient"></basic-client>
+        <grt-dialog id="deletedialog" dialog-type="confirmation" confirmation-name="Löschen" cancel-name="Abbrechen"
+            on-grtconfirm="_removeItem"></grt-dialog>
         <grt-dialog id="grtinfodialog" dialog-type="info"></grt-dialog>
-        <export-chooser id="exportdialog" dialog-type="info" confirmation-name="Schließen" on-export-paechter="exportPaechter"></export-chooser>
+        <export-chooser id="exportdialog" dialog-type="info" confirmation-name="Schließen"
+            on-export-data="exportPaechter"></export-chooser>
+        <apps-dialog id="appsdialog" action-buttons="[[actionButtons]]" tasks="[[getSelected(mvdata.*)]]"></apps-dialog>
+        <grt-sand-clock id="sandhour"></grt-sand-clock>
+        <div>
+            <div class="toolbar layout horizontal justified" flex>
+                <template is="dom-if" if="[[columnNames.length]]">
+                    <grt-grid-pagination id="pagesss" datalength="[[mvdata.length]]" page-size="{{pageSize}}"
+                        pstart="{{_pageStart}}" on-pagechanged="changePage" style-domain="first-domain">
+                    </grt-grid-pagination>
+                </template>
+                <div class="layout horizontal justified" flex="50">
+                    <button id="appsbutton" on-click="_showApps" disabled="[[_noOneSelected(mvdata.*)]]"
+                        class="action-button">
+                        <iron-icon icon="apps" id="appsicon" slot="item-icon" on-click="_showApps"></iron-icon>
+                    </button>
+                    <paper-button disabled="[[isSaveAllDisabled(mvdata.*, openeddetails.*, _isAenderung)]]" bottom
+                        raised on-click="postPaechter">Speichern</paper-button>
+                    <paper-button disabled="[[isExportDisabled(mvdata.*, openeddetails.*)]]" bottom raised
+                        on-click="_showExportDialog">Exportieren</paper-button>
+                </div>
+            </div>
+            <div class="demo">
+                <div class="table-responsive-vertical shadow-z-1">
+                    <table id="table" class="table table-condensed table-hover">
+                        <thead>
+                            <th class="centered-cell">
+                                <paper-checkbox on-change="_checkAll" checked="[[_areAllSelected(mvdata.*)]]">
+                                </paper-checkbox>
+                            </th>
+                            <th>
+                                <column-sorter colname="[[columnNames.0]]" path="GARTENNUMMER"
+                                    on-sorter-changed="_sortChange">
+                                </column-sorter>
+                            </th>
+                            <th>
+                                <column-sorter colname="[[columnNames.1]]" path="ANREDE"
+                                    on-sorter-changed="_sortChange">
+                                </column-sorter>
+                            </th>
+                            <th>
+                                <column-sorter colname="[[columnNames.2]]" path="NACHNAME"
+                                    on-sorter-changed="_sortChange">
+                                </column-sorter>
+                            </th>
+                            <th>
+                                <column-sorter colname="[[columnNames.3]]" path="VORNAME"
+                                    on-sorter-changed="_sortChange">
+                                </column-sorter>
+                            </th>
+                            <th>
+                                <column-sorter colname="[[columnNames.8]]" path="WOHNORT" on-sorter-changed="_sortChange">
+                                </column-sorter>
+                            </th>
+                            <th>
+                                <column-sorter colname="[[columnNames.9]]" path="FLAECHE"
+                                    on-sorter-changed="_sortChange">
+                                </column-sorter>
+                            </th>
+                            <th>
+                                <column-sorter colname="Alter" path="GEBURTSDATUM"
+                                    on-sorter-changed="_sortByGeburtsdatum">
+                                </column-sorter>
+                            </th>
+                            <th>
+                                <column-sorter colname="Geb." path="GEBURTSDATUM"
+                                    on-sorter-changed="_sortByGeburtsdatum">
+                                </column-sorter>
+                            </th>
+                            <th>
+                                <column-sorter colname="Jubiläum" path="GEBURTSDATUM"
+                                    on-sorter-changed="_sortByJubilaeum">
+                                </column-sorter>
+                            </th>
 
-        <div class="toolbar layout horizontal justified" flex>
-            <template is="dom-if" if="[[columnNames.length]]">
-                <grt-grid-pagination id="pages" datalength="[[mvdata.length]]" page-size="{{pageSize}}" pstart="{{_pageStart}}"
-                    on-pagechanged="changePage" style-domain="first-domain"></grt-grid-pagination>
-            </template>
-            <div class="layout horizontal justified" flex="50">
-                <paper-progress-button class="demo" bottom raised on-click="addPaecheter" loading-label="Nicht so hecktisch ..."
-                    loading="[[_loading]]">Antrag erfassen <iron-icon icon="add-circle-outline" slot="item-icon"></iron-icon>
-                </paper-progress-button>
-                <paper-progress-button class="demo" bottom raised on-click="postPaechter" loading-label="Nicht so hecktisch ..."
-                    loading="[[_loading]]">Speichern</paper-progress-button>
-                <paper-progress-button class="demo" disabled="[[!mvdata]]" bottom raised on-click="_showExportDialog"
-                    loading-label="Nicht so hecktisch ..." loading="[[_loading]]">Exportieren</paper-progress-button>
+
+                            <th>
+                                <column-sorter colname="[[columnNames.12]]" path="BEMERKUNGEN"
+                                    on-sorter-changed="_sortChange">
+                                </column-sorter>
+                            </th>
+                            <th class="button"></th>
+                            <th class="button"></th>
+                        </thead>
+                        <tbody>
+                            <template is="dom-repeat" items="[[mvpagedata]]">
+                                <tr class$="[[item.paechter.status]]">
+                                    <td class="centered-cell">
+                                        <paper-checkbox class="[[getClassByBeitrag(item.BEITRAG)]]"
+                                            id="[[getGridElementID(index, _pageStart, 'scb')]]" on-change="_checkOne"
+                                            checked="[[_isItemSelected(_pageStart, index, mvdata.*)]]"></paper-checkbox>
+                                    </td>
+                                    <td class="rightalign">[[item.GARTENNUMMER]]</td>
+                                    <td>[[item.ANREDE]]</td>
+                                    <td>[[item.NACHNAME]]</td>
+                                    <td>[[item.VORNAME]]</td>
+                                    <td>[[item.WOHNORT]]</td>
+                                    <td class="rightalign">[[item.FLAECHE]]</td>
+                                    <td class="rightalign">[[getAlterBy(item.GEBURTSDATUM)]]</td>
+                                    <td class="rightalign">[[item.GEBURTSDATUM]]</td>
+                                    <td>[[getJubilaeumBy(item.GEBURTSDATUM)]]</td>
+                                    <td>[[item.BEMERKUNGEN]]</td>
+                                    <td class="button">
+                                        <button id="bto[[item.GARTENNUMMER]]" on-click="_openDetails"
+                                            class="first-domain-endpagebutton action-button">
+                                            <iron-icon id="cro[[item.GARTENNUMMER]]"
+                                                icon="[[getIcon(item._detailsOpened)]]" slot="item-icon"
+                                                on-click="_openDetails"></iron-icon>
+                                        </button>
+                                    </td>
+                                    <td class="button">
+                                        <button id="btr[[item.GARTENNUMMER]]" on-click="_confirmRemove"
+                                            class="first-domain-endpagebutton action-button"
+                                            disabled="[[item._detailsOpened]]">
+                                            <iron-icon id="rmi[[item.GARTENNUMMER]]-[[index]]" icon="delete"
+                                                slot="item-icon" on-click="_confirmRemove"></iron-icon>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <template is="dom-if" if="[[item._detailsOpened]]">
+                                    <tr class="details">
+                                        <td colspan="13" class="no-padding">
+                                            <iron-collapse-button expand-icon="add-circle-outline"
+                                                collapse-icon="remove-circle-outline"
+                                                class="detailelement light-element flex" opened>
+                                                <div slot="collapse-trigger" class="flex">
+                                                    <span>Pachtvertragsdaten</span>
+                                                </div>
+                                                <div slot="collapse-content" class="corrected-margin">
+                                                    <div class="mcard strong-text-color">
+                                                        <div class="layout horizontal">
+                                                            <table width="25%">
+                                                                <thead>
+                                                                    <th colspan="2">Garten</th>
+                                                                </thead>
+                                                                <tbody>
+                                                                    <tr>
+                                                                        <td>[[columnNames.0]]</td>
+                                                                        <td>[[item.GARTENNUMMER]]</td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>[[columnNames.22]]</td>
+                                                                        <td>[[item.WEG]]</td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>[[columnNames.9]]</td>
+                                                                        <td>[[item.FLAECHE]]</td>
+                                                                    </tr>
+                                                                </tbody>
+                                                            </table>
+                                                            <table width="25%">
+                                                                <thead>
+                                                                    <th colspan="2">Anschrift</th>
+                                                                </thead>
+                                                                <tbody>
+                                                                    <tr>
+                                                                        <td>Name</td>
+                                                                        <td>[[item.ANREDE]] [[item.VORNAME]]
+                                                                            [[item.NACHNAME]]</td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>[[columnNames.5]]</td>
+                                                                        <td>[[item.STRASSE]]</td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>[[columnNames.8]]</td>
+                                                                        <td>[[item.PLZ]] [[item.WOHNORT]]</td>
+                                                                    </tr>
+                                                                </tbody>
+                                                            </table>
+                                                            <table width="25%">
+                                                                <thead>
+                                                                    <th colspan="2">Kontakt</th>
+                                                                </thead>
+                                                                <tbody>
+                                                                    <tr>
+                                                                        <td>[[columnNames.10]]</td>
+                                                                        <td><a
+                                                                                href="tel:[[item.TELEFON]]">[[item.TELEFON]]</a>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>[[columnNames.11]]</td>
+                                                                        <td><a
+                                                                                href="mailto:[[item.EMAIL]]">[[item.EMAIL]]</a>
+                                                                        </td>
+                                                                    </tr>
+                                                                </tbody>
+                                                            </table>
+                                                            <table width="25%">
+                                                                <thead>
+                                                                    <th colspan="2">Details</th>
+                                                                </thead>
+                                                                <tbody>
+                                                                    <tr>
+                                                                        <td>[[columnNames.4]]</td>
+                                                                        <td>[[item.GEBURTSDATUM]]</td>
+                                                                    </tr>
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </iron-collapse-button>
+                                        </td>
+                                    </tr>
+                                    <tr class="details">
+                                        <td colspan="14" class="no-padding">
+                                            <iron-collapse-button expand-icon="add-circle-outline"
+                                                collapse-icon="remove-circle-outline"
+                                                class="detailelement light-element flex" opened>
+                                                <div slot="collapse-trigger" class="flex">
+                                                    <div class="layout horizontal justified">
+                                                        <span>Datenbearbeitung</span>
+                                                        <button id="sbt[[index]]" on-click="_saveItemData"
+                                                            disabled="[[_saveOneButtonDisabled(dc)]]">
+                                                            <iron-icon icon="save" id="sic[[index]]" slot="item-icon"
+                                                                disabled="[[_saveOneButtonDisabled(dc)]]"
+                                                                on-click="_saveItemData"></iron-icon>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <div slot="collapse-content" class="corrected-margin">
+                                                    <div class="mcard strong-text-color">
+                                                        <grt-gartler id="grtl-[[index]]" gartler="{{item}}" >
+                                                        <h4 slot="title">Pächter</h4>></grt-gartler>
+
+                                                    </div>
+                                                </div>
+                                            </iron-collapse-button>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-
-        <div class="page">
-            <vaadin-grid id="mygrid" page-size="{{pageSize}}" active-item="{{activeItem}}" aria-label="Basic Binding Example"
-                items="[[mvdata]]" column-reordering-allowed>
-                <template class="row-details">
-                    <div class="details">
-                        <div class="layout horizontal justified">
-                            <p>
-                                <span>Anschrift</span><br>
-                                <small>[[columnNames.5]]:[[item.STRASSE]]</small><br>
-                                <small>[[columnNames.7]]:[[item.PLZ]]</small><br>
-                                <small>[[columnNames.8]]:[[item.WOHNORT]]</small>
-                            </p>
-                            <p>
-                                <span>Kontakt</span><br>
-                                <small>[[columnNames.10]]:[[item.TELEFON]]</small><br>
-                                <small>[[columnNames.11]]:[[item.EMAIL]]</small><br>
-                            </p>
-                            <p>
-                                <small>[[columnNames.4]]:[[item.GEBURTSDATUM]]</small><br>
-                            </p>
-                        </div>
-                    </div>
-                </template>
-                <!--auto-select wenn man will dass man auch über das anklicken in der zeile nicht nur in der box selektieren kann-->
-                <vaadin-grid-selection-column auto-select width="40px"></vaadin-grid-selection-column>
-
-                <vaadin-grid-column path="GARTENNUMMER" header="GARTENNUMMER" width="75px" flex-grow="0" text-align="end">
-                    <template class="header">
-                        <vaadin-grid-sorter path="GARTENNUMMER" on-sorter-changed="_sortChange">
-                            [[columnNames.0]]
-                        </vaadin-grid-sorter>
-                    </template>
-                </vaadin-grid-column>
-
-                <vaadin-grid-column path="ANREDE" header="Anrede" width="75px" flex-grow="0" text-align="end">
-                    <template class="header">
-                        <vaadin-grid-sorter path="ANREDE" on-sorter-changed="_sortChange">
-                            [[columnNames.1]]
-                        </vaadin-grid-sorter>
-                    </template>
-                </vaadin-grid-column>
-
-                <vaadin-grid-column path="NACHNAME" width="141px" resizable>
-                    <template class="header">
-                        <vaadin-grid-sorter path="NACHNAME" on-sorter-changed="_sortChange">
-                            [[columnNames.2]]
-                        </vaadin-grid-sorter>
-                    </template>
-                </vaadin-grid-column>
-
-                <vaadin-grid-column path="VORNAME" width="100px" resizable>
-                    <template class="header">
-                        <vaadin-grid-sorter path="VORNAME" on-sorter-changed="_sortChange">
-                            [[columnNames.3]]
-                        </vaadin-grid-sorter>
-                    </template>
-                </vaadin-grid-column>
-
-                <vaadin-grid-column path="WEG" width="80px" resizable text-align="end">
-                    <template class="header">
-                        <vaadin-grid-sorter path="WEG" on-sorter-changed="_sortChange">
-                            [[columnNames.22]]
-                        </vaadin-grid-sorter>
-                    </template>
-                </vaadin-grid-column>
-
-                <vaadin-grid-column path="FLAECHE" width="80px" resizable text-align="end">
-                    <template class="header">
-                        <vaadin-grid-sorter path="FLAECHE" on-sorter-changed="_sortChange">
-                            [[columnNames.9]]
-                        </vaadin-grid-sorter>
-                    </template>
-                </vaadin-grid-column>
-
-                <vaadin-grid-column width="80px" resizable text-align="end">
-                    <template class="header">Alter</template>
-                    <template>
-                        [[getAlterBy(item.GEBURTSDATUM)]]
-                    </template>
-                </vaadin-grid-column>
-                <!-- </vaadin-grid-column-group> -->
-                <vaadin-grid-column width="60px" resizable>
-                    <template class="header">Jubiläum</template>
-                    <template>
-                        [[getJubilaeumBy(item.GEBURTSDATUM)]]
-                    </template>
-                </vaadin-grid-column>
-
-                <vaadin-grid-column path="BEMERKUNGEN" resizable>
-                    <template class="header">
-                        <vaadin-grid-sorter path="BEMERKUNGEN" on-sorter-changed="_sortChange">
-                            [[columnNames.12]]
-                        </vaadin-grid-sorter>
-                    </template>
-                </vaadin-grid-column>
-
-                <vaadin-grid-column width="100px">
-                    <template class="header"></template>
-                    <template>
-                        <button id="bt[[item.GARTENNUMMER]]" on-click="_openDetails" class="first-domain-endpagebutton action-button">
-                            <slot>
-                                <iron-icon id="cr[[item.GARTENNUMMER]]" icon="create" slot="item-icon" on-click="_openDetails"></iron-icon>
-                            </slot>
-                        </button>
-                        <button id="bt[[item.GARTENNUMMER]]" on-click="_removeItem" class="first-domain-endpagebutton action-button"
-                            disabled="[[detailsOpened]]">
-                            <iron-icon id="rm[[item.GARTENNUMMER]]" icon="delete" slot="item-icon" on-click="_removeItem"></iron-icon>
-                        </button>
-                        <!-- <vaadin-checkbox aria-label$="Show Details for [[NAME]]" checked="{{detailsOpened}}">Details</vaadin-checkbox> -->
-                    </template>
-                </vaadin-grid-column>
-            </vaadin-grid>
-
-        </div>
-        <!-- <div id="pages"></div> -->
-
-
     </template>
 
 
@@ -313,39 +327,47 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             static get properties() {
                 return {
+                    actionButtons: {
+                        type: Array,
+                        value: ['email', 'rechnung', 'meldung', 'brief']
+                    },
+
                     pageSize: {
                         type: Number,
                         value: null,
+                        notify: true,
                         observer: 'changePage'
                     },
+
                     _pageStart: {
                         type: Number,
                         value: 0
-                        //observer: '_setPageEnd'
                     },
-                    // _pageEnd: {
-                    //   type: Number,
-                    //   value: 0
-                    // },
-                    _katzen: {
-                        type: Array,
-                        value: null,
-                        notify: true
-                    },
+
                     _loading: {
                         type: Boolean,
                         value: false
                     },
+
                     mvdata: {
                         type: Array,
                         value: [],
                         notify: true,
                         reflectToAttribute: true
                     },
+
+                    mvpagedata: {
+                        type: Array,
+                        value: [],
+                        notify: true,
+                        reflectToAttribute: true
+                    },
+
                     _pages: {
                         type: Object,
                         value: null
                     },
+
                     selected: {
                         type: Boolean,
                         value: false,
@@ -355,56 +377,103 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     columnNames: {
                         type: Array,
                         value: []
+                    },
+
+                    openeddetails: {
+                        type: Array,
+                        value: []
+                    },
+
+                    dosave: {
+                        type: Boolean,
+                        value: null,
+                        notify: true
+                    },
+
+                    dc: {
+                        type: Boolean,
+                        value: null,
+                        notify: true
+                    },
+
+                    _isAenderung: {
+                        type: Boolean
                     }
                 }
             }
 
-            _openDetails(e) {
+            _confirmRemove(e) {
                 e.preventDefault();
-                e.model.detailsOpened = !e.model.detailsOpened;
+                this.$.deletedialog.showDialog(
+                    {
+                        "title": "Pächterdaten Löschen",
+                        "message": "Bitte bestätigen Sie, dass Sie den Datensatz wirklich entfernen möchten.",
+                        "origData": e.target.id.substring(3)
+                    })
                 e.stopPropagation();
             }
 
-            _removeItem(e) {
-                e.preventDefault();
-                let id = e.target.id.substring(2);
-                console.log('id ist' + id);
-                let elem = this.mvdata.find((v) => {
-                    return v.GARTENNUMMER === id
-                });
-                console.log('elem ist' + JSON.stringify(elem));
-                let idx = this.mvdata.indexOf(elem);
-                console.log('index ist' + idx);
-                if (idx >= 0) {
-                    this.splice('mvdata', idx, 1);
+            _removeMetadata(paechter) {
+                let vToSave = JSON.parse(JSON.stringify(paechter))
+                const keysToReset = ["_detailsOpened"];
+                Object.keys(vToSave).forEach((vkey) => {
+                    if (keysToReset.some((elem) => elem === vkey)) {
+                        delete vToSave[vkey];
+                    }
+                })
+                return vToSave;
+            }
+
+            _saveOneButtonDisabled(dc) {
+                return !dc;
+            }
+
+            ready() {
+                super.ready();
+                this.$.firstclient.getPaechterAsJSON().then((resp) => {
+                    if (resp) {
+                        this.splitToObjects(resp).finally(() => {
+                            //wenn pageSize nur an einer stelle initialisiert wird (in then von splitToObjects)
+                            // dann der gleiche wert 10 wird nicht noch mal zu der pagination Componente getriggert
+                            // denn er sich noch nicht geändert hatte, die Komp beim ersten mal aber nicht da war
+                            this.set('pageSize', parseInt(0));
+                            this.changePage();
+                        });
+                    } else {
+                        showToast(this, 'Bei der Initialisierung der Seite wurden keine Pächterdaten gefunden', TOAST_TYPE.ERROR);
+                    }
+                }).catch((err) => {
+                    console.log("Fehler beim get fuer paechter  kam:" + JSON.stringify(err))
+                    showToast(this, 'Die Paecheterdaten konnten nicht geladen werden', TOAST_TYPE.ERROR);
+                })
+            }
+
+            _openDetails(e) {
+                e.model.set("item._detailsOpened", !e.model.item._detailsOpened);
+                if (e.model.item._detailsOpened) {
+                    this.push('openeddetails', true);
+                } else {
+                    this.shift('openeddetails');
                 }
                 e.stopPropagation();
-
-            }
-
-            addPaecheter() {
-                // this.$.adddialog.showDialog();
             }
 
             _sortChange(e) {
                 let self = this;
-                // Ganz wichtig hier e.stopPropagation, weil sonst der "sorter-changed" Event,
-                // weiter an den vaadin-grid propagiert worden wäre, und dieser würde noch einmal seine eigene 
-                // Sortierung die unsere "überladen"/ ändern würde. Bemerkbar wäre das dann insbesondere bei
-                // der selbst-implementierte "natural-alphanumerischen-Sortierung" (1,2,3,3a,4,4a etc)
-                e.stopPropagation();
-                console.log('sortchange called außer event' + (e.target) + (e.target.path) + (e.target.direction));
                 if (e.target && e.target.path && e.target.direction) {
+                    let otherSorter = this.shadowRoot.querySelectorAll('column-sorter');
+                    otherSorter.forEach((os) => {
+                        if (os.direction && (os.colname !== e.target.colname)) {
+                            os.direction = null;
+                        }
+                    })
                     let key = e.target.path;
                     let direction = e.target.direction;
                     let records = JSON.parse(JSON.stringify(self.mvdata));
-                    console.log('sortchange called in event');
-
-                    console.log('sortchange called e.target.path' + key + ' e.target.direction' + direction + " nritems" + records.length)
                     if (key === 'GARTENNUMMER') {
                         // For Number-like Strings containing alphanummerical chars
                         records = records.sort(function (o1, o2) {
-                            let result = self.naturalSorter(o1.GARTENNUMMER, o2.GARTENNUMMER);
+                            let result = self.naturalSorter((o1.GARTENNUMMER || "0"), (o2.GARTENNUMMER || "0"));
                             if (direction === 'asc') {
                                 return (result < 0) ? -1 : 1;
                             } else {
@@ -415,7 +484,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     } else if (!isNaN(this.mvdata[0][key])) {
                         // for numbers
                         records.sort(function (a, b) {
-
                             if (direction === 'asc') {
                                 if (a[key] < b[key]) return -1;
                                 if (a[key] > b[key]) return 1;
@@ -425,11 +493,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             }
                             return 0;
                         });
-
                     } else {
                         // for strings
                         records.sort(function (a, b) {
-
                             if (direction === 'asc') {
                                 if ((a[key] || "").toLowerCase() < (b[key] || "").toLowerCase()) return -1;
                                 if ((a[key] || "").toLowerCase() > (b[key] || "").toLowerCase()) return 1;
@@ -444,82 +510,88 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     self.set('mvdata', records);
                     self.changePage();
                 }
-
             }
+
+            _sortByGeburtsdatum(e) {
+                let self = this;
+                if (e.target && e.target.path && e.target.path === 'GEBURTSDATUM' && e.target.direction) {
+                    let otherSorter = this.shadowRoot.querySelectorAll('column-sorter');
+                    otherSorter.forEach((os) => {
+                        if (os.direction && (os.colname !== e.target.colname)) {
+                            os.direction = null;
+                        }
+                    })
+                    let key = e.target.path;
+                    let direction = e.target.direction;
+                    let records = JSON.parse(JSON.stringify(self.mvdata));
+                    records.sort(function (a, b) {
+                        if (direction === 'asc') {
+                            if (moment(a[key], 'DD/MM/YYYY').isBefore(moment(b[key], 'DD/MM/YYYY'))) return -1;
+                            if (moment(a[key], 'DD/MM/YYYY').isAfter(moment(b[key], 'DD/MM/YYYY'))) return 1;
+                        } else {
+                            if (moment(a[key], 'DD/MM/YYYY').isBefore(moment(b[key], 'DD/MM/YYYY'))) return 1;
+                            if (moment(a[key], 'DD/MM/YYYY').isAfter(moment(b[key], 'DD/MM/YYYY'))) return -1;
+                        }
+                        return 0;
+                    });
+
+                    self.set('mvdata', records);
+                    self.changePage();
+                }
+            }
+
+            _sortByJubilaeum(e) {
+                let self = this;
+                if (e.target && e.target.path && e.target.path === 'GEBURTSDATUM' && e.target.direction) {
+                    let otherSorter = this.shadowRoot.querySelectorAll('column-sorter');
+                    otherSorter.forEach((os) => {
+                        if (os.direction && (os.colname !== e.target.colname)) {
+                            os.direction = null;
+                        }
+                    })
+                    let key = e.target.path;
+                    let direction = e.target.direction;
+                    let records = JSON.parse(JSON.stringify(self.mvdata));
+                    // for strings
+                    records.sort(function (a, b) {
+                        if (direction === 'asc') {
+                            if (moment((self.getJubilaeumBy(a[key]) || 'Dec'), 'MMM').isBefore(moment((self.getJubilaeumBy(b[key]) || 'Dec'), 'MMM'))) return -1;
+                            if (moment((self.getJubilaeumBy(a[key]) || 'Dec'), 'MMM').isAfter(moment((self.getJubilaeumBy(b[key]) || 'Dec'), 'MMM'))) return 1;
+                        } else {
+                            if (moment((self.getJubilaeumBy(a[key]) || 'Dec'), 'MMM').isBefore(moment((self.getJubilaeumBy(b[key]) || 'Dec'), 'MMM'))) return 1;
+                            if (moment((self.getJubilaeumBy(a[key]) || 'Dec'), 'MMM').isAfter(moment((self.getJubilaeumBy(b[key]) || 'Dec'), 'MMM'))) return -1;
+                        }
+                        return 0;
+                    });
+
+                    self.set('mvdata', records);
+                    self.changePage();
+                }
+            }
+
+
+
+
 
             changePage() {
                 if (this._pageStart || this._pageStart === 0) {
-                    let end = parseInt(this._pageStart) + parseInt(this.pageSize);
+                    let end = parseInt(this._pageStart) + (parseInt(this.pageSize));
                     let newItems = this.mvdata.slice(this._pageStart, end);
-                    this.$.mygrid.items = newItems;
+                    this.set('mvpagedata', newItems);
+                    this.set('openeddetails', [])
                 }
-
             }
-
-
-
-            ready() {
-                super.ready();
-                this.$.firstclient.getPaechterAsJSON().then((resp) => {
-                    if (resp) {
-                        this.splitToObjects(resp);
-                        this.set('pageSize', 10);
-                    } else {
-                        showToast(this, 'Bei der Initialisierung der Seite wurden keine Paecheterdaten gefunden', TOAST_TYPE.ERROR);
-                    }
-                }).catch((err) => {
-
-                    console.log("Fehler beim get fuer Paecheter  kam:" + JSON.stringify(err))
-                    showToast(this, 'Die Paecheterdaten konnten nicht geladen werden', TOAST_TYPE.ERROR);
-                })
-
-                // this.$.firstclient.getPaecheterCSV().then((resp) => {
-                //   this.set('pageSize', 10);
-                //   this.mapToJSON(resp);
-
-                // }).catch((err) => {
-                //   console.log("Fehler beim importPaecheter fuer Paecheter  kam:" + JSON.stringify(err))
-                // })
-
-
-                // this.$.adddialog.addEventListener('addpaechter', (e) => {
-                //     console.log('adddialog gedruckt' + JSON.stringify(e.detail))
-                //     this.splice('mvdata', this._pageStart, 0, e.detail);
-                //     //this.push('mvdata', e.detail);
-                // });
-
-                this.$.mygrid.addEventListener('selected-items-changed', (e) => {
-                    this.doOnSelection(e);
-                })
-                /**
-                 *  When a row is clicked or the space key is pressed while a row cell is in focus, the related item object is assigned as the grid's activeItem.
-              
-              To programmatically select items, the activeItem, for example, could be added to the grid's selectedItems array. The methods selectItem(item) and deselectItem(item) can also be used to select or deselect items.
-              
-              In the example below, the grid's selectedItems array is replaced whenever activeItem changes, making it single-selectable. 
-                 * ABER NICHT ZUSAMMEN MIT CHECCKBOX SELECTION sondern nur die akteull selektierte itm zu wissen
-                 */
-                this.$.mygrid.addEventListener('active-item-changed', function (event) {
-                    const item = event.detail.value;
-                    //this.$.mygrid.selectedItems = item ? [item] : [];
-                    console.log('active item' + JSON.stringify(event.target.activeItem))
-                });
-            }
-
-            doOnSelection(e) {
-
-                console.log('selectiert sind' + JSON.stringify(e.target.selectedItems));
-
-
-            }
-
 
             splitToObjects(resp) {
                 let paechterData = resp.data;
                 let columns = resp.columns;
-                this.set('columnNames', columns);
-                this.set('mvdata', paechterData);
-                // this.set('mvdata', paechterData);
+                let promises = [];
+
+                return Promise.all(promises).then(() => {
+                    this.set('columnNames', columns);
+                    this.set('mvdata', paechterData);
+                    this.set('pageSize', parseInt(10));
+                })
             }
 
             naturalSorter(as, bs) {
@@ -528,7 +600,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 if (as === bs) return 0;
                 a = as.toLowerCase().match(rx);
                 b = bs.toLowerCase().match(rx);
-                console.log('path as:' + as + 'bs:' + bs);
                 L = a.length;
                 while (i < L) {
                     if (!b[i]) return 1;
@@ -537,10 +608,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     if (a1 !== b1) {
                         n = a1 - b1;
                         if (!isNaN(n)) {
-                            console.log('path returned wird' + n + ' for as' + as + 'bs' + bs + 'a1' + a1 + 'b1' + b1);
                             return n;
-                        } else {
-                            console.log('path else')
                         }
                         return a1 > b1 ? 1 : -1;
                     }
@@ -557,36 +625,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 if (newV) {
                     this.$.firstclient.getPaechterAsJSON().then((resp) => {
                         if (resp) {
-                            this.set('pageSize', 10);
-                            this.splitToObjects(resp);
-                            this.changePage();
+                            this.splitToObjects(resp).finally(() => {
+                                this.changePage();
+                            });
                         } else {
-                            showToast(this, 'Bei der erneuten Initialisierung der Seite wurden keine Paecheterdaten gefunden', TOAST_TYPE.ERROR);
+                            showToast(this, 'Bei der erneuten Initialisierung der Seite wurden keine Pächterdaten gefunden', TOAST_TYPE.ERROR);
                         }
                     }).catch((err) => {
                         console.log("Fehler beim get fuer Paecheter  kam:" + JSON.stringify(err))
-                        showToast(this, 'Die Paecheterdaten konnten nicht geladen werden', TOAST_TYPE.ERROR);
+                        showToast(this, 'Die Pächeterdaten konnten nicht geladen werden', TOAST_TYPE.ERROR);
                     })
-                }
-            }
-
-            postPaecheter() {
-                if (!this.mvdata || !this.mvdata.length) {
-                    this.$.grtinfodialog.showDialog(
-                        {
-                            "title": "Keine Daten",
-                            "message": "Es gibt keine Pächterdaten, die man speichern könnte."
-                        })
-
-                } else {
-                    let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
-
-                    this.$.firstclient.postPaecheterAsJSON(dataAndColumns).then(() => {
-                        console.log('paechter gespeichert')
-                        showToast(this, 'Die Paechter wurden erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
-                    }).catch(() => {
-                        showToast(this, 'Fehler beim Speichern der Paecheterndaten', TOAST_TYPE.ERROR);
-                    });
                 }
             }
 
@@ -607,25 +655,202 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 }
             }
 
-            exportPaecheter(e) {
+            exportPaechter(e) {
                 let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
-
-                this.$.firstclient.exportPaecheterAsCSV(dataAndColumns, e.detail).then((savePath) => {
+                this.$.firstclient.exportPaechterAsCSV(dataAndColumns, e.detail).then((savePath) => {
                     if (savePath && savePath.path) {
                         this.$.grtinfodialog.showDialog(
                             {
                                 "title": "Daten als CSV - exportieren",
-                                "message": "Die Daten der Versicheten wurden erfolgreich unter " + savePath.path + " gespeichert."
+                                "message": "Die Daten der Pächter wurden erfolgreich unter " + savePath.path + " gespeichert."
                             })
                     } else if (savePath) {
-                        showToast(this, "Die Daten der Pächter werden unter " + savePath + " gespeichert.", TOAST_TYPE.WARN);
+                        showToast(this, "Die Daten der Pächter werden unter " + savePath + " gespeichert.", TOAST_TYPE.WARN, 'topRight');
                     }
-                }).catch(() => {
-                    showToast(this, 'Der Datenexport ist fehlgeschlagen', TOAST_TYPE.ERROR);
+                }).catch((err) => {
+                    showToast(this, 'Der Datenexport der Pächter ist fehlgeschlagen', TOAST_TYPE.ERROR);
                 });
+            }
 
+            //paechterdata save
+            _saveItemData(e) {
+                if (e && e.target && e.target.id && !e.target.disabled) {
+                    let idxOrigTable = idxActiveTable + (parseInt(this._pageStart) || 0);
+                    // das ist och nicht funktionall, siehe versicherte
+                    this.set('dosave', idxOrigTable);
+                }
+                e.stopPropagation();
+            }
 
+            _insertChangedPaechter(e) {
+                this.splice('mvdata', e.detail.index, 1, e.detail.data)
+                // self.set('originaldata', self.vc);
+                this.set('dosave', null);
+                this.changePage();
+            }
 
+            _insertNewPaechter(e) {
+                let self = this;
+                self.splice('mvdata', self._pageStart, 0, e.detail);
+            }
+
+            _postOnePaechter(e) {
+                let toSave = null;
+                if (e.type && e.type === 'add-v') {
+                    toSave = e.detail;
+                } else if (e.type && e.type === 'savedpaechter') {
+                    toSave = e.detail.data;
+                }
+                toSave = this._removeMetadata(toSave);
+                this.$.firstclient.postOnePaechter(toSave).then(() => {
+                    if (e.type && e.type === 'add-v') {
+                        this._insertNewPaechter(e);
+                    } else if (e.type && e.type === 'savedpaechter') {
+                        this._insertChangedPaechter(e);
+                    }
+                    showToast(this, 'Die Änderungen des Pächters wurden erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
+
+                }).catch((error) => {
+                    showToast(this, 'Fehler bei der Speicherung der Änderungen', TOAST_TYPE.ERROR);
+                    this.set('dosave', null);
+                })
+
+            }
+
+            postPaechter() {
+                if (!this.mvdata || !this.mvdata.length) {
+                    this.$.grtinfodialog.showDialog(
+                        {
+                            "title": "Keine Daten",
+                            "message": "Es gibt keine Pächterdaten, die man speichern könnte."
+                        })
+
+                } else {
+                    let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
+                    this.$.sandhour.showDialog();
+                    this.$.firstclient.postPaechterAsJSON(dataAndColumns).then(() => {
+                        console.log('paechter gespeichert')
+                        showToast(this, 'Die Paechter wurden erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
+                    }).catch(() => {
+                        showToast(this, 'Fehler beim Speichern der Paecheterndaten', TOAST_TYPE.ERROR);
+                    }).finally(()=>{
+                        this.$.sandhour._closeDialog();
+                    })
+                    
+                }
+            }
+
+            // check-box and apps
+            _isItemSelected(_pageStart, index) {
+                let path = 'mvdata.' + (_pageStart + index) + '.selected';
+                return this.get(path);
+            }
+
+            _noOneSelected() {
+                return !this.mvdata.some((data) => data.selected);
+            }
+
+            _areAllSelected() {
+                return !this.mvdata.some((data) => !data.selected);
+            }
+
+            _checkAll(e) {
+                if (e.currentTarget.checked) {
+                    this.mvdata.forEach((mv, idx) => {
+                        let path = 'mvdata.' + idx + '.selected'
+                        this.set(path, true)
+                    })
+                } else {
+                    this.mvdata.forEach((mv, idx) => {
+                        let path = 'mvdata.' + idx + '.selected'
+                        this.set(path, false)
+                    })
+                }
+            }
+
+            getSelected() {
+                let thetasks = this.mvdata.filter((el) => el.selected === true);
+                return thetasks;
+            }
+
+            _checkOne(e) {
+                let realIndex = e.target.id.substring(3);
+                if (e.currentTarget.checked) {
+                    let path = 'mvdata.' + realIndex + '.selected'
+                    this.set(path, true)
+                } else {
+                    let path = 'mvdata.' + realIndex + '.selected'
+                    this.set(path, false)
+                }
+            }
+
+            _showApps(e) {
+                this.$.appsdialog.showDialog()
+                // iziToast.show({
+                //   position: "center",
+                //   title: 'Hey',
+                //   message: 'What would you like to add?',
+                // })
+            }
+
+            getGridElementID(index, _pageStart, prefix) {
+                let realIndex = (parseInt(index) + parseInt(_pageStart));
+                return prefix + realIndex;
+            }
+
+            //css and dynamic elements
+            isSaveAllDisabled() {
+                if (!this._isAenderung || (this.openeddetails && this.openeddetails.length) || !this.mvdata || !this.mvdata.length) {
+                    return true;
+                } else 
+                return false;
+            }
+
+            isExportDisabled() {
+                if ((this.openeddetails && this.openeddetails.length) || !this.mvdata || !this.mvdata.length) {
+                    return true;
+                } else return false;
+            }
+
+            getClassByBeitrag(beitrag) {
+                if (!beitrag || beitrag.length === 0) {
+                    return ".redc";
+                } else return ".redc";
+            }
+
+            getIcon(detailsOpened) {
+                if (detailsOpened) {
+                    return 'close';
+                } else return 'create';
+            }
+
+            _removeItem(confirmEvent) {
+                let id = confirmEvent.detail.substring(0, confirmEvent.detail.indexOf('-'));
+                let elem = this.mvdata.find((v) => {
+                    return v.GARTENNUMMER === id;
+                });
+                let idx = this.mvdata.indexOf(elem);
+                if (idx >= 0) {
+                    this.$.firstclient.deleteOnePaechter(elem.GARTENNUMMER).then(() => {
+                        this.splice('mvdata', idx, 1);
+                        showToast(this, 'Der Pächter wurde erfolgreich gelöscht', TOAST_TYPE.SUCCESS);
+                    }).catch(() => {
+                        showToast(this, 'Fehler bei der Löschung des Pächters. Versuchen Sie später noch einmal.', TOAST_TYPE.ERROR);
+                    })
+                } else if (!elem && idx === -1) {
+                    // ist ein fehlerhafter Datensatz ohne Gartennummer, womöglich aus einer leeren Zeile der Importdatei
+                    const rowIdx = id.substring(1); // ab dem minus-Zeichen, befindet sich die Zeilenindex
+                    this.$.firstclient.deleteOnePaechter(null).then(() => {
+                        this.splice('mvdata', rowIdx, 1);
+                        showToast(this, 'Der Pächter wurde erfolgreich gelöscht', TOAST_TYPE.SUCCESS);
+                    }).catch(() => {
+                        showToast(this, 'Fehler bei der Löschung des Pächters. Versuchen Sie später noch einmal.', TOAST_TYPE.ERROR);
+                    })
+                }
+            }
+
+            addPaecheter() {
+                // this.$.adddialog.showDialog();
             }
 
             getAlterBy(geburtsdatum) {
@@ -650,8 +875,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     }
                 }
                 return jmonat;
-
-
             }
         }
 
