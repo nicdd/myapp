@@ -35,7 +35,8 @@
     "file-saver": "^2.0.0",
     "granite-file-reader": "LostInBrittany/granite-file-reader#^1.3.1",
     "ud-stepper": "urdeveloper/ud-stepper#^0.5.0",
-    "izitoast": "^1.4.0"
+    "izitoast": "^1.4.0",
+    "datetime-picker": "fooloomanzoo/datetime-picker#2.9.4"
   },
   "resolutions": {
     "polymer": "^2.0.0",

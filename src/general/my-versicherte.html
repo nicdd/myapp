@@ -50,6 +50,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../../bower_components/iron-collapse-button/iron-collapse-button.html">
 <link rel="import" href="../../bower_components/iron-icons/editor-icons.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/datetime-picker/overlay-date-picker.html">
 <link rel="import" href="../shared-styles.html">
 <link rel="import" href="../second-domain-styles.html">
 <link rel="import" href="../table-styles.html">
@@ -173,32 +174,32 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 </column-sorter>
               </th>
               <th>
-                <column-sorter colname="[[columnNames.14]]" path="GBV" on-sorter-changed="_sortChange"></column-sorter>
+                <column-sorter colname="[[columnNames.13]]" path="GBV" on-sorter-changed="_sortChange"></column-sorter>
               </th>
               <th>
-                <column-sorter colname="[[columnNames.15]]" path="FED" on-sorter-changed="_sortChange"></column-sorter>
+                <column-sorter colname="[[columnNames.14]]" path="FED" on-sorter-changed="_sortChange"></column-sorter>
               </th>
               <th>
-                <column-sorter colname="[[columnNames.16]]" path="HOEV" on-sorter-changed="_sortChange"></column-sorter>
+                <column-sorter colname="[[columnNames.15]]" path="HOEV" on-sorter-changed="_sortChange"></column-sorter>
               </th>
               <th>
-                <column-sorter colname="[[columnNames.17]]" path="A7_1" on-sorter-changed="_sortChange"></column-sorter>
+                <column-sorter colname="[[columnNames.16]]" path="A7_1" on-sorter-changed="_sortChange"></column-sorter>
               </th>
               <th>
-                <column-sorter colname="[[columnNames.18]]" path="A7_3" on-sorter-changed="_sortChange"></column-sorter>
+                <column-sorter colname="[[columnNames.17]]" path="A7_3" on-sorter-changed="_sortChange"></column-sorter>
               </th>
               <th>
-                <column-sorter colname="[[columnNames.19]]" path="A7_4" on-sorter-changed="_sortChange"></column-sorter>
+                <column-sorter colname="[[columnNames.18]]" path="A7_4" on-sorter-changed="_sortChange"></column-sorter>
               </th>
               <th>
-                <column-sorter colname="[[columnNames.20]]" path="UV" on-sorter-changed="_sortChange"></column-sorter>
+                <column-sorter colname="[[columnNames.19]]" path="UV" on-sorter-changed="_sortChange"></column-sorter>
               </th>
               <th>
-                <column-sorter colname="[[columnNames.21]]" path="BEITRAG" on-sorter-changed="_sortChange">
+                <column-sorter colname="[[columnNames.20]]" path="BEITRAG" on-sorter-changed="_sortChange">
                 </column-sorter>
               </th>
               <th>
-                <column-sorter colname="[[columnNames.13]]" path="V_BEMERKUNG" on-sorter-changed="_sortChange">
+                <column-sorter colname="[[columnNames.21]]" path="V_BEMERKUNG" on-sorter-changed="_sortChange">
                 </column-sorter>
               </th>
               <th class="button"></th>
@@ -338,10 +339,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                           <div class="mcard strong-text-color">
                             Versicherer: <paper-input id="versName[[index]]" value="[[item.versicherung.name]]"
                               on-value-changed="_doOnVersicherungNameChanged"></paper-input>
-                            Von: <paper-input id="versVon[[index]]" value="[[item.versicherung.von]]"
-                              on-value-changed="_doOnVersicherungVonChanged"></paper-input>
-                            Bis: <paper-input id="versBis[[index]]" value="[[item.versicherung.bis]]"
-                              on-value-changed="_doOnVersicherungBisChanged"></paper-input>
+                            Von: <overlay-date-picker id="versVon[[index]]" date="{{item.versicherung.von}}" required on-value-changed="_doOnVersicherungVonChanged"></overlay-date-picker>
+                            <!-- <paper-input id="versVon[[index]]" value="[[item.versicherung.von]]"
+                              on-value-changed="_doOnVersicherungVonChanged"></paper-input> -->
+                            Bis: <overlay-date-picker id="versBis[[index]]" date="{{item.versicherung.bis}}" required on-value-changed="_doOnVersicherungBisChanged"></overlay-date-picker>
+                            
+                            <!--<paper-input id="versBis[[index]]" value="[[item.versicherung.bis]]"
+                              on-value-changed="_doOnVersicherungBisChanged"></paper-input>-->
                           </div>
                         </div>
                         <template is="dom-if" if="[[_isKVDVersichert(item.versicherung.name)]]">
@@ -479,18 +483,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       }
       _doOnVersicherungVonChanged(e) {
+        
         if (e && e.target) {
-          let realIdx = e.target.id.substring(7);
-          let path = 'mvpagedata.' + realIdx + '.versicherung.von';
-          this.set(path, e.target.__data.value)
+          // let realIdx = e.target.id.substring(7);
+          // let path = 'mvpagedata.' + realIdx + '.versicherung.von';
+          // this.set(path, e.target.__data.value)
+          console.warn('changeevent for von')
           this.set('dc', true)
         }
       }
       _doOnVersicherungBisChanged(e) {
         if (e && e.target) {
-          let realIdx = e.target.id.substring(7);
-          let path = 'mvpagedata.' + realIdx + '.versicherung.bis';
-          this.set(path, e.target.__data.value)
+          // let realIdx = e.target.id.substring(7);
+          // let path = 'mvpagedata.' + realIdx + '.versicherung.bis';
+          // this.set(path, e.target.__data.value)
           this.set('dc', true)
         }
       }
