@@ -127,7 +127,8 @@
                                 </column-sorter>
                             </th>
                             <th>
-                                <column-sorter colname="[[columnNames.8]]" path="WOHNORT" on-sorter-changed="_sortChange">
+                                <column-sorter colname="[[columnNames.8]]" path="WOHNORT"
+                                    on-sorter-changed="_sortChange">
                                 </column-sorter>
                             </th>
                             <th>
@@ -300,8 +301,9 @@
                                                 </div>
                                                 <div slot="collapse-content" class="corrected-margin">
                                                     <div class="mcard strong-text-color">
-                                                        <grt-gartler id="grtl-[[index]]" gartler="{{item}}" >
-                                                        <h4 slot="title">Pächter</h4>></grt-gartler>
+                                                        <grt-gartler id="grtl-[[index]]" gartler="[[item]]">
+                                                            <h4 slot="title">Pächter</h4>>
+                                                        </grt-gartler>
 
                                                     </div>
                                                 </div>
@@ -733,10 +735,10 @@
                         showToast(this, 'Die Paechter wurden erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
                     }).catch(() => {
                         showToast(this, 'Fehler beim Speichern der Paecheterndaten', TOAST_TYPE.ERROR);
-                    }).finally(()=>{
+                    }).finally(() => {
                         this.$.sandhour._closeDialog();
                     })
-                    
+
                 }
             }
 
@@ -802,8 +804,8 @@
             isSaveAllDisabled() {
                 if (!this._isAenderung || (this.openeddetails && this.openeddetails.length) || !this.mvdata || !this.mvdata.length) {
                     return true;
-                } else 
-                return false;
+                } else
+                    return false;
             }
 
             isExportDisabled() {
