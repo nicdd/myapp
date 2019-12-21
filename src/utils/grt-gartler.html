@@ -41,10 +41,11 @@ Pagination Element for Vaadin-Grid Tables
                         <div class="layout vertical">
                             <paper-input class="labelgroup" always-float-label label="Gartennummer" disabled
                                 value="[[gartler.GARTENNUMMER]]"></paper-input>
-                            <paper-input class="labelgroup" always-float-label label="Weg" value="{{gartler.WEG::input}}">
+                            <paper-input class="labelgroup" always-float-label label="Weg"
+                                value="{{gartler.WEG}}">
                             </paper-input>
                             <paper-input class="labelgroup" always-float-label label="Fläche"
-                                value="{{gartler.FLAECHE::input}}"></paper-input>
+                                value="{{gartler.FLAECHE}}"></paper-input>
                         </div>
                     </div>
                 </div>
@@ -56,15 +57,15 @@ Pagination Element for Vaadin-Grid Tables
                         <div class="layout vertical">
                             <div class="flex-container ">
                                 <paper-input class="labelgroup" always-float-label label="Geburtsdatum"
-                                    value="{{gartler.GEBURTSDATUM::input}}"></paper-input>
+                                    value="{{gartler.GEBURTSDATUM}}"></paper-input>
                                 <paper-input class="labelgroup" always-float-label label="Anrede"
-                                    value="{{gartler.ANREDE::input}}"></paper-input>
+                                    value="{{gartler.ANREDE}}"></paper-input>
                             </div>
                             <div class="flex-container ">
                                 <paper-input class="labelgroup" always-float-label label="Vorname"
-                                    value="{{gartler.VORNAME::input}}"></paper-input>
+                                    value="{{gartler.VORNAME}}"></paper-input>
                                 <paper-input class="labelgroup" always-float-label label="Name"
-                                    value="{{gartler.NACHNAME::input}}"></paper-input>
+                                    value="{{gartler.NACHNAME}}"></paper-input>
                             </div>
                             <div class="flex-container ">
                                 <paper-input class="labelgroup" always-float-label label="Strasse"
@@ -75,7 +76,8 @@ Pagination Element for Vaadin-Grid Tables
                             <div class="flex-container ">
                                 <paper-input class="labelgroup" always-float-label label="PLZ" value="{{gartler.PLZ}}">
                                 </paper-input>
-                                <paper-input class="labelgroup" always-float-label label="Ort" value="{{gartler.WOHNORT}}">
+                                <paper-input class="labelgroup" always-float-label label="Ort"
+                                    value="{{gartler.WOHNORT}}">
                                 </paper-input>
                             </div>
                         </div>
@@ -88,26 +90,22 @@ Pagination Element for Vaadin-Grid Tables
                     <div class="cardcontent">
                         <div class="layout vertical">
                             <paper-input class="labelgroup" always-float-label label="Telefon"
-                                value="{{gartler.TELEFON::input}}"></paper-input>
+                                value="{{gartler.TELEFON}}"></paper-input>
                             <paper-input class="labelgroup" always-float-label label="E-Mail"
-                                value="{{gartler.EMAIL::input}}"></paper-input>
+                                value="{{gartler.EMAIL}}"></paper-input>
                         </div>
                     </div>
                 </div>
                 <div class="mcard layout vertical justified">
-                <paper-button disabled="[[_originalEqualThisGartler(originalGartler.*, gartler.*)]]" bottom
-                        raised on-click="_resetGartler">Zurücksetzen</paper-button>
-                <paper-button disabled="[[_originalEqualThisGartler(originalGartler.*, gartler.*)]]" bottom
-                        raised on-click="postPaechter">Speichern</paper-button>
-                    </div>
-                
+                    <paper-button disabled="[[_originalEqualThisGartler(originalGartler.*, gartler.*)]]" bottom raised
+                        on-click="_resetGartler">Zurücksetzen</paper-button>
+                    <paper-button disabled="[[_originalEqualThisGartler(originalGartler.*, gartler.*)]]" bottom raised
+                        on-click="_saveGartler">Speichern</paper-button>
+                </div>
             </div>
             <div class="mcard">
-                <p class="cardtitle">
-                    Bemerkungen
-                </p>
                 <div class="cardcontent">
-                    <paper-textarea label="Textarea label" value="{{gartler.BEMERKUNGEN::input}}"></paper-textarea>
+                    <paper-textarea label="Bemerkungen" value="{{gartler.BEMERKUNGEN}}"></paper-textarea>
                 </div>
             </div>
         </div>
@@ -120,36 +118,80 @@ Pagination Element for Vaadin-Grid Tables
 
             static get properties() {
                 return {
+
+                    id: String,
                     gartler: {
                         type: Object,
                         observer: "_gartlerChanged"
                     },
 
-                    originalGartler:{
+                    originalGartler: {
                         type: Object
+                    },
+
+                    pendingEvents: {
+                        type: Array,
+                        value: []
+                    },
+
+                    succesfulledEvents: {
+                        type: Array,
+                        value: []
                     }
                 }
             }
+            
+            static get observers() {
+                return [
+                    'succesfulledEventsChanged(succesfulledEvents.*)'
+                ];
+            }
 
-            _gartlerChanged(newV, oldV){
-                if(newV && !oldV){
+            pushSuccesfullEvent(evName){
+                this.push('succesfulledEvents', evName + '_' + this.id);
+                if (evName === 'savegartler'){
+                    this.set("originalGartler", JSON.parse(JSON.stringify(this.gartler)))
+                }
+            }
+
+            _gartlerChanged(newV, oldV) {
+                if (newV && !oldV) {
                     this.set("originalGartler", JSON.parse(JSON.stringify(newV)))
                 }
             }
 
-            _originalEqualThisGartler(){
-
+            _originalEqualThisGartler() {
                 let response = _.isEqual(this.originalGartler, this.gartler);
-                    return response
+                return response
             }
 
-            _resetGartler(){
+            _resetGartler() {
                 this.set("gartler", JSON.parse(JSON.stringify(this.originalGartler)))
             }
 
+            _saveGartler() {
+                this.push('pendingEvents', 'savegartler' + "_" + this.id)
+                this.dispatchEvent(new CustomEvent('savegartler', { detail: {data: JSON.parse(JSON.stringify(this.gartler)), index: this.id.substring(4)} }))
+            }
 
-
-
+            succesfulledEventsChanged(change) {
+                if(change && change.value && Array.isArray(change.value.indexSplices)){
+                    let idx = change.value.indexSplices.length - 1;
+                    while (idx >= 0) {
+                        let spliced = change.value.indexSplices[idx];
+                        if(spliced.type === 'splice' && parseInt(spliced.addedCount)){
+                            for(let i = 0; i < parseInt(spliced.addedCount); i++){
+                                let pendingEntry = this.pendingEvents.find((el) => el === spliced.object[spliced.index] );
+                                if (pendingEntry === 0 || pendingEntry){
+                                    this.splice('pendingEvents', pendingEntry, 1);
+                                }
+                            }
+                        }
+                        this.splice('succesfulledEvents', idx, 1)
+                        idx -= 1;
+                    }
+                }
+            }
 
         }
 

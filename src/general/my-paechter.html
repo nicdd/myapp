@@ -291,17 +291,12 @@
                                                 <div slot="collapse-trigger" class="flex">
                                                     <div class="layout horizontal justified">
                                                         <span>Datenbearbeitung</span>
-                                                        <button id="sbt[[index]]" on-click="_saveItemData"
-                                                            disabled="[[_saveOneButtonDisabled(dc)]]">
-                                                            <iron-icon icon="save" id="sic[[index]]" slot="item-icon"
-                                                                disabled="[[_saveOneButtonDisabled(dc)]]"
-                                                                on-click="_saveItemData"></iron-icon>
-                                                        </button>
                                                     </div>
                                                 </div>
                                                 <div slot="collapse-content" class="corrected-margin">
                                                     <div class="mcard strong-text-color">
-                                                        <grt-gartler id="grtl-[[index]]" gartler="[[item]]">
+                                                        <grt-gartler id="grtl[[index]]" gartler="[[item]]"
+                                                            on-savegartler="_postOnePaechter">
                                                             <h4 slot="title">Pächter</h4>>
                                                         </grt-gartler>
 
@@ -386,18 +381,6 @@
                         value: []
                     },
 
-                    dosave: {
-                        type: Boolean,
-                        value: null,
-                        notify: true
-                    },
-
-                    dc: {
-                        type: Boolean,
-                        value: null,
-                        notify: true
-                    },
-
                     _isAenderung: {
                         type: Boolean
                     }
@@ -417,7 +400,7 @@
 
             _removeMetadata(paechter) {
                 let vToSave = JSON.parse(JSON.stringify(paechter))
-                const keysToReset = ["_detailsOpened"];
+                const keysToReset = ["selected", "_detailsOpened"];
                 Object.keys(vToSave).forEach((vkey) => {
                     if (keysToReset.some((elem) => elem === vkey)) {
                         delete vToSave[vkey];
@@ -426,12 +409,18 @@
                 return vToSave;
             }
 
-            _saveOneButtonDisabled(dc) {
-                return !dc;
-            }
-
             ready() {
                 super.ready();
+                
+                if (this.$)
+                this.$ = new Proxy(this.$, {
+                    get: ($, id) => $[id] || this.shadowRoot.getElementById(id),
+                    set: ($, id, element) => {
+                        $[id] = element;
+                        return true;
+                    }
+                });
+            
                 this.$.firstclient.getPaechterAsJSON().then((resp) => {
                     if (resp) {
                         this.splitToObjects(resp).finally(() => {
@@ -686,8 +675,6 @@
 
             _insertChangedPaechter(e) {
                 this.splice('mvdata', e.detail.index, 1, e.detail.data)
-                // self.set('originaldata', self.vc);
-                this.set('dosave', null);
                 this.changePage();
             }
 
@@ -698,25 +685,18 @@
 
             _postOnePaechter(e) {
                 let toSave = null;
-                if (e.type && e.type === 'add-v') {
-                    toSave = e.detail;
-                } else if (e.type && e.type === 'savedpaechter') {
+                if (e.type && e.type === 'savegartler') {
                     toSave = e.detail.data;
-                }
-                toSave = this._removeMetadata(toSave);
-                this.$.firstclient.postOnePaechter(toSave).then(() => {
-                    if (e.type && e.type === 'add-v') {
-                        this._insertNewPaechter(e);
-                    } else if (e.type && e.type === 'savedpaechter') {
+                    let mid = e.target.id;
+                    toSave = this._removeMetadata(toSave);
+                    this.$.firstclient.postOnePaechter(toSave).then(() => {
+                        this.$[mid].pushSuccesfullEvent(e.type);
                         this._insertChangedPaechter(e);
-                    }
-                    showToast(this, 'Die Änderungen des Pächters wurden erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
-
-                }).catch((error) => {
-                    showToast(this, 'Fehler bei der Speicherung der Änderungen', TOAST_TYPE.ERROR);
-                    this.set('dosave', null);
-                })
-
+                        showToast(this, 'Die Änderungen des Pächters wurden erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
+                    }).catch((error) => {
+                        showToast(this, 'Fehler bei der Speicherung der Änderungen', TOAST_TYPE.ERROR);
+                    })
+                }
             }
 
             postPaechter() {
