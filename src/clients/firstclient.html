@@ -61,6 +61,11 @@
                             CSV_UNKLARE: {
                                 path: '/loadCSV/unklare',
                                 port: '8000'
+                            },
+
+                            LOGG_PAECHTER_CHANGES:{
+                                path: '/api/loggs/paechter',
+                                port: '8000'
                             }
                         }
                     }
@@ -282,7 +287,8 @@
 
             }
 
-            postOnePaechter(theOne) {
+            postOnePaechter(theOne, logdata) {
+                console.warn('firstclient logadata' + JSON.stringify(logdata))
                 let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.JSON_PAECHTER.path + "/" + theOne.GARTENNUMMER, this.URLS.JSON_PAECHTER.port);
                 let myHeaders = new Headers();
                 myHeaders.set("Content-Type", "application/json");
@@ -305,7 +311,22 @@
                     if (!response.ok) {
                         throw response;
                     } else if (response && response.ok) {
-                        return response.json();
+                        let toRespond = response.json();
+                        try{
+                            if(logdata){
+                            logdata['data'] = toRespond;
+                            logdata['user'] = this.user;
+                            //logdata.datetime = this.moment();
+                            this.loggdata(logdata, 'paechter');
+                            }
+                        }catch(err){
+                            console.warn('nologgs')
+
+                        }
+
+                        
+                        
+                        return toRespond;
                     } else return undefined;
                 }).catch(() => {
                     console.log('postOnePaechter die Anfrage an' + sourceURL + ' war nicht erfolgreich')
@@ -667,6 +688,50 @@
 
                 })
                 return toSave;
+            }
+
+            loggdata(logdata, path) {
+                console.warn('LOGGDATA firstclient logadata' + JSON.stringify(logdata))
+                let gNr, urlpath, urlport;
+                switch(path){
+                    case 'paechter':
+                        gNr = logdata.data.GARTENNUMMER;
+                        urlpath = this.URLS.LOGG_PAECHTER_CHANGES.path;
+                        urlport = this.URLS.LOGG_PAECHTER_CHANGES.port;
+                    break;
+                    default:
+                    break;
+                }
+                
+                let sourceURL = this._getSourceURL(this.actualLocation, urlpath + "/" + gNr, urlport);
+                let myHeaders = new Headers();
+                myHeaders.set("Content-Type", "application/json");
+
+                let tosend = JSON.stringify(theOne);
+
+                let myInit = {
+                    method: 'POST',
+                    headers: myHeaders,
+                    mode: 'cors',
+                    cache: 'default',
+                    credentials: 'omit',
+                    body: tosend
+                };
+
+                let myRequest = new Request(sourceURL, myInit);
+
+                return fetch(myRequest).then((response) => {
+                    console.log("logg OnePaechter antwort" + JSON.stringify(response));
+                    if (!response.ok) {
+                        throw response;
+                    } else if (response && response.ok) {
+                        let toRespond = response.json();
+                        return toRespond;
+                    } else return undefined;
+                }).catch(() => {
+                    console.log('logging OnePaechter die Anfrage an' + sourceURL + ' war nicht erfolgreich')
+                    return Promise.reject();
+                });
             }
 
         }

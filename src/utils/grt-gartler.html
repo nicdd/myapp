@@ -170,8 +170,19 @@ Pagination Element for Vaadin-Grid Tables
             }
 
             _saveGartler() {
+                let diff = null;
+                let logdata = null;
+                try {
+                    diff = this.difference(this.gartler,this.originalGartler);
+                    if (diff){
+                        logdata = {diff: diff, type: 'UPDATE'}
+                    }
+                    console.warn('difference:' + JSON.stringify(diff))
+                }catch(fehler){
+                    console.warn('grt-gartler - Die Logdataen für _saveGartler:' + JSON.stringify(this.gartler) + ' konnten nicht ERSTELLT werden')
+                }
                 this.push('pendingEvents', 'savegartler' + "_" + this.id)
-                this.dispatchEvent(new CustomEvent('savegartler', { detail: {data: JSON.parse(JSON.stringify(this.gartler)), index: this.id.substring(4)} }))
+                this.dispatchEvent(new CustomEvent('savegartler', { detail: {data: JSON.parse(JSON.stringify(this.gartler)), index: this.id.substring(4), logdata: logdata} }))
             }
 
             succesfulledEventsChanged(change) {
@@ -191,6 +202,17 @@ Pagination Element for Vaadin-Grid Tables
                         idx -= 1;
                     }
                 }
+            }
+
+            difference(object, base) {
+                function changes(object, base) {
+                    return _.transform(object, function (result, value, key) {
+                        if (!_.isEqual(value, base[key])) {
+                            result[key] = (_.isObject(value) && _.isObject(base[key])) ? changes(value, base[key]) : {before: base[key], after: value};
+                        }
+                    });
+                }
+                return changes(object, base);
             }
 
         }
