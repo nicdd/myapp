@@ -76,6 +76,7 @@
             ready() {
                 super.ready();
                 this._setActualLocation();
+                
             }
 
             _setActualLocation() {
@@ -288,7 +289,9 @@
             }
 
             postOnePaechter(theOne, logdata) {
-                console.warn('firstclient logadata' + JSON.stringify(logdata))
+                let usr = JSON.parse(document.querySelector('my-app').getAttribute('user'));
+
+                console.warn('firstclient logadata' + JSON.stringify(logdata) + ' user:' + JSON.stringify(usr))
                 let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.JSON_PAECHTER.path + "/" + theOne.GARTENNUMMER, this.URLS.JSON_PAECHTER.port);
                 let myHeaders = new Headers();
                 myHeaders.set("Content-Type", "application/json");
@@ -307,16 +310,16 @@
                 let myRequest = new Request(sourceURL, myInit);
 
                 return fetch(myRequest).then((response) => {
-                    console.log("postOnePaechter antwort" + JSON.stringify(response));
+                    console.warn("postOnePaechter antwort" + JSON.stringify(response));
                     if (!response.ok) {
                         throw response;
                     } else if (response && response.ok) {
                         let toRespond = response.json();
                         try{
                             if(logdata){
-                            logdata['data'] = toRespond;
-                            logdata['user'] = this.user;
-                            //logdata.datetime = this.moment();
+                            logdata.data = theOne;
+                            logdata.user = usr.name;
+                            logdata.datetime = moment().format('YYYYMMDD_HHmm');
                             this.loggdata(logdata, 'paechter');
                             }
                         }catch(err){
@@ -707,7 +710,7 @@
                 let myHeaders = new Headers();
                 myHeaders.set("Content-Type", "application/json");
 
-                let tosend = JSON.stringify(theOne);
+                let tosend = JSON.stringify(logdata);
 
                 let myInit = {
                     method: 'POST',
@@ -721,7 +724,7 @@
                 let myRequest = new Request(sourceURL, myInit);
 
                 return fetch(myRequest).then((response) => {
-                    console.log("logg OnePaechter antwort" + JSON.stringify(response));
+                    console.warn("logg OnePaechter antwort" + JSON.stringify(response));
                     if (!response.ok) {
                         throw response;
                     } else if (response && response.ok) {
@@ -729,9 +732,40 @@
                         return toRespond;
                     } else return undefined;
                 }).catch(() => {
-                    console.log('logging OnePaechter die Anfrage an' + sourceURL + ' war nicht erfolgreich')
+                    console.warn('logging OnePaechter die Anfrage an' + sourceURL + ' war nicht erfolgreich')
                     return Promise.reject();
                 });
+            }
+
+            getHistoryFor(ganr){
+                let self = this;
+                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.LOGG_PAECHTER_CHANGES.path + "/" + ganr, this.URLS.LOGG_PAECHTER_CHANGES.port);
+                let myHeaders = new Headers();
+
+                let myInit = {
+                    method: 'GET',
+                    headers: myHeaders,
+                    mode: 'cors',
+                    cache: 'default',
+                    credentials: 'omit'
+                };
+
+                let myRequest = new Request(sourceURL, myInit);
+
+                return fetch(myRequest).then((response) => {
+                    if (response.status && response.status === 204) {
+                        console.log("getHistoryFor as JSON status 204")
+                        return undefined;
+                    } else {
+                        return response.json();
+                    }
+                }).then((data) => {
+                    console.log('firstclient getHistoryFor antwortet' + JSON.stringify(data))
+                    return Promise.resolve(data);
+                }).catch((err) => {
+                    console.log('getHistoryFor die Anfrage an api/loggs/paechter war nicht erfolgreich' + JSON.stringify(error))
+                });
+
             }
 
         }

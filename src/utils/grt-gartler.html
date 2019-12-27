@@ -173,7 +173,9 @@ Pagination Element for Vaadin-Grid Tables
                 let diff = null;
                 let logdata = null;
                 try {
-                    diff = this.difference(this.gartler,this.originalGartler);
+                    let actualGartler = JSON.parse(JSON.stringify(this.gartler));
+                    delete actualGartler['_history'];
+                    diff = this.difference(actualGartler,this.originalGartler);
                     if (diff){
                         logdata = {diff: diff, type: 'UPDATE'}
                     }

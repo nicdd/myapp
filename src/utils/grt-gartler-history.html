@@ -1,0 +1,271 @@
+<!--
+Pagination Element for Vaadin-Grid Tables
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../shared-styles.html">
+<link rel="import" href="../table-styles.html">
+
+<dom-module id="grt-gartler-history">
+    <template>
+        <style include="shared-styles table-styles">
+            :host {
+                display: block;
+                padding: 3px;
+            }
+
+            .flex-container {
+                /* We first create a flex layout context */
+                display: flex;
+
+                /* Then we define the flow direction 
+     and if we allow the items to wrap 
+   * Remember this is the same as:
+   * flex-direction: row;
+   * flex-wrap: wrap;
+   */
+                flex-flow: row wrap;
+
+                /* Then we define how is distributed the remaining space */
+                justify-content: space-between;
+            }
+        </style>
+        <div class="demo">
+            <div class="table-responsive-vertical shadow-z-1" id="haupttable">
+                <table id="table" class="table table-condensed">
+                    <thead>
+                        <th></th>
+                        <th>Benutzer</th>
+                        <th>Änderungsart</th>
+                        <th>Datum</th>
+                    </thead>
+                    <tbody>
+                        <template is="dom-repeat" items="[[history.history]]" as="eintrag">
+                            <tr id="change-[[index]]" style="cursor: pointer;" on-tap="_toggle">
+                                <td>
+                                    <iron-icon id="icon-[[index]]" icon="icons:expand-more">
+
+                                    </iron-icon>
+                                </td>
+                                <td>[[eintrag.user]]</td>
+                                <td>[[eintrag.type]]</td>
+                                <td>[[eintrag.datetime]]</td>
+                            </tr>
+                            <tr>
+                                <td class="no-padding" colspan="99">
+                                    <iron-collapse id="collapse-[[index]]" no-animation="true">
+                                        <div class="layout vertical">
+                                            <div class="mcard">
+                                                <div class="layout horizontal">
+                                                    <template is="dom-repeat"
+                                                        items="[[_getArrayFrom(index, history.history.*)]]"
+                                                        as="property">
+                                                        <div class="vertical" style="margin: 3px 6px !important;">
+                                                            <p>
+                                                                <b>[[property.label]]</b>
+                                                            </p>
+                                                            <div class="layout vertical">
+                                                                <div class="layout horizontal"><b>Vorher:</b>
+                                                                    <div>[[property.before]]</div>
+                                                                </div>
+                                                                <div class="layout horizontal"><b>Nachher:</b>
+                                                                    <div>[[property.after]]</div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                            <div class="flex-container">
+                                                <div class="mcard layout vertical">
+                                                    <p class="cardtitle">
+                                                        Gartendaten
+                                                    </p>
+                                                    <div class="cardcontent">
+                                                        <div class="layout vertical">
+                                                            <paper-input readonly class="labelgroup" always-float-label
+                                                                label="Gartennummer"
+                                                                value="[[eintrag.data.GARTENNUMMER]]"></paper-input>
+                                                            </paper-input>
+                                                            <paper-input readonly class="labelgroup" always-float-label
+                                                                label="Weg" value="[[eintrag.data.WEG]]">
+                                                            </paper-input>
+                                                            <paper-input readonly class="labelgroup" always-float-label
+                                                                label="Fläche" value="[[eintrag.data.FLAECHE]]">
+                                                            </paper-input>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="mcard layout vertical ">
+                                                    <p class="cardtitle">
+                                                        Pächterdaten
+                                                    </p>
+                                                    <div class="cardcontent">
+                                                        <div class="layout vertical">
+                                                            <div class="flex-container ">
+                                                                <paper-input readonly class="labelgroup"
+                                                                    always-float-label label="Geburtsdatum"
+                                                                    value="[[eintrag.data.GEBURTSDATUM]]">
+                                                                </paper-input>
+                                                                <paper-input readonly class="labelgroup"
+                                                                    always-float-label label="Anrede"
+                                                                    value="[[eintrag.data.ANREDE]]">
+                                                                </paper-input>
+                                                            </div>
+                                                            <div class="flex-container ">
+                                                                <paper-input readonly class="labelgroup"
+                                                                    always-float-label label="Vorname"
+                                                                    value="[[eintrag.data.VORNAME]]">
+                                                                </paper-input>
+                                                                <paper-input readonly class="labelgroup"
+                                                                    always-float-label label="Name"
+                                                                    value="[[eintrag.data.NACHNAME]]">
+                                                                </paper-input>
+                                                            </div>
+                                                            <div class="flex-container ">
+                                                                <paper-input readonly class="labelgroup"
+                                                                    always-float-label label="Strasse"
+                                                                    value="[[eintrag.data.STRASSE]]">
+                                                                </paper-input>
+                                                                <paper-input readonly class="labelgroup"
+                                                                    always-float-label label="Hausnummer"
+                                                                    value="[[eintrag.data.HAUSNUMMER]]">
+                                                                </paper-input>
+                                                            </div>
+                                                            <div class="flex-container ">
+                                                                <paper-input readonly class="labelgroup"
+                                                                    always-float-label label="PLZ"
+                                                                    value="[[eintrag.data.PLZ]]">
+                                                                </paper-input>
+                                                                <paper-input readonly class="labelgroup"
+                                                                    always-float-label label="Ort"
+                                                                    value="[[eintrag.data.WOHNORT]]">
+                                                                </paper-input>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="mcard layout vertical">
+                                                    <p class="cardtitle">
+                                                        Kontaktdaten
+                                                    </p>
+                                                    <div class="cardcontent">
+                                                        <div class="layout vertical">
+                                                            <paper-input readonly class="labelgroup" always-float-label
+                                                                label="Telefon" value="[[eintrag.data.TELEFON]]">
+                                                            </paper-input>
+                                                            <paper-input readonly class="labelgroup" always-float-label
+                                                                label="E-Mail" value="[[eintrag.data.EMAIL]]">
+                                                            </paper-input>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <template is="dom-if" if="[[_isLastDataChange(index)]]">
+                                                    <div class="mcard layout vertical justified">
+                                                        <paper-button
+                                                            disabled="[[_originalEqualThisGartler(originalGartler.*, eintrag.data.*)]]"
+                                                            bottom raised on-click="_resetGartler">Zurücksetzen
+                                                        </paper-button>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                            <div class="mcard">
+                                                <div class="cardcontent">
+                                                    <paper-textarea readonly label="Bemerkungen"
+                                                        value="[[eintrag.data.BEMERKUNGEN]]">
+                                                    </paper-textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </iron-collapse>
+
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+    </template>
+
+    <script>
+        class GrtGartlerHistory extends Polymer.Element {
+            static get is() { return 'grt-gartler-history'; }
+
+            static get properties() {
+                return {
+                    id: String,
+                    history: {
+                        type: Array,
+                        value: []
+                    },
+                    _selHistory: {
+                        type: Number,
+                        value: null,
+                        observer: '_selHistoryChanged'
+                    }
+                }
+            }
+
+            _toggle(ev) {
+                console.warn('toggled')
+                const hIndex = Number.parseInt(ev.target.closest('tr').getAttribute('id').replace('change-', ''));
+                console.warn('toggled hindex' + hIndex)
+                this._selHistory = hIndex === this._selHistory ? null : hIndex;
+                console.warn('toggled hindex this._selHistory' + this._selHistory)
+            }
+
+            _selHistoryChanged(newV, oldV) {
+                const newSel = Number.parseInt(newV);
+                const oldSel = Number.parseInt(oldV);
+                console.warn('_selHistoryChanged newSel' + newSel + ' oldSel' + oldSel)
+                if (Number.isInteger(oldSel)) {
+                    this.shadowRoot.querySelector('#collapse-' + oldSel).hide();
+                }
+                if (Number.isInteger(newSel) && newSel < this.history.history.length) {
+                    const target = this.shadowRoot.querySelector('#collapse-' + newSel);
+                    target.show();
+                    if (!this._isInViewport(target)) {
+                        const offset = newSel - 5;
+                        console.warn('offset < 0' + (offset < 0))
+                        const contId = offset < 0 ? "#haupttable" : "#change-" + offset;
+                        this.shadowRoot.querySelector(contId).scrollIntoView();
+                    }
+                }
+
+            }
+
+            _isInViewport(el) {
+                const rect = el.getBoundingClientRect();
+                let resp = rect.top > 200 && rect.bottom < 750;
+                console.warn(resp + ' rect.top' + rect.top)
+                return resp;
+            }
+
+            _getArrayFrom(idx) {
+                let result = [];
+                Object.keys(this.history.history[idx].diff).forEach((key) => {
+                    let newChange = {
+                        label: key,
+                        before: this.history.history[idx].diff[key].before,
+                        after: this.history.history[idx].diff[key].after
+                    }
+                    result.push(newChange);
+                })
+                return result;
+            }
+
+            _isLastDataChange(index) {
+                return index === 0;
+            }
+
+        }
+
+        window.customElements.define(GrtGartlerHistory.is, GrtGartlerHistory);
+    </script>
+</dom-module>
