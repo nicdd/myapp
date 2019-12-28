@@ -5,6 +5,7 @@ Pagination Element for Vaadin-Grid Tables
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../clients/firstclient.html">
 <link rel="import" href="../shared-styles.html">
 <link rel="import" href="../first-domain-styles.html">
 <link rel="import" href="../table-styles.html">
@@ -33,6 +34,7 @@ Pagination Element for Vaadin-Grid Tables
                 justify-content: space-between;
             }
         </style>
+        <first-client id="firstclient"></first-client>
         <div class="demo">
             <div class="table-responsive-vertical shadow-z-1" id="haupttable">
                 <table id="table" class="table table-condensed table-striped table-bordered">
@@ -163,6 +165,7 @@ Pagination Element for Vaadin-Grid Tables
                                                         </div>
                                                     </div>
                                                 </div>
+                                                <!--
                                                 <template is="dom-if" if="[[_isLastDataChange(index)]]">
                                                     <div class="mcard marginedcard layout vertical justified">
                                                         <paper-button
@@ -171,6 +174,7 @@ Pagination Element for Vaadin-Grid Tables
                                                         </paper-button>
                                                     </div>
                                                 </template>
+                                                -->
                                             </div>
                                             <div class="mcard marginedcard disabled">
                                                 <div class="cardcontent">
@@ -201,9 +205,12 @@ Pagination Element for Vaadin-Grid Tables
             static get properties() {
                 return {
                     id: String,
+                    garten: {
+                        type: String,
+                        observer: '_loadHistory'
+                    },
                     history: {
-                        type: Array,
-                        value: []
+                        type: Object
                     },
                     _selHistory: {
                         type: Number,
@@ -214,17 +221,13 @@ Pagination Element for Vaadin-Grid Tables
             }
 
             _toggle(ev) {
-                console.warn('toggled')
                 const hIndex = Number.parseInt(ev.target.closest('tr').getAttribute('id').replace('change-', ''));
-                console.warn('toggled hindex' + hIndex)
                 this._selHistory = hIndex === this._selHistory ? null : hIndex;
-                console.warn('toggled hindex this._selHistory' + this._selHistory)
             }
 
             _selHistoryChanged(newV, oldV) {
                 const newSel = Number.parseInt(newV);
                 const oldSel = Number.parseInt(oldV);
-                console.warn('_selHistoryChanged newSel' + newSel + ' oldSel' + oldSel)
                 if (Number.isInteger(oldSel)) {
                     this.shadowRoot.querySelector('#collapse-' + oldSel).hide();
                 }
@@ -233,7 +236,6 @@ Pagination Element for Vaadin-Grid Tables
                     target.show();
                     if (!this._isInViewport(target)) {
                         const offset = newSel - 5;
-                        console.warn('offset < 0' + (offset < 0))
                         const contId = offset < 0 ? "#haupttable" : "#change-" + offset;
                         this.shadowRoot.querySelector(contId).scrollIntoView();
                     }
@@ -244,7 +246,6 @@ Pagination Element for Vaadin-Grid Tables
             _isInViewport(el) {
                 const rect = el.getBoundingClientRect();
                 let resp = rect.top > 200 && rect.bottom < 750;
-                console.warn(resp + ' rect.top' + rect.top)
                 return resp;
             }
 
@@ -271,6 +272,23 @@ Pagination Element for Vaadin-Grid Tables
                 if(mDateTime.isValid()){
                     return moment(mDateTime).format('DD.MM.YYYY HH:mm')
                 }
+            }
+
+            postLogData(newGartler, logdata, path){
+                this.$.firstclient.logdata(newGartler, logdata, path).then((resp)=>{
+                    this._loadHistory(this.history.id);
+                }).catch((error) => {
+                    showToast(this, 'Fehler bei der Speicherung der History-Daten ', TOAST_TYPE.ERROR);
+                })
+            }
+
+            _loadHistory(gartennummer){
+                if(gartennummer){
+                    this.$.firstclient.getHistoryFor(gartennummer).then((response)=>{
+                        this.set("history", response || {id:gartennummer, history:[]});
+                    })
+                }
+
             }
 
         }

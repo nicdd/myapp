@@ -310,7 +310,7 @@
                                         <td colspan="13" class="no-padding">
                                             <iron-collapse-button id="history_clps[[index]]" expand-icon="add-circle-outline"
                                                 collapse-icon="remove-circle-outline"
-                                                class="detailelement light-element flex" on-opened-changed="collapsedOpeningChanged">
+                                                class="detailelement light-element flex">
                                                 <div slot="collapse-trigger" class="flex">
                                                     <div class="layout horizontal justified">
                                                         <span>Änderungshistorie</span>
@@ -318,7 +318,7 @@
                                                 </div>
                                                 <div slot="collapse-content" class="corrected-margin">
                                                     <div class="mcard strong-text-color">
-                                                        <grt-gartler-history id="history[[index]]" history="[[item._history]]">
+                                                        <grt-gartler-history id="history[[index]]" garten="[[item.GARTENNUMMER]]">
                                                             <h4 slot="title">Pächter</h4>
                                                         </grt-gartler-history>
 
@@ -412,20 +412,7 @@
                 }
             }
 
-            collapsedOpeningChanged(e){
-                if(e.target.id.includes('history_clps')){
-                    let idx = e.target.id.substring(12);
-                    if (e.detail.value){
-                        this.$.firstclient.getHistoryFor(e.model.item.GARTENNUMMER).then((response)=>{
-                            e.model.set("item._history", response);
-                        })
-                    }
-
-                    
-                }
-
-                //debugger;
-            }
+            
 
             _confirmRemove(e) {
                 e.preventDefault();
@@ -440,7 +427,7 @@
 
             _removeMetadata(paechter) {
                 let vToSave = JSON.parse(JSON.stringify(paechter))
-                const keysToReset = ["selected", "_detailsOpened", "_history"];
+                const keysToReset = ["selected", "_detailsOpened"];
                 Object.keys(vToSave).forEach((vkey) => {
                     if (keysToReset.some((elem) => elem === vkey)) {
                         delete vToSave[vkey];
@@ -730,11 +717,14 @@
                 if (e.type && e.type === 'savegartler') {
                     toSave = e.detail.data;
                     let mid = e.target.id;
-                    console.warn('logdata' + JSON.stringify(e.detail.logdata) + ' this.logg' + this.logg)
                     toSave = this._removeMetadata(toSave);
-                    this.$.firstclient.postOnePaechter(toSave, (this.logg ? e.detail.logdata : null)).then(() => {
+                    this.$.firstclient.postOnePaechter(toSave).then(() => {
                         this.$[mid].pushSuccesfullEvent(e.type);
                         this._insertChangedPaechter(e);
+                        if (this.logg){
+                            let historyID = "history" + mid.substring(4);
+                            this.$[historyID].postLogData(toSave, e.detail.logdata, 'paechter');
+                        }
                         showToast(this, 'Die Änderungen des Pächters wurden erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
                     }).catch((error) => {
                         showToast(this, 'Fehler bei der Speicherung der Änderungen', TOAST_TYPE.ERROR);

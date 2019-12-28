@@ -63,7 +63,7 @@
                                 port: '8000'
                             },
 
-                            LOGG_PAECHTER_CHANGES:{
+                            LOGG_PAECHTER_CHANGES: {
                                 path: '/api/loggs/paechter',
                                 port: '8000'
                             }
@@ -76,7 +76,7 @@
             ready() {
                 super.ready();
                 this._setActualLocation();
-                
+
             }
 
             _setActualLocation() {
@@ -288,12 +288,11 @@
 
             }
 
-            postOnePaechter(theOne, logdata) {
-                let usr = JSON.parse(document.querySelector('my-app').getAttribute('user'));
+            postOnePaechter(theOne) {
 
-                console.warn('firstclient logadata' + JSON.stringify(logdata) + ' user:' + JSON.stringify(usr))
                 let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.JSON_PAECHTER.path + "/" + theOne.GARTENNUMMER, this.URLS.JSON_PAECHTER.port);
                 let myHeaders = new Headers();
+
                 myHeaders.set("Content-Type", "application/json");
 
                 let tosend = JSON.stringify(theOne);
@@ -310,26 +309,10 @@
                 let myRequest = new Request(sourceURL, myInit);
 
                 return fetch(myRequest).then((response) => {
-                    console.warn("postOnePaechter antwort" + JSON.stringify(response));
                     if (!response.ok) {
                         throw response;
                     } else if (response && response.ok) {
-                        let toRespond = response.json();
-                        try{
-                            if(logdata){
-                            logdata.data = theOne;
-                            logdata.user = usr.name;
-                            logdata.datetime = moment().format('YYYYMMDD_HHmm');
-                            this.loggdata(logdata, 'paechter');
-                            }
-                        }catch(err){
-                            console.warn('nologgs')
-
-                        }
-
-                        
-                        
-                        return toRespond;
+                        return response.json();
                     } else return undefined;
                 }).catch(() => {
                     console.log('postOnePaechter die Anfrage an' + sourceURL + ' war nicht erfolgreich')
@@ -693,19 +676,28 @@
                 return toSave;
             }
 
-            loggdata(logdata, path) {
-                console.warn('LOGGDATA firstclient logadata' + JSON.stringify(logdata))
+            logdata(theOne, logdata, path) {
+                let usr = JSON.parse(document.querySelector('my-app').getAttribute('user'));
+                try {
+                    if (logdata) {
+                        logdata.data = theOne;
+                        logdata.user = usr.name;
+                        logdata.datetime = moment().format('YYYYMMDD_HHmm');
+                    }
+                } catch (err) {
+                    console.warn('nologgs')
+                }
                 let gNr, urlpath, urlport;
-                switch(path){
+                switch (path) {
                     case 'paechter':
                         gNr = logdata.data.GARTENNUMMER;
                         urlpath = this.URLS.LOGG_PAECHTER_CHANGES.path;
                         urlport = this.URLS.LOGG_PAECHTER_CHANGES.port;
-                    break;
+                        break;
                     default:
-                    break;
+                        break;
                 }
-                
+
                 let sourceURL = this._getSourceURL(this.actualLocation, urlpath + "/" + gNr, urlport);
                 let myHeaders = new Headers();
                 myHeaders.set("Content-Type", "application/json");
@@ -724,7 +716,6 @@
                 let myRequest = new Request(sourceURL, myInit);
 
                 return fetch(myRequest).then((response) => {
-                    console.warn("logg OnePaechter antwort" + JSON.stringify(response));
                     if (!response.ok) {
                         throw response;
                     } else if (response && response.ok) {
@@ -737,7 +728,7 @@
                 });
             }
 
-            getHistoryFor(ganr){
+            getHistoryFor(ganr) {
                 let self = this;
                 let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.LOGG_PAECHTER_CHANGES.path + "/" + ganr, this.URLS.LOGG_PAECHTER_CHANGES.port);
                 let myHeaders = new Headers();
