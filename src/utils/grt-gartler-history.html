@@ -6,6 +6,7 @@ Pagination Element for Vaadin-Grid Tables
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
 <link rel="import" href="../shared-styles.html">
+<link rel="import" href="../first-domain-styles.html">
 <link rel="import" href="../table-styles.html">
 
 <dom-module id="grt-gartler-history">
@@ -34,7 +35,7 @@ Pagination Element for Vaadin-Grid Tables
         </style>
         <div class="demo">
             <div class="table-responsive-vertical shadow-z-1" id="haupttable">
-                <table id="table" class="table table-condensed">
+                <table id="table" class="table table-condensed table-striped table-bordered">
                     <thead>
                         <th></th>
                         <th>Benutzer</th>
@@ -51,13 +52,13 @@ Pagination Element for Vaadin-Grid Tables
                                 </td>
                                 <td>[[eintrag.user]]</td>
                                 <td>[[eintrag.type]]</td>
-                                <td>[[eintrag.datetime]]</td>
+                                <td>[[_getDatum(eintrag.datetime)]]</td>
                             </tr>
                             <tr>
-                                <td class="no-padding" colspan="99">
+                                <td class="no-padding" style="padding: 0;" colspan="100">
                                     <iron-collapse id="collapse-[[index]]" no-animation="true">
                                         <div class="layout vertical">
-                                            <div class="mcard">
+                                            <div class="mcard marginedcard">
                                                 <div class="layout horizontal">
                                                     <template is="dom-repeat"
                                                         items="[[_getArrayFrom(index, history.history.*)]]"
@@ -79,7 +80,7 @@ Pagination Element for Vaadin-Grid Tables
                                                 </div>
                                             </div>
                                             <div class="flex-container">
-                                                <div class="mcard layout vertical">
+                                                <div class="mcard marginedcard layout vertical disabled">
                                                     <p class="cardtitle">
                                                         Gartendaten
                                                     </p>
@@ -98,7 +99,7 @@ Pagination Element for Vaadin-Grid Tables
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div class="mcard layout vertical ">
+                                                <div class="mcard marginedcard layout vertical disabled">
                                                     <p class="cardtitle">
                                                         Pächterdaten
                                                     </p>
@@ -147,7 +148,7 @@ Pagination Element for Vaadin-Grid Tables
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div class="mcard layout vertical">
+                                                <div class="mcard marginedcard layout vertical disabled">
                                                     <p class="cardtitle">
                                                         Kontaktdaten
                                                     </p>
@@ -163,7 +164,7 @@ Pagination Element for Vaadin-Grid Tables
                                                     </div>
                                                 </div>
                                                 <template is="dom-if" if="[[_isLastDataChange(index)]]">
-                                                    <div class="mcard layout vertical justified">
+                                                    <div class="mcard marginedcard layout vertical justified">
                                                         <paper-button
                                                             disabled="[[_originalEqualThisGartler(originalGartler.*, eintrag.data.*)]]"
                                                             bottom raised on-click="_resetGartler">Zurücksetzen
@@ -171,7 +172,7 @@ Pagination Element for Vaadin-Grid Tables
                                                     </div>
                                                 </template>
                                             </div>
-                                            <div class="mcard">
+                                            <div class="mcard marginedcard disabled">
                                                 <div class="cardcontent">
                                                     <paper-textarea readonly label="Bemerkungen"
                                                         value="[[eintrag.data.BEMERKUNGEN]]">
@@ -262,6 +263,14 @@ Pagination Element for Vaadin-Grid Tables
 
             _isLastDataChange(index) {
                 return index === 0;
+            }
+
+            _getDatum(datetime){
+                let mDateTime = moment(datetime, 'YYYYMMDD_HHmm');
+
+                if(mDateTime.isValid()){
+                    return moment(mDateTime).format('DD.MM.YYYY HH:mm')
+                }
             }
 
         }
