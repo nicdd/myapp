@@ -18,19 +18,19 @@
 <link rel="import" href="../utils/grt-gartler.html">
 <link rel="import" href="../utils/grt-gartler-history.html">
 
-<dom-module id="my-paechter">
+<dom-module id="my-foerdermitglieder">
     <template>
         <style include="first-domain-styles table-styles">
             :host {
                 /* Stretch this element to fill viewport */
                 height: calc(100vh - 88px);
                 flex: 1;
-
                 /* Make a flex column layout of children */
                 display: flex;
                 flex-direction: column;
                 overflow: auto;
                 -webkit-overflow-scrolling: touch;
+                background-color: var(--my-yellow-background);
                 padding: var(--content-padding);
             }
 
@@ -71,9 +71,10 @@
                 text-align: center !important;
                 vertical-align: middle !important;
             }
+
         </style>
 
-        <first-client id="firstclient"></first-client>
+         <first-client id="firstclient"></first-client>
         <basic-client id="bclient"></basic-client>
         <grt-dialog id="deletedialog" dialog-type="confirmation" confirmation-name="Löschen" cancel-name="Abbrechen"
             on-grtconfirm="_removeItem"></grt-dialog>
@@ -342,11 +343,15 @@
 
 
     <script>
-        class MyPaechter extends Polymer.Element {
-            static get is() { return 'my-paechter'; }
+        class MyFoerdermitglieder extends Polymer.Element {
+            static get is() { return 'my-foerdermitglieder'; }
 
             static get properties() {
                 return {
+                    mbgclr:{
+                        type: String,
+                        value: "red"
+                    },
                     logg:{
                         type: Boolean,
                     },
@@ -894,6 +899,6 @@
             }
         }
 
-        window.customElements.define(MyPaechter.is, MyPaechter);
+        window.customElements.define(MyFoerdermitglieder.is, MyFoerdermitglieder);
     </script>
 </dom-module>

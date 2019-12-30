@@ -71,7 +71,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <style include="second-domain-styles table-styles">
       :host {
         /* Stretch this element to fill viewport */
-        /* height: 85vh; */
+        height: calc(100vh - 88px);
         flex: 1;
 
         /* Make a flex column layout of children */
@@ -79,6 +79,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         flex-direction: column;
         overflow: auto;
         -webkit-overflow-scrolling: touch;
+        padding: var(--content-padding);
       }
 
       .toolbar {

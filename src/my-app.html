@@ -28,6 +28,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/neon-animation/web-animations.html">
 <link rel="import" href="general/default-page.html">
 <link rel="import" href="general/my-paechter.html">
+<link rel="import" href="general/my-foerdermitglieder.html">
 <link rel="import" href="general/my-versicherte.html">
 <link rel="import" href="general/my-unklare.html">
 <link rel="import" href="general/my-versicherungkonfig.html">
@@ -50,6 +51,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       :host {
         display: block;
         height: 100%;
+        --my-yellow-background: #fff176;
+        --content-padding: 8px;
+        --app-drawer-width: 220px;
       }
 
       app-header-layout {
@@ -81,7 +85,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       iron-pages {
-        padding: 10px 16px;
+        padding: 0px;
       }
 
       #help {
@@ -156,6 +160,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         fallback-selection="view404" role="main">
         <my-paechter logg="true" name="paechter"></my-paechter>
         <default-page name="default"></default-page>
+        <my-foerdermitglieder logg="true" name="foerdermitglieder"></my-foerdermitglieder>
         <my-versicherte name="versicherte"></my-versicherte>
         <my-unklare name="unklare"></my-unklare>
         <my-versicherungkonfig name="versicherungkonfig"></my-versicherungkonfig>

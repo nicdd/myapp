@@ -66,12 +66,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <style include="critical-domain-styles table-styles">
       :host {
         /* Stretch this element to fill viewport */
-        height: 85vh;
+        height: calc(100vh - 88px);
 
         /* Make a flex column layout of children */
         display: flex;
 
         flex-direction: column;
+        padding: var(--content-padding);
       }
 
       .toolbar {
