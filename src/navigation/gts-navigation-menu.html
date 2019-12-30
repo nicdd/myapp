@@ -144,8 +144,12 @@
                 } */
             }
 
-            .nav-item.child.yellow.iron-selected{
+            .nav-item.child.aktive.iron-selected{
                 background-color: var(--my-yellow-background);
+            }
+
+            .nav-item.child.passive.iron-selected{
+                background-color: var(--my-darkyellow-background);
             }
 
             .nav-item.child:hover {
@@ -164,9 +168,9 @@
                         <div slot="collapse-content">
                             <iron-selector attr-for-selected="name" class="drawer-list">
                                 <paper-item on-click="_navigateEvent" name="paechter" class="nav-item child" href="#[[rootPath]]paechter">Pächter</paper-item>
-                                <paper-item on-click="_navigateEvent" name="foerdermitglieder" class="nav-item child yellow"
+                                <paper-item on-click="_navigateEvent" name="foerdermitglieder" class="nav-item child aktive"
                                     href="#[[rootPath]]foerdermitglieder">Fördermitglieder</paper-item>
-                                <paper-item on-click="_navigateEvent" name="passivemitglieder" class="nav-item child"
+                                <paper-item on-click="_navigateEvent" name="passivemitglieder" class="nav-item child passive"
                                     href="#[[rootPath]]passivemitglieder">Passive Mitglieder</paper-item>
                             </iron-selector>
                         </div>
