@@ -101,7 +101,6 @@
                                             disabled="[[!editing]]">
                                             <iron-icon id="dli[[index]]" icon="delete" slot="item-icon" on-click="_removeColumn"></iron-icon>
                                         </button>
-
                                     </td>
                                 </tr>
                             </template>
@@ -158,7 +157,7 @@
 
             ready() {
                 super.ready();
-                this.$.bclient.getGeneralColumnConfig().then((colConf) => {
+                this.$.bclient.getDomaenenColumnConfig('general').then((colConf) => {
                     if (colConf && Array.isArray(colConf)) {
                         let anzC = colConf.length;
                         this.set('tempAnzahlSpalten', anzC)
@@ -260,7 +259,7 @@
 
             _saveColumnConfig() {
 
-                this.$.bclient.postGeneralColumnConfig(this.colConf).then(() => {
+                this.$.bclient.postDomaenenColumnConfig(this.colConf, 'general').then(() => {
                     this.set('completed', false)
                     this.set('completed', true)
                     showToast(this, 'Die Konfiguration der Spalten wurde erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
@@ -315,7 +314,6 @@
                         this.splice(path, idx, 1);
                 }
                 console.log('checkbox checked colConf' + JSON.stringify(this.colConf))
-
             }
         }
 

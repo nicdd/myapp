@@ -30,8 +30,26 @@
                             GENERAL_COLUMN_CONFIG: {
                                 path: '/api/generalcolumnconfig',
                                 port: '8000'
+                            },
+
+                            FOERDERMITGLIEDER_CONFIG: {
+                                path: '/api/foerdermitgliedercolumnconfig',
+                                port: '8000'
                             }
                         }
+                    },
+                    HEADERINFO:{
+                        type: Object,
+                        value: {
+                            GET_HEADER:{
+                                method: 'GET',
+                                headers: new Headers(),
+                                mode: 'cors',
+                                cache: 'default',
+                                credentials: 'omit'
+                            }
+                        }
+
                     },
                     versicherungconfig: {
                         type: Object,
@@ -74,14 +92,15 @@
                 this.set('actualLocation', { protocol: window.location.protocol, hostname: window.location.hostname });
             }
 
-            _getSourceURL(uriData, resPath, port) {
+            _getSourceURL(resPath, port) {
+                let uriData = this.actualLocation;
                 let urlToSource = uriData.protocol + "//" + uriData.hostname + ":" + port + resPath;
                 return urlToSource;
             }
 
             getVersicherungconfig() {
                 let self = this;
-                let sourceURL = self._getSourceURL(self.actualLocation, self.URLS.VERSICHERUNG_CONFIG.path, self.URLS.VERSICHERUNG_CONFIG.port);
+                let sourceURL = self._getSourceURL(self.URLS.VERSICHERUNG_CONFIG.path, self.URLS.VERSICHERUNG_CONFIG.port);
                 let myHeaders = new Headers();
 
                 let myInit = {
@@ -116,7 +135,7 @@
                 let tosend = JSON.stringify(theConfig);
                 console.log('theconfigtosave' + JSON.stringify(theConfig))
                 let self = this;
-                let sourceURL = self._getSourceURL(self.actualLocation, self.URLS.VERSICHERUNG_CONFIG.path, self.URLS.VERSICHERUNG_CONFIG.port);
+                let sourceURL = self._getSourceURL(self.URLS.VERSICHERUNG_CONFIG.path, self.URLS.VERSICHERUNG_CONFIG.port);
                 let myHeaders = new Headers();
                 myHeaders.set("Content-Type", "application/json");
 
@@ -153,38 +172,44 @@
                 return this.versicherungconfig;
             }
 
-            getGeneralColumnConfig() {
+            getDomaenenColumnConfig(domainName){
                 let self = this;
-                let sourceURL = self._getSourceURL(self.actualLocation, self.URLS.GENERAL_COLUMN_CONFIG.path, self.URLS.GENERAL_COLUMN_CONFIG.port);
-                let myHeaders = new Headers();
+                let urlInfo = null;
+                Object.keys(self.URLS).forEach((key)=>{
+                    if (self.URLS[key].path.indexOf(domainName, 5) >= 0){
+                        urlInfo = self.URLS[key];
+                    }
+                })
 
-                let myInit = {
-                    method: 'GET',
-                    headers: myHeaders,
-                    mode: 'cors',
-                    cache: 'default',
-                    credentials: 'omit'
-                };
+                let sourceURL = self._getSourceURL(urlInfo.path, urlInfo.port);
 
-                let myRequest = new Request(sourceURL, myInit);
+                let myRequest = new Request(sourceURL, self.HEADERINFO.GET_HEADER);
 
                 return fetch(myRequest).then((response) => {
                     if (response.status && response.status === 204) {
-                        console.log("getGeneralColumnConfig status 204")
+                        console.log("get" + domainName + "ColumnConfig status 204")
                         return undefined;
                     } else {
                         return response.json();
                     }
                 }).catch((err) => {
-                        console.log('getGeneralColumnConfig die Anfrage an api/generalcolumnconfig war nicht erfolgreich' + JSON.stringify(error))
-                    });
+                    console.log('get' + domainName + 'ColumnConfig die Anfrage an api/'+ domainName +'columnconfig war nicht erfolgreich' + JSON.stringify(error))
+                    return Promise.reject(err);
+                });
             }
 
-            postGeneralColumnConfig(theConfig) {
+            postDomaenenColumnConfig(theConfig, domainName) {
+                let self = this;
                 let tosend = JSON.stringify(theConfig);
                 console.log('theconfigtosave' + JSON.stringify(theConfig))
-                let self = this;
-                let sourceURL = self._getSourceURL(self.actualLocation, self.URLS.GENERAL_COLUMN_CONFIG.path, self.URLS.GENERAL_COLUMN_CONFIG.port);
+                let urlInfo = null;
+                Object.keys(self.URLS).forEach((key)=>{
+                    if (self.URLS[key].path.indexOf(domainName, 5) >= 0){
+                        urlInfo = self.URLS[key];
+                    }
+                })
+                
+                let sourceURL = self._getSourceURL(urlInfo.path, urlInfo.port);
                 let myHeaders = new Headers();
                 myHeaders.set("Content-Type", "application/json");
 
@@ -201,14 +226,14 @@
 
                 return fetch(myRequest).then((response) => {
                     if (response.ok) {
-                        console.log("postVersicherungconfig antwort")
+                        console.log("post" + domainName + " Spaltenconfig antwort")
                         return response.json();
                     } else {
                         throw Error(`Anfrage fehlgeschlagen mit status ${response.status}`);
                     }
                     
                 }).catch((err) => {
-                    console.log('postGeneralColumnConfig die Anfrage an api/versicherungconfig war nicht erfolgreich')
+                    console.log('post' + domainName + 'ColumnConfig die Anfrage an api/' + domainName + 'columnconfig war nicht erfolgreich')
                     return Promise.reject(err);
                 });
 

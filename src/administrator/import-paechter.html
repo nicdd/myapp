@@ -247,7 +247,7 @@
             showToast(this, 'Bei der Importierung der Vereinsdaten wurden keine Paechterdaten gefunden', TOAST_TYPE.ERROR);
           }
         }).then(() => {
-          return this.$.bclient.getGeneralColumnConfig().then((generalConf) => {
+          return this.$.bclient.getDomaenenColumnConfig('general').then((generalConf) => {
             if (generalConf && Array.isArray(generalConf)) {
               this.set('generalConf', generalConf);
             }
@@ -264,7 +264,7 @@
       }
 
       _importLocalPaechterPressed(localPaechterFromCSVAsArray) {
-        this.$.bclient.getGeneralColumnConfig().then((generalConf) => {
+        this.$.bclient.getDomaenenColumnConfig('general').then((generalConf) => {
           if (generalConf && Array.isArray(generalConf) && localPaechterFromCSVAsArray && localPaechterFromCSVAsArray.length) {
             this.set('generalConf', generalConf);
             this.mapToJSON(localPaechterFromCSVAsArray);

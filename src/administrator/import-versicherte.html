@@ -273,7 +273,7 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
             showToast(this, 'Bei der Importierung der KVD-Daten wurden keine Versichertendaten gefunden', TOAST_TYPE.ERROR);
           }
         }).then(() => {
-          return this.$.bclient.getGeneralColumnConfig().then((generalConf) => {
+          return this.$.bclient.getDomaenenColumnConfig('general').then((generalConf) => {
             if (generalConf && Array.isArray(generalConf)) {
               this.set('generalConf', generalConf);
             }
@@ -312,7 +312,7 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
       }
 
       _importLocalVersichertePressed(localVersicherteFromCSVAsArray) {
-        this.$.bclient.getGeneralColumnConfig().then((generalConf) => {
+        this.$.bclient.getDomaenenColumnConfig('general').then((generalConf) => {
           if (generalConf && Array.isArray(generalConf) && localVersicherteFromCSVAsArray && localVersicherteFromCSVAsArray.length) {
             this.set('generalConf', generalConf);
             this.mapToJSON(localVersicherteFromCSVAsArray);

@@ -38,6 +38,11 @@
                                 port: '8000'
                             },
 
+                            JSON_FOERDERMITGLIEDER: {
+                                path: '/api/foerdermitglieder',
+                                port: '8000'
+                            },
+
                             CSV_VERSICHERTE: {
                                 path: '/loadCSV/versicherte',
                                 port: '8000'
@@ -68,6 +73,19 @@
                                 port: '8000'
                             }
                         }
+                    },
+                    HEADERINFO:{
+                        type: Object,
+                        value: {
+                            GET_HEADER:{
+                                method: 'GET',
+                                headers: new Headers(),
+                                mode: 'cors',
+                                cache: 'default',
+                                credentials: 'omit'
+                            }
+                        }
+
                     }
                 }
             }
@@ -83,24 +101,17 @@
                 this.set('actualLocation', { protocol: window.location.protocol, hostname: window.location.hostname });
             }
 
-            _getSourceURL(uriData, resPath, port) {
+            _getSourceURL(resPath, port) {
+                let uriData = this.actualLocation;
                 let urlToSource = uriData.protocol + "//" + uriData.hostname + ":" + port + resPath;
                 return urlToSource;
             }
 
             getCSV() {
-                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.CSV_BASIC.path, this.URLS.CSV_BASIC.port);
-                let myHeaders = new Headers();
+                let self = this;
+                let sourceURL = self._getSourceURL(self.URLS.CSV_BASIC.path, self.URLS.CSV_BASIC.port);
 
-                let myInit = {
-                    method: 'GET',
-                    headers: myHeaders,
-                    mode: 'cors',
-                    cache: 'default',
-                    credentials: 'omit'
-                };
-
-                let myRequest = new Request(sourceURL, myInit);
+                let myRequest = new Request(sourceURL, self.HEADERINFO.GET_HEADER);
 
                 return fetch(myRequest).then((response) => {
                     console.log("getCSVs aaaaaaaantwort" + JSON.stringify(response));
@@ -115,18 +126,10 @@
 
 
             getVersicherteCSV() {
-                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.CSV_VERSICHERTE.path, this.URLS.CSV_VERSICHERTE.port);
-                let myHeaders = new Headers();
+                let self = this;
+                let sourceURL = self._getSourceURL(self.URLS.CSV_VERSICHERTE.path, self.URLS.CSV_VERSICHERTE.port);
 
-                let myInit = {
-                    method: 'GET',
-                    headers: myHeaders,
-                    mode: 'cors',
-                    cache: 'default',
-                    credentials: 'omit'
-                };
-
-                let myRequest = new Request(sourceURL, myInit);
+                let myRequest = new Request(sourceURL, self.HEADERINFO.GET_HEADER);
 
                 return fetch(myRequest).then((response) => {
                     console.log("getCSVs aaaaaaaantwort" + JSON.stringify(response));
@@ -140,18 +143,10 @@
             }
 
             getPaechterCSV() {
-                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.CSV_PAECHTER.path, this.URLS.CSV_PAECHTER.port);
-                let myHeaders = new Headers();
+                let self = this;
+                let sourceURL = self._getSourceURL(self.URLS.CSV_PAECHTER.path, self.URLS.CSV_PAECHTER.port);
 
-                let myInit = {
-                    method: 'GET',
-                    headers: myHeaders,
-                    mode: 'cors',
-                    cache: 'default',
-                    credentials: 'omit'
-                };
-
-                let myRequest = new Request(sourceURL, myInit);
+                let myRequest = new Request(sourceURL, self.HEADERINFO.GET_HEADER);
 
                 return fetch(myRequest).then((response) => {
                     console.log("getCSVs aaaaaaaantwort" + JSON.stringify(response));
@@ -166,7 +161,8 @@
 
             postVersicherteAsJSON(versicherte) {
                 console.log('topost' + JSON.stringify(versicherte))
-                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.JSON_VERSICHERTE.path, this.URLS.JSON_VERSICHERTE.port);
+                let self = this;
+                let sourceURL = self._getSourceURL(self.URLS.JSON_VERSICHERTE.path, self.URLS.JSON_VERSICHERTE.port);
                 let myHeaders = new Headers();
                 myHeaders.set("Content-Type", "application/json");
 
@@ -197,18 +193,9 @@
 
             getUnklareVersicherteAsJSON() {
                 let self = this;
-                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.JSON_UNKLARE_VERSICHERTE.path, this.URLS.JSON_UNKLARE_VERSICHERTE.port);
-                let myHeaders = new Headers();
+                let sourceURL = self._getSourceURL(self.URLS.JSON_UNKLARE_VERSICHERTE.path, self.URLS.JSON_UNKLARE_VERSICHERTE.port);
 
-                let myInit = {
-                    method: 'GET',
-                    headers: myHeaders,
-                    mode: 'cors',
-                    cache: 'default',
-                    credentials: 'omit'
-                };
-
-                let myRequest = new Request(sourceURL, myInit);
+                let myRequest = new Request(sourceURL, self.HEADERINFO.GET_HEADER);
 
                 return fetch(myRequest).then((response) => {
                     if (response.status && response.status === 204) {
@@ -226,8 +213,8 @@
             }
 
             postUnklareVersicherteAsJSON(unklareFaelle) {
-
-                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.JSON_UNKLARE_VERSICHERTE.path, this.URLS.JSON_UNKLARE_VERSICHERTE.port);
+                let self = this;
+                let sourceURL = self._getSourceURL(self.URLS.JSON_UNKLARE_VERSICHERTE.path, self.URLS.JSON_UNKLARE_VERSICHERTE.port);
                 let myHeaders = new Headers();
                 myHeaders.set("Content-Type", "application/json");
 
@@ -259,18 +246,9 @@
 
             getOnePachter(ganr) {
                 let self = this;
-                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.JSON_PAECHTER.path + "/" + ganr, this.URLS.JSON_PAECHTER.port);
-                let myHeaders = new Headers();
+                let sourceURL = self._getSourceURL(self.URLS.JSON_PAECHTER.path + "/" + ganr, self.URLS.JSON_PAECHTER.port);
 
-                let myInit = {
-                    method: 'GET',
-                    headers: myHeaders,
-                    mode: 'cors',
-                    cache: 'default',
-                    credentials: 'omit'
-                };
-
-                let myRequest = new Request(sourceURL, myInit);
+                let myRequest = new Request(sourceURL, self.HEADERINFO.GET_HEADER);
 
                 return fetch(myRequest).then((response) => {
                     if (response.status && response.status === 204) {
@@ -289,8 +267,8 @@
             }
 
             postOnePaechter(theOne) {
-
-                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.JSON_PAECHTER.path + "/" + theOne.GARTENNUMMER, this.URLS.JSON_PAECHTER.port);
+                let self = this;
+                let sourceURL = self._getSourceURL(self.URLS.JSON_PAECHTER.path + "/" + theOne.GARTENNUMMER, self.URLS.JSON_PAECHTER.port);
                 let myHeaders = new Headers();
 
                 myHeaders.set("Content-Type", "application/json");
@@ -321,8 +299,8 @@
             }
 
             postOneVersicherter(theOne) {
-
-                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.JSON_ONE_VERSICHERTER.path, this.URLS.JSON_ONE_VERSICHERTER.port);
+                let self = this;
+                let sourceURL = self._getSourceURL(self.URLS.JSON_ONE_VERSICHERTER.path, self.URLS.JSON_ONE_VERSICHERTER.port);
                 let myHeaders = new Headers();
                 myHeaders.set("Content-Type", "application/json");
 
@@ -357,7 +335,7 @@
 
             deleteUngeklaerterVersicherter(gartennummer) {
                 let self = this;
-                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.JSON_UNKLARE_VERSICHERTE.path, this.URLS.JSON_UNKLARE_VERSICHERTE.port);
+                let sourceURL = self._getSourceURL(self.URLS.JSON_UNKLARE_VERSICHERTE.path, self.URLS.JSON_UNKLARE_VERSICHERTE.port);
                 let myHeaders = new Headers();
 
                 let myInit = {
@@ -388,7 +366,7 @@
 
             deleteOnePaechter(gartennummer) {
                 let self = this;
-                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.JSON_PAECHTER.path, this.URLS.JSON_PAECHTER.port);
+                let sourceURL = self._getSourceURL(self.URLS.JSON_PAECHTER.path, self.URLS.JSON_PAECHTER.port);
                 let myHeaders = new Headers();
 
                 let myInit = {
@@ -419,7 +397,7 @@
 
             deleteOneVersicherter(gartennummer) {
                 let self = this;
-                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.JSON_VERSICHERTE.path, this.URLS.JSON_VERSICHERTE.port);
+                let sourceURL = self._getSourceURL(self.URLS.JSON_VERSICHERTE.path, self.URLS.JSON_VERSICHERTE.port);
                 let myHeaders = new Headers();
 
                 let myInit = {
@@ -450,7 +428,8 @@
 
             postPaechterAsJSON(paechter) {
                 console.log('topost' + JSON.stringify(paechter))
-                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.JSON_PAECHTER.path, this.URLS.JSON_PAECHTER.port);
+                let self = this;
+                let sourceURL = self._getSourceURL(self.URLS.JSON_PAECHTER.path, self.URLS.JSON_PAECHTER.port);
                 let myHeaders = new Headers();
                 myHeaders.set("Content-Type", "application/json");
 
@@ -482,7 +461,8 @@
 
             updatePaechterAsJSON(paechter) {
                 console.log('toupdate' + JSON.stringify(paechter))
-                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.JSON_PAECHTER.path, this.URLS.JSON_PAECHTER.port);
+                let self = this;
+                let sourceURL = self._getSourceURL(self.URLS.JSON_PAECHTER.path, self.URLS.JSON_PAECHTER.port);
                 let myHeaders = new Headers();
                 myHeaders.set("Content-Type", "application/json");
 
@@ -514,18 +494,9 @@
 
             getVersicherteAsJSON() {
                 let self = this;
-                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.JSON_VERSICHERTE.path, this.URLS.JSON_VERSICHERTE.port);
-                let myHeaders = new Headers();
+                let sourceURL = self._getSourceURL(self.URLS.JSON_VERSICHERTE.path, self.URLS.JSON_VERSICHERTE.port);
 
-                let myInit = {
-                    method: 'GET',
-                    headers: myHeaders,
-                    mode: 'cors',
-                    cache: 'default',
-                    credentials: 'omit'
-                };
-
-                let myRequest = new Request(sourceURL, myInit);
+                let myRequest = new Request(sourceURL, self.HEADERINFO.GET_HEADER);
 
                 return fetch(myRequest).then((response) => {
                     if (response.status && response.status === 204) {
@@ -544,18 +515,9 @@
 
             getPaechterAsJSON() {
                 let self = this;
-                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.JSON_PAECHTER.path, this.URLS.JSON_PAECHTER.port);
-                let myHeaders = new Headers();
+                let sourceURL = self._getSourceURL(self.URLS.JSON_PAECHTER.path, self.URLS.JSON_PAECHTER.port);
 
-                let myInit = {
-                    method: 'GET',
-                    headers: myHeaders,
-                    mode: 'cors',
-                    cache: 'default',
-                    credentials: 'omit'
-                };
-
-                let myRequest = new Request(sourceURL, myInit);
+                let myRequest = new Request(sourceURL, self.HEADERINFO.GET_HEADER);
 
                 return fetch(myRequest).then((response) => {
                     if (response.status && response.status === 204) {
@@ -573,41 +535,44 @@
             }
 
             exportVersicherteAsCSV(versicherte, destination) {
-                let asCSV = this.mapToCSV(versicherte);
-                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.CSV_VERSICHERTE.path, this.URLS.CSV_VERSICHERTE.port);
+                let self = this;
+                let asCSV = self.mapToCSV(versicherte);
+                let sourceURL = self._getSourceURL(self.URLS.CSV_VERSICHERTE.path, self.URLS.CSV_VERSICHERTE.port);
                 console.log('topost' + JSON.stringify(versicherte))
                 if (destination === "server") {
-                    return this._exportRemote(asCSV, sourceURL);
+                    return self._exportRemote(asCSV, sourceURL);
                 } else if (destination === "lokal") {
-                    return this._saveLokalAsCSV(asCSV, "versicherte_");
+                    return self._saveLokalAsCSV(asCSV, "versicherte_");
                 } else {
-                    return this._exportRemote(asCSV, sourceURL);
+                    return self._exportRemote(asCSV, sourceURL);
                 }
             }
 
             exportUnklareAsCSV(unklare, destination) {
-                let asCSV = this.mapToCSV(unklare);
-                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.CSV_UNKLARE.path, this.URLS.CSV_UNKLARE.port);
+                let self = this;
+                let asCSV = self.mapToCSV(unklare);
+                let sourceURL = self._getSourceURL(self.URLS.CSV_UNKLARE.path, self.URLS.CSV_UNKLARE.port);
                 console.log('topost' + JSON.stringify(unklare))
                 if (destination === "server") {
-                    return this._exportRemote(asCSV, sourceURL);
+                    return self._exportRemote(asCSV, sourceURL);
                 } else if (destination === "lokal") {
-                    return this._saveLokalAsCSV(asCSV, "unklare_");
+                    return self._saveLokalAsCSV(asCSV, "unklare_");
                 } else {
-                    return this._exportRemote(asCSV, sourceURL);
+                    return self._exportRemote(asCSV, sourceURL);
                 }
             }
 
             exportPaechterAsCSV(paechter, destination) {
-                let asCSV = this.mapToCSV(paechter);
-                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.CSV_PAECHTER.path, this.URLS.CSV_PAECHTER.port);
+                let self = this;
+                let asCSV = self.mapToCSV(paechter);
+                let sourceURL = self._getSourceURL(self.URLS.CSV_PAECHTER.path, self.URLS.CSV_PAECHTER.port);
                 console.log('topost' + JSON.stringify(paechter))
                 if (destination === "server") {
-                    return this._exportRemote(asCSV, sourceURL);
+                    return self._exportRemote(asCSV, sourceURL);
                 } else if (destination === "lokal") {
-                    return this._saveLokalAsCSV(asCSV, "paechter_");
+                    return self._saveLokalAsCSV(asCSV, "paechter_");
                 } else {
-                    return this._exportRemote(asCSV, sourceURL);
+                    return self._exportRemote(asCSV, sourceURL);
                 }
             }
 
@@ -677,6 +642,7 @@
             }
 
             logdata(theOne, logdata, path) {
+                let self = this;
                 let usr = JSON.parse(document.querySelector('my-app').getAttribute('user'));
                 try {
                     if (logdata) {
@@ -691,14 +657,14 @@
                 switch (path) {
                     case 'paechter':
                         gNr = logdata.data.GARTENNUMMER;
-                        urlpath = this.URLS.LOGG_PAECHTER_CHANGES.path;
-                        urlport = this.URLS.LOGG_PAECHTER_CHANGES.port;
+                        urlpath = self.URLS.LOGG_PAECHTER_CHANGES.path;
+                        urlport = self.URLS.LOGG_PAECHTER_CHANGES.port;
                         break;
                     default:
                         break;
                 }
 
-                let sourceURL = this._getSourceURL(this.actualLocation, urlpath + "/" + gNr, urlport);
+                let sourceURL = self._getSourceURL(urlpath + "/" + gNr, urlport);
                 let myHeaders = new Headers();
                 myHeaders.set("Content-Type", "application/json");
 
@@ -730,18 +696,9 @@
 
             getHistoryFor(ganr) {
                 let self = this;
-                let sourceURL = this._getSourceURL(this.actualLocation, this.URLS.LOGG_PAECHTER_CHANGES.path + "/" + ganr, this.URLS.LOGG_PAECHTER_CHANGES.port);
-                let myHeaders = new Headers();
+                let sourceURL = self._getSourceURL(self.URLS.LOGG_PAECHTER_CHANGES.path + "/" + ganr, self.URLS.LOGG_PAECHTER_CHANGES.port);
 
-                let myInit = {
-                    method: 'GET',
-                    headers: myHeaders,
-                    mode: 'cors',
-                    cache: 'default',
-                    credentials: 'omit'
-                };
-
-                let myRequest = new Request(sourceURL, myInit);
+                let myRequest = new Request(sourceURL, self.HEADERINFO.GET_HEADER);
 
                 return fetch(myRequest).then((response) => {
                     if (response.status && response.status === 204) {
@@ -755,6 +712,44 @@
                     return Promise.resolve(data);
                 }).catch((err) => {
                     console.log('getHistoryFor die Anfrage an api/loggs/paechter war nicht erfolgreich' + JSON.stringify(error))
+                });
+
+            }
+
+            postAsJSON(data, domainName) {
+                let self = this;
+                let urlInfo = null;
+                Object.keys(self.URLS).forEach((key)=>{
+                    if (self.URLS[key].path.indexOf(domainName, 5) >= 0){
+                        urlInfo = self.URLS[key];
+                    }
+                })
+                let sourceURL = self._getSourceURL(urlInfo.path, urlInfo.port);
+                let myHeaders = new Headers();
+                myHeaders.set("Content-Type", "application/json");
+
+                let tosend = JSON.stringify(data);
+
+                let myInit = {
+                    method: 'POST',
+                    headers: myHeaders,
+                    mode: 'cors',
+                    cache: 'default',
+                    credentials: 'omit',
+                    body: tosend
+                };
+
+                let myRequest = new Request(sourceURL, myInit);
+
+                return fetch(myRequest).then((response) => {
+                    console.log("post " + domainName + " AsJSON antwort" + JSON.stringify(response));
+                    if (response && response.ok) {
+                        return response.json();
+                    } else return undefined;
+
+
+                }).catch(() => {
+                    console.log('post ' + domainName + ' AsJSON die Anfrage an' + sourceURL + ' war nicht erfolgreich')
                 });
 
             }

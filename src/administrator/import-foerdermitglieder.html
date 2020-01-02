@@ -1,0 +1,537 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/paper-progress-button/paper-progress-button.html">
+<link rel="import" href="../../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../../bower_components/granite-file-reader/granite-file-reader.html">
+<link rel="import" href="../utils/grt-dropdown-input.html">
+<link rel="import" href="../clients/firstclient.html">
+<link rel="import" href="../clients/basicclient.html">
+<link rel="import" href="../first-domain-styles.html">
+<link rel="import" href="../table-styles.html">
+
+<dom-module id="import-foerdermitglieder">
+  <template>
+    <style include="first-domain-styles table-styles">
+      :host {
+        /* Stretch this element to fill viewport */
+        height: 85vh;
+        /* Make a flex column layout of children */
+        display: flex;
+        flex-direction: column;
+
+        --paper-input-error: {
+          white-space: normal;
+        }
+
+
+      }
+
+      .clickHere {
+        border-radius: 3px;
+        background-color: var(--app-primary-color);
+        color: white;
+        padding: 0.5rem 1rem;
+      }
+
+      .page {
+        /* Stretch this element in the parent flex */
+        flex: 1;
+        /* Make a flex column layout of children */
+        display: flex;
+        flex-direction: column;
+
+        -webkit-overflow-scrolling: touch;
+        padding: 3rem;
+      }
+
+      .metacol {
+        width: 7rem;
+        text-align: center;
+      }
+
+      /* .contentcol {
+        text-align: start;
+      } */
+      .contentcol {
+        text-align: center;
+        padding-left: 1rem;
+      }
+    </style>
+
+    <first-client id="firstclient"></first-client>
+    <basic-client id="bclient"></basic-client>
+    <div class="toolbar layout horizontal center-justified" flex>
+      <paper-input always-float-label minlength="1" maxlength="100" allowed-pattern="^[a-zA-Z0-9]$" required
+        auto-validate label="Domänenname" error-message="Pflichteingabe - nur Kleinbuchstaben" on-input="validate"
+        value="{{domainname}}"></paper-input>
+      <granite-file-reader disabled="[[domainname.length]]" read-as="dataURL" accept=".csv"
+        on-file-read="_doOnFileRead">
+        <div class="clickHere">Lokale CSV-Datei importieren</div>
+      </granite-file-reader>
+    </div>
+    <template is="dom-if" if="[[generalConf.length]]">
+      <div class="layout vertical card">
+        <div class="layout horizontal ">
+          <paper-input class="labelgroup" min="1" max="100" always-float-label label="Anzahl der Spalten" type="number"
+            required value="{{tempAnzahlSpalten}}"></paper-input>
+          <paper-button bottom raised disabled="[[isUebernehmenDisabled(tempAnzahlSpalten, generalConf.length)]]"
+            on-click="_addReduceColumns">[[getUebernehmenButtonName(tempAnzahlSpalten, generalConf.length)]]
+          </paper-button>
+
+        </div>
+        <div class="page demo table-responsive-vertical">
+          <table id="table" class="table table-condensed">
+            <thead>
+              <th class="metacol">#</th>
+              <th class="contentcol" title="Technischer Spaltenname für die Datenbanktabelle">Spaltenname</th>
+              <th class="contentcol" title="So wird diese Spalte in der Maske aussehen">Alias</th>
+              <th class="contentcol" title="Die Entsprechung in der zu importierenden Tabelle">Entsprechung
+                Import</th>
+              <th class="contentcol" title="Darf für den Pächter-Bereich verfügbar sein">Pächter</th>
+              <th class="contentcol" title="Darf für den Versicherungs-Bereich verfügbar sein">Versicherung</th>
+              <th class="contentcol" title="Darf für den FM-Bereich verfügbar sein">F-Mitglieder</th>
+              <th class="contentcol" title="Spaltenname entfernen">Löschen</th>
+            </thead>
+            <tbody>
+              <template is="dom-repeat" items="[[generalConf]]">
+                <tr>
+                  <td class="metacol">
+                    [[getOrdnungsnummer(index)]]
+                  </td>
+                  <td class="contentcol">
+                    <paper-input id="cnm[[index]]" on-input="validate" value="{{item.colname}}" auto-validate
+                      allowed-pattern="^[A-Z0-9_]$" required
+                      error-message="Das Feld muss einen durch- und großgeschriebenen technischen Spaltennamen enthalten">
+                    </paper-input>
+                  </td>
+                  <td class="contentcol">
+                    <paper-input id="als[[index]]" on-input="validate" value="{{item.alias}}" auto-validate
+                      allowed-pattern="^[a-zA-Z0-9 ]$" required
+                      error-message="Das Feld muss einen Spaltennamen enthalten"></paper-input>
+                  </td>
+                  <td class="contentcol">
+                    <grt-dropdown-input id="ctp[[index]]" items="[[secondColumns]]" selected="{{entPaars.index.right}}"
+                      on-iron-select="_doOnSelect"></grt-dropdown-input>
+                  </td>
+                  <td class="contentcol">
+                    <paper-checkbox id="cbp[[index]]" checked="[[hasRole('paechter', item)]]" on-change="doOnCbChecked">
+                    </paper-checkbox>
+                  </td>
+                  <td class="contentcol">
+                    <paper-checkbox id="cbv[[index]]" checked="[[hasRole('versicherung', item)]]"
+                      on-change="doOnCbChecked"></paper-checkbox>
+
+                  </td>
+                  <td class="contentcol">
+                    <paper-checkbox id="cbf[[index]]" checked="[[hasRole('foerdermitglieder', item)]]"
+                      on-change="doOnCbChecked"></paper-checkbox>
+
+                  </td>
+                  <td class="metacol">
+                    <button id="dlb[[index]]" on-click="_removeColumn" class="first-domain-endpagebutton action-button">
+                      <iron-icon id="dli[[index]]" icon="delete" slot="item-icon" on-click="_removeColumn"></iron-icon>
+                    </button>
+                  </td>
+
+                </tr>
+              </template>
+
+            </tbody>
+          </table>
+        </div>
+        <paper-button disabled="[[formInvalid]]" on-click="_mergeImportedAndSave">Weiter</paper-button>
+      </div>
+    </template>
+
+  </template>
+
+  <script>
+    class ImportFoerdermitglieder extends Polymer.Element {
+      static get is() { return 'import-foerdermitglieder'; }
+
+      static get properties() {
+        return {
+
+          domainname: {
+            type: String,
+          },
+
+          tempAnzahlSpalten: {
+            type: Number,
+            value: null,
+            notify: true
+          },
+
+          _loading: {
+            type: Boolean,
+            value: false
+          },
+
+          mvdata: {
+            type: Array,
+            value: [],
+            notify: true,
+            reflectToAttribute: true
+          },
+
+          mfile: {
+            type: Object,
+            value: null,
+            notify: true,
+            observer: '_transformCSVToArray'
+          },
+
+          secondColumns: {
+            type: Array,
+            value: null
+          },
+
+          entPaars: {
+            type: Object,
+            value: [],
+            notify: true,
+            reflectToAttribute: true
+          },
+
+          dataAndColumns: {
+            type: Object,
+            value: null
+          },
+
+          generalConf: {
+            type: Array,
+            value: null,
+            notify: true
+          },
+
+          formInvalid: {
+            type: Boolean,
+            notify: true
+          },
+
+          completed: {
+            type: Boolean,
+            value: false,
+            notify: true
+          },
+          _defaultColumnConf: {
+            type: Array,
+            value: [{ "colname": "GARTENNUMMER", "coltype": "string", "alias": "GNr", "rolen": ["paechter", "versicherung"] }, { "colname": "ANREDE", "coltype": "string", "alias": "Anrede", "rolen": ["paechter", "versicherung"] }, { "colname": "NACHNAME", "coltype": "string", "alias": "Nachname", "rolen": ["paechter", "versicherung"] }, { "colname": "VORNAME", "coltype": "string", "alias": "Vorname", "rolen": ["paechter", "versicherung"] }, { "colname": "STRASSE", "coltype": "string", "alias": "Strasse", "rolen": ["paechter", "versicherung"] }, { "colname": "PLZ", "coltype": "string", "alias": "PLZ", "rolen": ["paechter", "versicherung"] }, { "colname": "WOHNORT", "coltype": "string", "alias": "Wohnort", "rolen": ["paechter", "versicherung"] }, { "colname": "TELEFON", "coltype": "string", "alias": "Telefon", "rolen": ["paechter", "versicherung"] }, { "colname": "WEG", "coltype": "string", "alias": "Weg", "rolen": ["paechter", "versicherung"] }, { "colname": "FLAECHE", "coltype": "string", "alias": "Fläche", "rolen": ["paechter", "versicherung"] }, { "colname": "GEBURTSDATUM", "coltype": "string", "alias": "Geburtsdatum", "rolen": ["paechter"] }, { "colname": "EMAIL", "coltype": "string", "alias": "E-Mail", "rolen": ["paechter", "versicherung"] }, { "colname": "BEMERKUNGEN", "coltype": "string", "alias": "Bemerkung (P)", "rolen": ["paechter"] }, { "colname": "V_BEMERKUNG", "coltype": "string", "alias": "Bemerkung (V)", "rolen": ["versicherung"] }, { "colname": "GBV", "coltype": "number", "alias": "GBV", "rolen": ["versicherung"] }, { "colname": "FED", "coltype": "number", "alias": "FED", "rolen": ["versicherung"] }, { "colname": "HOEV", "coltype": "number", "alias": "HöV", "rolen": ["versicherung"] }, { "colname": "A7_1", "coltype": "number", "alias": "Solar", "rolen": ["versicherung"] }, { "colname": "A7_3", "coltype": "string", "alias": "SA", "rolen": ["versicherung"] }, { "colname": "A7_4", "coltype": "number", "alias": "GS", "rolen": ["versicherung"] }, { "colname": "UV", "coltype": "number", "alias": "Unfall", "rolen": ["versicherung"] }, { "colname": "BEITRAG", "coltype": "number", "alias": "Beitrag", "rolen": ["versicherung"] }]
+          }
+        }
+      }
+
+      _doOnFileRead(e) {
+        let self = this;
+        let b64Result = e.detail;
+        self._urltoFile(b64Result, 'foerdermitglieder.csv', 'text/csv').then((file) => {
+          let reader = new FileReader();
+          reader.onload = function (e) {
+            let text = reader.result;
+            self.set('mfile', text);
+          }
+          reader.readAsText(file, 'base64');
+        })
+      }
+
+      _urltoFile(url, filename, mimeType) {
+        let self = this;
+        return (fetch(url)
+          .then(function (res) { return res.arrayBuffer(); })
+          .then(function (buf) { return new File([buf], filename, { type: mimeType }); })
+          .catch((err) => {
+            showToast(self, 'Fehler bei der Importierung der Daten aus der lokalen Datei', TOAST_TYPE.ERROR);
+          })
+        );
+      }
+
+      mapToJSON(resp) {
+        let usr = document.querySelector('my-app').getAttribute('user')
+        usr = JSON.parse(usr);
+
+        let transformedResult = [];
+        let columns = resp[0];
+
+        for (let i = 1; i < resp.length; i++) {
+          if (resp[i][0] !== 'Ende der Liste') {
+            let myRowObj = {};
+
+            for (let j = 0; j < columns.length; j++) {
+              let attrName = columns[j];
+              let attrValue = (attrName === "GBV" || attrName === "FED" || attrName === "Beitrag" || attrName === "UV" || attrName === "HöV") ? (isFinite(resp[i][j]) && !isNaN(resp[i][j]) ? (parseInt(resp[i][j]) || 0) : 0) : resp[i][j];
+              myRowObj[attrName] = attrValue;
+            }
+            myRowObj['created'] = { user: usr.name, datum: moment().format('YYYYMMDD_HHmm'), source: 'csv' };
+            transformedResult.push(myRowObj);
+          } else {
+            break;
+          }
+
+        }
+        this.set('columnNames', columns);
+        this.set('mvdata', transformedResult);
+      }
+
+      _transformCSVToArray() {
+        let finalArray = [];
+        if (this.mfile) {
+          let firstArr = this.mfile.split('\n');
+          let secondArray = null;
+          firstArr.forEach((el) => {
+            secondArray = el.split(',');
+            finalArray.push(secondArray);
+          })
+          this._importLocalFoerdermitgliederPressed(finalArray);
+        }
+
+      }
+
+      saveToDB(dataAndColumns) {
+        return this.$.firstclient.postAsJSON(dataAndColumns, this.domainname);
+
+      }
+
+      _initData(conf, csvData) {
+        if (conf && Array.isArray(conf) && csvData && csvData.length) {
+          let anzC = conf.length;
+          this.set('tempAnzahlSpalten', anzC)
+          this.set('generalConf', conf);
+          this.set('completed', true)
+          this.mapToJSON(csvData);
+          let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
+          this.set('dataAndColumns', dataAndColumns);
+          let secondColumns = JSON.parse(JSON.stringify(dataAndColumns.columns));
+          secondColumns.unshift('**Keine**');
+          this.set('secondColumns', secondColumns);
+          showToast(this, 'Die Daten wurden aus der lokalen Datei erfolgreich geladen. Damit diese auch dauerhaft importiert werden können, setzen Sie die Konfiguration durch die Zuordnung der Tabellenspalten fort.', TOAST_TYPE.WARN, 'center');
+        } else {
+          let anzC = this._defaultColumnConf.length;
+          this.set('tempAnzahlSpalten', anzC)
+          this.set('generalConf', this._defaultColumnConf);
+          this.set('completed', true)
+          showToast(this, 'Bei der Importierung der Vereinsdaten wurden keine Foerdermitgliederdaten gefunden', TOAST_TYPE.ERROR);
+        }
+      }
+
+      _importLocalFoerdermitgliederPressed(localFoerdermitgliederFromCSVAsArray) {
+        this.$.bclient.getDomaenenColumnConfig(this.domainname).then((domConf) => {
+          this._initData(domConf, localFoerdermitgliederFromCSVAsArray);
+          showToast(this, 'Die Domänen-Spaltenkonfiguration wurde erfolgreich geladen', TOAST_TYPE.SUCCESS);
+        }).catch(() => {
+          this.$.bclient.getDomaenenColumnConfig('general').then((generalConf) => {
+            this._initData(generalConf, localFoerdermitgliederFromCSVAsArray);
+            showToast(this, 'Die Domänen-Spaltenkonfiguration konnte nicht geladen werden, die allgemeine Spaltenkofiguration wird benutzt', TOAST_TYPE.WARN);
+          }).catch(()=>{
+            this._initData(this._defaultColumnConf, localFoerdermitgliederFromCSVAsArray);
+          })
+        })
+
+      }
+
+      _setLoading(val) {
+        this.set('_loading', val);
+      }
+
+      getOrdnungsnummer(index) {
+        return index + 1;
+      }
+
+      _doOnSelect(e) {
+        let self = this;
+        if (e && e.target) {
+          let myelemId = e.target.id;
+          let realIndex = myelemId.substring(3);
+          let wertLinks = self.generalConf[realIndex].colname;
+          let wertRechts = e.target.selected;
+          let path = 'entPaars.' + realIndex;
+
+          let bereitsBelegt = self.entPaars.find((elem) => (!!elem) && (elem.right === wertRechts) && (wertRechts !== self.secondColumns[0]));
+          if (bereitsBelegt) {
+            self.splice('entPaars', realIndex, 1, { zeile: (parseInt(realIndex) + 1), left: wertLinks, right: null });
+            let thehashid = '#' + myelemId;
+            let melem = self.shadowRoot.querySelector(thehashid);
+            melem.resetItem(true);
+            melem.selected = null;
+            melem.errorMessage = "Spaltenname in Zeile " + bereitsBelegt.zeile + " bereits zugeordnet"
+          } else {
+            self.set(path, { zeile: (parseInt(realIndex) + 1), left: wertLinks, right: wertRechts });
+          }
+          console.warn('entpaars :' + JSON.stringify(self.entPaars))
+          console.warn('columnconfig :' + JSON.stringify(self.generalConf))
+        }
+        this.validate();
+      }
+
+      validate(e) {
+        let invalidFound = false;
+        if (this.entPaars && this.generalConf) {
+          console.warn('this.entPaars.length:' + this.entPaars.length + " this.generalConf.length:" + this.generalConf.length)
+        } else {
+          console.warn('this.entPaars oder conf nicht ready')
+        }
+        if (this.domainname && this.domainname.length && this.entPaars && this.generalConf && this.entPaars.length === this.generalConf.length) {
+          let bothLaenge = this.entPaars.length;
+          for (let i = 0; i < bothLaenge; i++) {
+            let gCElem = this.generalConf[i];
+            let invConfFound = (!gCElem.colname || !gCElem.colname.length || !gCElem.coltype || !gCElem.coltype.length || !gCElem.alias || !gCElem.alias.length);
+            let entPElem = this.entPaars[i];
+            let invEntPFound = (!entPElem || !entPElem.right || !entPElem.right.length);
+            console.warn('invConfFound:' + invConfFound + " invEntPFound" + invEntPFound)
+            console.warn(JSON.stringify(gCElem))
+            invalidFound = invalidFound || invConfFound || invEntPFound;
+          }
+        } else {
+          invalidFound = true;
+        }
+        console.warn('invalidFound wird auf' + invalidFound + "gesetzt")
+        this.set('formInvalid', invalidFound);
+      }
+
+      _mergeImportedAndSave() {
+        let columns = [];
+        this.generalConf.forEach((col) => {
+          columns.push(col.alias);
+        })
+        let data = JSON.parse(JSON.stringify(this.dataAndColumns.data));
+        let newData = [];
+        data.forEach((foerdermitgliedData) => {
+          let newFoerdermitglied = new Foerdermitglied(this.entPaars);
+          Object.keys(foerdermitgliedData).forEach((key) => {
+            let correspondingPaar = this.entPaars.find((p) => p.right === key);
+            if (correspondingPaar) {
+              newFoerdermitglied[correspondingPaar.left] = foerdermitgliedData[key];
+            }
+          })
+          newData.push(newFoerdermitglied);
+        })
+        let newDataAndColumns = { data: newData, columns: columns }
+        console.warn('dataandcoltosave:' + JSON.stringify(newDataAndColumns))
+        this.saveToDB(newDataAndColumns).then(() => {
+          showToast(this, 'Sie haben die Daten erfolgreich importiert.', TOAST_TYPE.SUCCESS);
+          this.set('completed', true)
+        }).catch(() => {
+          this.set('completed', false)
+          showToast(this, 'Fehler bei der Übertragung der importierten Daten in die Datenbank.', TOAST_TYPE.ERROR);
+        }).finally(()=>{
+          this.$.bclient.postDomaenenColumnConfig(this.generalConf, this.domainname).then(() => {
+                    showToast(this, 'Die Konfiguration der Spalten für die Domäne' + this.domainname + 'wurde erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
+                }).catch(() => {
+                    showToast(this, 'Fehler bei der Speicherung der Spaltenkonfiguration für die Domäne ' + this.domainname, TOAST_TYPE.ERROR);
+                });
+        })
+
+      }
+
+      getUebernehmenButtonName(tempAnzahlSpalten, anzahlColumns) {
+        if (!tempAnzahlSpalten) {
+          return "Übernehmen";
+        } else {
+          if (parseInt(tempAnzahlSpalten) > (parseInt(anzahlColumns) || 0)) {
+            return "Erhöhen";
+          } else if (parseInt(tempAnzahlSpalten) < (parseInt(anzahlColumns) || 0)) {
+            return "Reduzieren";
+          } else return "Ändern"
+        }
+      }
+
+      isUebernehmenDisabled(tempAnzahlSpalten, anzahlColumns) {
+        if (tempAnzahlSpalten && anzahlColumns && (parseInt(tempAnzahlSpalten) === parseInt(anzahlColumns))) {
+          return true;
+        } else {
+          return false;
+        }
+      }
+
+      _addReduceColumns() {
+        if (!this.generalConf) {
+          this.generalConf = [];
+        }
+        if (this.tempAnzahlSpalten > this.generalConf.length) {
+          let diff = this.tempAnzahlSpalten - this.generalConf.length;
+          while (diff) {
+            this._addColumn();
+            diff--;
+          }
+        } else if (this.tempAnzahlSpalten < this.generalConf.length) {
+          let diff = this.generalConf.length - this.tempAnzahlSpalten;
+          while (diff) {
+            this._removeColumn(this.generalConf.length - 1);
+            diff--;
+          }
+        }
+
+      }
+
+      _addColumn() {
+        this.push('generalConf', { colname: null, coltype: "string", alias: null, rolen: [] });
+        this.validate();
+      }
+
+      _removeColumn(indexParam) {
+        let index = null;
+        if ((typeof indexParam === 'number')) {
+          index = indexParam;
+        } else if (indexParam.target && indexParam.target.id) {
+          index = parseInt(indexParam.target.id.substring(3));
+          indexParam.preventDefault();
+          indexParam.stopPropagation();
+        }
+        if (index || index === 0) {
+          this.splice('generalConf', index, 1)
+        }
+        this.set('tempAnzahlSpalten', this.generalConf.length);
+        this.validate();
+      }
+
+      hasRole(rolename, item) {
+        return item.rolen && Array.isArray(item.rolen) && item.rolen.indexOf(rolename) >= 0;
+      }
+
+      doOnCbChecked(e) {
+        let idprefix = e.target.id.substring(0, 3);
+        let realIndex = e.target.id.substring(3);
+        let role = null;
+        switch (idprefix) {
+          case 'cbp':
+            role = 'paechter';
+            break;
+          case 'cbv':
+            role = 'versicherung';
+            break;
+          case 'cbf':
+            role = 'foerdermitglieder';
+            break;
+          default:
+            break;
+        }
+        if (e.currentTarget.checked) {
+          let path = "generalConf." + realIndex + ".rolen";
+          this.push(path, role);
+        } else {
+          let path = "generalConf." + realIndex + ".rolen";
+          let rolen = this.get(path);
+          let idx = rolen.indexOf(role);
+          this.splice(path, idx, 1);
+        }
+      }
+
+
+    }
+
+    class Foerdermitglied {
+      constructor(foerdermitgliedKeys) {
+        if (foerdermitgliedKeys) {
+          this._createEmptyFoerdermitglied(foerdermitgliedKeys)
+        }
+      }
+
+      _createEmptyFoerdermitglied(foerdermitgliedKeys) {
+        foerdermitgliedKeys.forEach((paar) => {
+          this[paar.left] = null;
+        })
+      }
+
+    }
+
+    window.customElements.define(ImportFoerdermitglieder.is, ImportFoerdermitglieder);
+  </script>
+</dom-module>
