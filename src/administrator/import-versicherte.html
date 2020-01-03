@@ -260,7 +260,7 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
 
       _importRemoteVersichertePressed() {
         //toDo make a backup from the existing data if some, because they will be overridden
-        this.$.firstclient.getVersicherteCSV().then((resp) => {
+        this.$.firstclient.getCSVForDomain('versicherte').then((resp) => {
           if (resp) {
             this.mapToJSON(resp);
             let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
@@ -288,17 +288,17 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
 
       saveToDB(versicherte) {
 
-        return this.$.firstclient.getPaechterAsJSON().then((paechter) => {
+        return this.$.firstclient.getAsJSON('paechter').then((paechter) => {
           return this.resolveConflicts(paechter, versicherte);
 
         }).then((conflictCheckedData) => {
           let unklareFaelle = { columns: versicherte.columns, data: conflictCheckedData.unklare };
           let klareFaelle = { columns: versicherte.columns, data: conflictCheckedData.klare };
           let promises = [];
-          let klarePr = this.$.firstclient.updatePaechterAsJSON(klareFaelle).catch(()=>{
+          let klarePr = this.$.firstclient.updateAsJSON(klareFaelle, 'paechter').catch(()=>{
             showToast(this, 'Fehler bei der Übertragung der importierten Pächter-Daten in die Datenbank. (klare Fälle) ', TOAST_TYPE.ERROR);
           });
-          let unklarePr = this.$.firstclient.postUnklareVersicherteAsJSON(unklareFaelle).catch(()=>{
+          let unklarePr = this.$.firstclient.postAsJSON(unklareFaelle, 'unklareversicherte').catch(()=>{
             showToast(this, 'Fehler bei der Übertragung der importierten Pächter-Daten in die Datenbank. (unklare Fälle) ', TOAST_TYPE.ERROR);
           })
           promises.push(klarePr);

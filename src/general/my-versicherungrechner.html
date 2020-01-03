@@ -330,9 +330,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             ready() {
                 super.ready();
-                if (!this.vcs) {
-                    this.loadVersicherungKonfig();
-                }
             }
 
             versicherungsdatenChanged(changed) {
@@ -381,13 +378,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     window.removeEventListener('vconfigchanged', this._resetVersicherungKonfig.bind(this));
             }
 
-            loadVersicherungKonfig() {
-                this.$.bclient.getVersicherungconfig().then((vconf) => {
-                    this._setVersicherungKonfig(vconf);
-                })
-            }
-
             _resetVersicherungKonfig(e) {
+                console.warn('versicherungconfig changed in my versicherungrechner')
                 this._setVersicherungKonfig(e.detail);
             }
 

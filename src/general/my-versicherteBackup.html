@@ -838,7 +838,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
 
         window.addEventListener('vconfigchanged', (e) => {
-          console.log('vconfigchanged in versicherte' + JSON.stringify(e.detail))
+          console.warn('vconfigchanged in versicherteBackup' + JSON.stringify(e.detail))
           this.set('vconfig', e.detail);
         })
 

@@ -467,7 +467,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
         let idx = this.mvdata.indexOf(elem);
         if (idx >= 0) {
-          this.$.firstclient.deleteUngeklaerterVersicherter(elem.GARTENNUMMER).then(() => {
+          this.$.firstclient.deleteOne('unklareversicherte', elem.GARTENNUMMER).then(() => {
             this.splice('mvdata', idx, 1);
             showToast(this, 'Der Ungeklärter Fall wurde erfolgreich gelöscht', TOAST_TYPE.SUCCESS);
           }).catch(() => {
@@ -476,7 +476,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         } else if (!elem && idx === -1) {
           // ist ein fehlerhafter Datensatz ohne Gartennummer, womöglich aus einer leeren Zeile der Importdatei
           const rowIdx = id.substring(1); // ab dem minus-Zeichen, befindet sich die Zeilenindex
-          this.$.firstclient.deleteUngeklaerterVersicherter(null).then(() => {
+          this.$.firstclient.deleteOne('unklareversicherte', null).then(() => {
             this.splice('mvdata', rowIdx, 1);
             showToast(this, 'Der Ungeklärter Fall wurde erfolgreich gelöscht', TOAST_TYPE.SUCCESS);
           }).catch(() => {
@@ -550,25 +550,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       }
 
-      ready() {
-        super.ready();
-        this.$.firstclient.getUnklareVersicherteAsJSON().then((resp) => {
-          if (resp) {
-            this.splitToObjects(resp).finally(() => {
-              //wenn pageSize nur an einer stelle initialisiert wird (in then von splitToObjects)
-              // dann der gleiche wert 10 wird nicht noch mal zu der pagination Componente getriggert
-              // denn er sich noch nicht geändert hatte, die Komp beim ersten mal aber nicht da war
-              this.set('pageSize', parseInt(0));
-              this.changePage();
-            });
-          } else {
-            showToast(this, 'Bei der Initialisierung der Seite wurden keine Versichertendaten gefunden', TOAST_TYPE.ERROR);
-          }
-        }).catch((err) => {
-          console.log("Fehler beim get fuer versicherte  kam:" + JSON.stringify(err))
-        })
-      }
-
       _isItemSelected(_pageStart, index) {
         let path = 'mvdata.' + (_pageStart + index) + '.selected';
         return this.get(path);
@@ -621,7 +602,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _activeChanged(newV, oldV) {
         console.log('selected changed newV:' + newV + " oldV:" + oldV)
         if (newV) {
-          this.$.firstclient.getUnklareVersicherteAsJSON().then((resp) => {
+          this.$.firstclient.getAsJSON('unklareversicherte').then((resp) => {
             if (resp) {
               //this.set('pageSize', 10);
               this.splitToObjects(resp).finally(() => {
@@ -630,7 +611,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             } else {
               showToast(this, 'Bei der erneuten Initialisierung der Seite wurden keine Versichertendaten gefunden', TOAST_TYPE.ERROR);
             }
-          })
+          }).catch((err) => {
+          console.log("Fehler beim get fuer versicherte  kam:" + JSON.stringify(err))
+        })
         }
       }
 
@@ -694,14 +677,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         let promises = [];
 
-        let postPachterPr = this.$.firstclient.postOnePaechter(unklarerV).then(() => {
+        let postPachterPr = this.$.firstclient.postAsJSON(unklarerV, 'paechter', unklarerV.GARTENNUMMER).then(() => {
 
           showToast(this, 'Der ungeklärte Fall wurde erfolgreich in einen neuen Pächter umgespeichert.', TOAST_TYPE.SUCCESS);
         }).catch((error) => {
           showToast(this, 'Fehler bei der Speicherung der Änderungen', TOAST_TYPE.ERROR);
         });
 
-        let deleteUnklarerPr = this.$.firstclient.deleteUngeklaerterVersicherter(unklarerV.GARTENNUMMER).then(() => {
+        let deleteUnklarerPr = this.$.firstclient.deleteOne('unklareversicherte', unklarerV.GARTENNUMMER).then(() => {
           showToast(this, 'Der ungeklärte Fall wurde erfolgreich entfernt.', TOAST_TYPE.SUCCESS);
         }).catch(() => {
           showToast(this, 'Fehler bei der Löschung des ungeklärten Falles. Verschen Sie später noch einmal.', TOAST_TYPE.ERROR);
@@ -730,7 +713,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       getPaechterBy(ganr) {
-        return this.$.firstclient.getOnePachter(ganr).then((paechter) => {
+        return this.$.firstclient.getAsJSON('paechter', ganr).then((paechter) => {
           if (paechter) {
             paechter['found'] = true;
             return Promise.resolve(paechter);

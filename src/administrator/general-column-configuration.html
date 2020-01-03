@@ -250,7 +250,7 @@
                 let invalidFound = true;
                 if (this.colConf) {
                     invalidFound = this.colConf.some((elem) => {
-                        console.log('elem ist ' + JSON.stringify(elem))
+                        //console.log('elem ist general col conf' + JSON.stringify(elem))
                         return (!elem.colname || !elem.colname.length || !elem.coltype || !elem.coltype.length || !elem.alias || !elem.alias.length)
                     })
                 }

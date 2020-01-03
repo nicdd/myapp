@@ -1,23 +1,14 @@
-<link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="rest-client.html">
 
 <dom-module id="basic-client">
-    <template>
-        <style></style>
-    </template>
     <script>
-        class BasicClient extends Polymer.Element {
+        class BasicClient extends customElements.get('rest-client') {
             static get is() { return 'basic-client'; }
 
             static get properties() {
                 return {
-                    actualLocation: {
-                        type: Object,
-                        value: {
-                            protocol: null,
-                            hostname: null
-                        }
-                    },
+
                     URLS: {
                         type: Object,
                         value: {
@@ -38,19 +29,6 @@
                             }
                         }
                     },
-                    HEADERINFO:{
-                        type: Object,
-                        value: {
-                            GET_HEADER:{
-                                method: 'GET',
-                                headers: new Headers(),
-                                mode: 'cors',
-                                cache: 'default',
-                                credentials: 'omit'
-                            }
-                        }
-
-                    },
                     versicherungconfig: {
                         type: Object,
                         observer: '_vconfigChanged'
@@ -60,130 +38,61 @@
 
             _vconfigChanged(newV, oldV) {
                 if (newV) {
-                    //debugger;
-                    console.log('event vconfigchanged wird gefeuert')// + JSON.stringify(newV))
-                    //this.dispatchEvent(new CustomEvent('vconfigchanged', { bubbles: true, composed: true, detail: newV }));
-                    this.eventDispatch('vconfigchanged', newV)
+                    this.dispatchEvent(new CustomEvent('vconfigchanged', { bubbles: true, composed: true, detail: newV }));
                 }
             }
 
-
-            ready() {
-                super.ready();
-                this._setActualLocation();
-            }
-
-            connectedCallback() {
-                super.connectedCallback();
-                this.eventDispatch();
-                //this.$.bclient.addEventListener('vconfigchanged', (e) => this._boundListener(e));
-            }
-            
-            eventDispatch(eventName, eventDetail){
-                this.dispatchEvent(new CustomEvent(eventName, { bubbles: true, composed: true, detail: eventDetail }));
-            }
-
-            disconnectedCallback() {
-                super.disconnectedCallback();
-                //this.$.bclient.removeEventListener('vconfigchanged', (e) => this._boundListener(e));
-            }
-
-            _setActualLocation() {
-                this.set('actualLocation', { protocol: window.location.protocol, hostname: window.location.hostname });
-            }
-
-            _getSourceURL(resPath, port) {
-                let uriData = this.actualLocation;
-                let urlToSource = uriData.protocol + "//" + uriData.hostname + ":" + port + resPath;
-                return urlToSource;
-            }
-
             getVersicherungconfig() {
+
                 let self = this;
-                let sourceURL = self._getSourceURL(self.URLS.VERSICHERUNG_CONFIG.path, self.URLS.VERSICHERUNG_CONFIG.port);
-                let myHeaders = new Headers();
-
-                let myInit = {
-                    method: 'GET',
-                    headers: myHeaders,
-                    mode: 'cors',
-                    cache: 'default',
-                    credentials: 'omit'
-                };
-
-                let myRequest = new Request(sourceURL, myInit);
+                if(this.versicherungconfig){
+                    return Promise.resolve(this.get('versicherungconfig'))
+                }
+                let myRequest = new Request(self._getSourceURL(self.URLS.VERSICHERUNG_CONFIG), this._getRestGetConfig());
 
                 return fetch(myRequest).then((response) => {
                     if (response.status && response.status === 204) {
-                        console.log("getVersicherungconfig status 204")
                         return undefined;
                     } else {
                         return response.json();
                     }
                 }).then((data) => {
-                    //console.log('basicclient versicherungconfig wird gesetzt auf' + JSON.stringify(data))
                     self.set('versicherungconfig', data);
-                    //console.log('basicclient versicherungconfig wurde gesetzt auf' + JSON.stringify(this.versicherungconfig))
                     return Promise.resolve(data);
-                })
-                    .catch((err) => {
-                        console.log('getVersicherungconfig die Anfrage an api/versicherungconfig war nicht erfolgreich' + JSON.stringify(error))
-                    });
+                }).catch((err) => {
+                    console.log('getVersicherungconfig die Anfrage an api/versicherungconfig war nicht erfolgreich' + JSON.stringify(error))
+                });
             }
 
             postVersicherungconfig(theConfig) {
-                let tosend = JSON.stringify(theConfig);
-                console.log('theconfigtosave' + JSON.stringify(theConfig))
+                
                 let self = this;
-                let sourceURL = self._getSourceURL(self.URLS.VERSICHERUNG_CONFIG.path, self.URLS.VERSICHERUNG_CONFIG.port);
-                let myHeaders = new Headers();
-                myHeaders.set("Content-Type", "application/json");
+                let postConfig = self._getRestPostConfig();
+                postConfig.body = JSON.stringify(theConfig);
 
-                //let parsedObject = theConfig.json();
-
-                let myInit = {
-                    method: 'POST',
-                    headers: myHeaders,
-                    mode: 'cors',
-                    cache: 'default',
-                    credentials: 'omit',
-                    body: tosend
-                };
-
-                let myRequest = new Request(sourceURL, myInit);
+                let myRequest = new Request(self._getSourceURL(self.URLS.VERSICHERUNG_CONFIG), postConfig);
 
                 return fetch(myRequest).then((response) => {
-                    console.log("postVersicherungconfig antwort" + JSON.stringify(response));
-                    // this.dispatchEvent(new CustomEvent('vconfigchanged', { bubbles: true, composed: true }));
                     return response.json();
                 }).then((data) => {
-                    console.log("postVersicherungconfig antwort" + JSON.stringify(data));
                     self.set('versicherungconfig', data);
-
                     return Promise.resolve(data);
                 }).catch(() => {
-                    console.log('postVersicherungconfig die Anfrage an api/versicherungconfig war nicht erfolgreich')
+                    console.warn('postVersicherungconfig die Anfrage an api/versicherungconfig war nicht erfolgreich')
                 });
 
             }
 
-            getLocalVersicherungconfig() {
-                console.log('getLocalVersicherungconfig basicclient + ' + JSON.stringify(this.versicherungconfig))
-                return this.versicherungconfig;
-            }
-
-            getDomaenenColumnConfig(domainName){
+            getDomaenenColumnConfig(domainName) {
                 let self = this;
                 let urlInfo = null;
-                Object.keys(self.URLS).forEach((key)=>{
-                    if (self.URLS[key].path.indexOf(domainName, 5) >= 0){
+                Object.keys(self.URLS).forEach((key) => {
+                    if (self.URLS[key].path.indexOf(domainName, 5) >= 0) {
                         urlInfo = self.URLS[key];
                     }
                 })
 
-                let sourceURL = self._getSourceURL(urlInfo.path, urlInfo.port);
-
-                let myRequest = new Request(sourceURL, self.HEADERINFO.GET_HEADER);
+                let myRequest = new Request(self._getSourceURL(urlInfo), this._getRestGetConfig());
 
                 return fetch(myRequest).then((response) => {
                     if (response.status && response.status === 204) {
@@ -193,50 +102,37 @@
                         return response.json();
                     }
                 }).catch((err) => {
-                    console.log('get' + domainName + 'ColumnConfig die Anfrage an api/'+ domainName +'columnconfig war nicht erfolgreich' + JSON.stringify(error))
+                    console.warn('get' + domainName + 'ColumnConfig die Anfrage an api/' + domainName + 'columnconfig war nicht erfolgreich' + JSON.stringify(error))
                     return Promise.reject(err);
                 });
             }
 
             postDomaenenColumnConfig(theConfig, domainName) {
                 let self = this;
-                let tosend = JSON.stringify(theConfig);
-                console.log('theconfigtosave' + JSON.stringify(theConfig))
+                let postConfig = self._getRestPostConfig();
+                postConfig.body = JSON.stringify(theConfig);
+                
                 let urlInfo = null;
-                Object.keys(self.URLS).forEach((key)=>{
-                    if (self.URLS[key].path.indexOf(domainName, 5) >= 0){
+                Object.keys(self.URLS).forEach((key) => {
+                    if (self.URLS[key].path.indexOf(domainName, 5) >= 0) {
                         urlInfo = self.URLS[key];
                     }
                 })
-                
-                let sourceURL = self._getSourceURL(urlInfo.path, urlInfo.port);
-                let myHeaders = new Headers();
-                myHeaders.set("Content-Type", "application/json");
 
-                let myInit = {
-                    method: 'POST',
-                    headers: myHeaders,
-                    mode: 'cors',
-                    cache: 'default',
-                    credentials: 'omit',
-                    body: tosend
-                };
-
-                let myRequest = new Request(sourceURL, myInit);
+                let myRequest = new Request(self._getSourceURL(urlInfo), postConfig);
 
                 return fetch(myRequest).then((response) => {
-                    if (response.ok) {
+                    if (response && response.ok) {
                         console.log("post" + domainName + " Spaltenconfig antwort")
                         return response.json();
                     } else {
                         throw Error(`Anfrage fehlgeschlagen mit status ${response.status}`);
                     }
-                    
+
                 }).catch((err) => {
                     console.log('post' + domainName + 'ColumnConfig die Anfrage an api/' + domainName + 'columnconfig war nicht erfolgreich')
                     return Promise.reject(err);
                 });
-
             }
 
         }

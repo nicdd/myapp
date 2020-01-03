@@ -113,10 +113,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         window.addEventListener('vconfigchanged', (e) => {
           this._setVersicherungKonfig(e.detail);
         })
-        this.loadVersicherungKonfig();
       }
 
       _setVersicherungKonfig(vconfig) {
+        console.warn('versicherungconfig changed in my versicherungkonfig')
         if (vconfig)
           this.set('vc', JSON.parse(JSON.stringify(vconfig)));
       }
@@ -128,12 +128,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           showToast(this, 'Fehler beim Speichern der Versicherungskonfiguration', TOAST_TYPE.ERROR);
         });
 
-      }
-
-      loadVersicherungKonfig() {
-        this.$.bclient.getVersicherungconfig().then((vconfig) => {
-          this._setVersicherungKonfig(vconfig);
-        })
       }
 
     }

@@ -520,7 +520,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       ready() {
         super.ready();
-        this.$.firstclient.getPaechterAsJSON().then((resp) => {
+        this.$.firstclient.getAsJSON('paechter').then((resp) => {
           if (resp) {
 
             //console.log('datasind ready' + JSON.stringify(resp))
@@ -540,7 +540,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         })
 
         window.addEventListener('vconfigchanged', (e) => {
-          console.log('vconfigchanged in versicherte' + JSON.stringify(e.detail))
+          console.warn('vconfigchanged in versicherte' + JSON.stringify(e.detail))
           this.set('vconfig', e.detail);
         })
       }
@@ -660,7 +660,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _activeChanged(newV, oldV) {
         console.log('selected changed newV:' + newV + " oldV:" + oldV)
         if (newV) {
-          this.$.firstclient.getPaechterAsJSON().then((resp) => {
+          this.$.firstclient.getAsJSON('paechter').then((resp) => {
             if (resp) {
               resp.data = this.setVersicherungstatus(resp.data);
               //this.set('pageSize', 10);
@@ -755,7 +755,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
         toSave = this._setStatusForOneVersicherter(toSave);
         toSave = this._removeMetadata(toSave);
-        this.$.firstclient.postOnePaechter(toSave).then(() => {
+        this.$.firstclient.postAsJSON(toSave, 'paechter', toSave.GARTENNUMMER).then(() => {
           if (e.type && e.type === 'add-v') {
             this._insertNewVersicherter(e);
           } else if (e.type && e.type === 'savedversicherter') {

@@ -1,0 +1,106 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+
+<dom-module id="rest-client">
+    <script>
+        class RestClient extends Polymer.Element {
+            static get is() { return 'rest-client'; }
+
+            static get properties() {
+                return {
+                    actualLocation: {
+                        type: Object,
+                        value: {
+                            protocol: null,
+                            hostname: null
+                        }
+                    }
+                }
+            }
+
+            ready() {
+                super.ready();
+                this._setActualLocation();
+            }
+
+            _setActualLocation() {
+                this.set('actualLocation', { protocol: window.location.protocol, hostname: window.location.hostname });
+            }
+            /**
+             * Erwartet wird hier an der ersten Stelle eine URL-Config mit Basispath und Port
+             * Die nächsten Elemente sind optional, die Abfrageparameter
+             */
+            _getSourceURL(...args) {
+                let urlConfig = args[0];
+                let uriData = this.actualLocation;
+                let pathParams = "";
+                for(let i = 1; i < args.length; i++){
+                    if(Array.isArray(args[i])){
+                        args[i].forEach((el)=>{
+                            pathParams += "/" + el;
+                        })
+                    } else {
+                        pathParams += "/" + args[i];
+                    }
+                }
+                let thePath = urlConfig.path + pathParams;
+                let urlToSource = uriData.protocol + "//" + uriData.hostname + ":" + urlConfig.port + thePath;
+                return urlToSource;
+            }
+
+            _getRestGetConfig(mimeType){
+                return {
+                    method: 'GET',
+                    mode: 'cors',
+                    credentials: 'omit',
+                    cache: 'default',
+                    headers: this._getHeaders(mimeType)
+                };
+            }
+
+            _getRestPostConfig(mimeType){
+                return {
+                    method: 'POST',
+                    mode: 'cors',
+                    credentials: 'omit',
+                    cache: 'default',
+                    headers: this._getHeaders(mimeType)
+                };
+            }
+
+            _getRestPutConfig(mimeType){
+                return {
+                    method: 'POST',
+                    mode: 'cors',
+                    credentials: 'omit',
+                    cache: 'default',
+                    headers: this._getHeaders(mimeType)
+                };
+            }
+
+            _getRestDeleteConfig(mimeType){
+                return {
+                    method: 'DELETE',
+                    mode: 'cors',
+                    credentials: 'omit',
+                    cache: 'default',
+                    headers: this._getHeaders(mimeType)
+                };
+            }
+
+            _getHeaders(mimeType){
+                let headers = new Headers();
+                if(mimeType){
+                    headers.append("Content-Type", mimeType);
+                } else {
+                    headers.append("Content-Type", "application/json");
+                }
+                
+                return headers;
+            }
+
+        }
+
+        customElements.define(RestClient.is, RestClient);
+    </script>
+</dom-module>

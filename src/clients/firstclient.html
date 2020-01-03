@@ -1,37 +1,16 @@
-<link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
-<script src="../../bower_components/file-saver/dist/FileSaver.min.js"></script>
+<link rel="import" href="rest-client.html">
 
 <dom-module id="first-client">
-    <template></template>
-
     <script>
-        class FirstClient extends Polymer.Element {
+        class FirstClient extends customElements.get('rest-client') {
             static get is() { return 'first-client'; }
 
             static get properties() {
                 return {
-                    actualLocation: {
-                        type: Object,
-                        value: {
-                            protocol: null,
-                            hostname: null
-                        }
-
-                    },
                     URLS: {
                         type: Object,
                         value: {
-
-                            CSV_BASIC: {
-                                path: '/loadCSV/test',
-                                port: '8000'
-                            },
-
-                            CSV_PAECHTER: {
-                                path: '/loadCSV/paechter',
-                                port: '8000'
-                            },
 
                             JSON_PAECHTER: {
                                 path: '/api/paechter',
@@ -43,23 +22,23 @@
                                 port: '8000'
                             },
 
-                            CSV_VERSICHERTE: {
-                                path: '/loadCSV/versicherte',
-                                port: '8000'
-                            },
-
-                            JSON_VERSICHERTE: {
-                                path: '/api/versicherte',
-                                port: '8000'
-                            },
-
-                            JSON_ONE_VERSICHERTER: {
-                                path: '/api/versicherter',
-                                port: '8000'
-                            },
-
                             JSON_UNKLARE_VERSICHERTE: {
                                 path: '/api/unklareversicherte',
+                                port: '8000'
+                            },
+
+                            LOGG_PAECHTER_CHANGES: {
+                                path: '/api/loggs/paechter',
+                                port: '8000'
+                            },
+
+                            CSV_PAECHTER: {
+                                path: '/loadCSV/paechter',
+                                port: '8000'
+                            },
+
+                            CSV_VERSICHERTE: {
+                                path: '/loadCSV/versicherte',
                                 port: '8000'
                             },
 
@@ -68,24 +47,11 @@
                                 port: '8000'
                             },
 
-                            LOGG_PAECHTER_CHANGES: {
-                                path: '/api/loggs/paechter',
+                            CSV_FOERDERMITGLIEDER: {
+                                path: '/loadCSV/foerdermitglieder',
                                 port: '8000'
                             }
                         }
-                    },
-                    HEADERINFO:{
-                        type: Object,
-                        value: {
-                            GET_HEADER:{
-                                method: 'GET',
-                                headers: new Headers(),
-                                mode: 'cors',
-                                cache: 'default',
-                                credentials: 'omit'
-                            }
-                        }
-
                     }
                 }
             }
@@ -101,508 +67,146 @@
                 this.set('actualLocation', { protocol: window.location.protocol, hostname: window.location.hostname });
             }
 
-            _getSourceURL(resPath, port) {
-                let uriData = this.actualLocation;
-                let urlToSource = uriData.protocol + "//" + uriData.hostname + ":" + port + resPath;
-                return urlToSource;
-            }
+            /**
+             * For getOnePaechter Arguments should be ('paechter', gartenNummer) 
+             * For get AllPaechter Arguments should be ('paechter')
+             */
+            getAsJSON(domainName, ...params) {
 
-            getCSV() {
                 let self = this;
-                let sourceURL = self._getSourceURL(self.URLS.CSV_BASIC.path, self.URLS.CSV_BASIC.port);
+                let urlInfo = null;
+                let getConfig = self._getRestGetConfig();
+                Object.keys(self.URLS).forEach((key) => {
+                    if (self.URLS[key].path.indexOf(domainName, 5) === 5) {
+                        urlInfo = self.URLS[key];
+                    }
+                })
 
-                let myRequest = new Request(sourceURL, self.HEADERINFO.GET_HEADER);
+                let myRequest = new Request(self._getSourceURL(urlInfo, params), getConfig);
 
                 return fetch(myRequest).then((response) => {
-                    console.log("getCSVs aaaaaaaantwort" + JSON.stringify(response));
-                    if (response.status === 204) {
-                        return [['firstName', 'lastName', 'street', 'city'], [, , ,]]
-                    } else return response.json();
-                }).catch(() => {
-                    console.log('getCSV die Anfrage an /loadCSV/test war nicht erfolgreich')
-                });
-            }
-
-
-
-            getVersicherteCSV() {
-                let self = this;
-                let sourceURL = self._getSourceURL(self.URLS.CSV_VERSICHERTE.path, self.URLS.CSV_VERSICHERTE.port);
-
-                let myRequest = new Request(sourceURL, self.HEADERINFO.GET_HEADER);
-
-                return fetch(myRequest).then((response) => {
-                    console.log("getCSVs aaaaaaaantwort" + JSON.stringify(response));
-                    if (response.status === 204) {
+                    if (response.status && response.status === 204) {
+                        console.log("get" + domainName + " As JSON status 204")
                         return undefined;
-                    } else return response.json();
+                    } else {
+                        return response.json();
+                    }
+                }).then((data) => {
+                    console.log('firstclient' + domainName + 'as jason wird gesetzt auf' + JSON.stringify(data))
+                    return Promise.resolve(data);
                 }).catch((err) => {
-                    console.log('getPaechterCSV die Anfrage an /loadCSV/paechter war nicht erfolgreich')
-                    return Promise.reject(err);
+                    console.log('get' + domainName + ' AsJSON die Anfrage an' + self._getSourceURL(urlInfo, params) + ' war nicht erfolgreich' + JSON.stringify(error))
                 });
             }
 
-            getPaechterCSV() {
+            postAsJSON(data, domainName, ...params) {
                 let self = this;
-                let sourceURL = self._getSourceURL(self.URLS.CSV_PAECHTER.path, self.URLS.CSV_PAECHTER.port);
-
-                let myRequest = new Request(sourceURL, self.HEADERINFO.GET_HEADER);
+                let urlInfo = null;
+                let postConfig = self._getRestPostConfig();
+                postConfig.body = JSON.stringify(data);
+                Object.keys(self.URLS).forEach((key) => {
+                    if (self.URLS[key].path.indexOf(domainName, 5) === 5) {
+                        urlInfo = self.URLS[key];
+                    }
+                })
+                let myRequest = new Request(self._getSourceURL(urlInfo, params), postConfig);
 
                 return fetch(myRequest).then((response) => {
-                    console.log("getCSVs aaaaaaaantwort" + JSON.stringify(response));
-                    if (response.status === 204) {
-                        return undefined;
-                    } else return response.json();
-                }).catch((err) => {
-                    console.log('getPaechterCSV die Anfrage an /loadCSV/paechter war nicht erfolgreich')
-                    return Promise.reject(err);
-                });
-            }
-
-            postVersicherteAsJSON(versicherte) {
-                console.log('topost' + JSON.stringify(versicherte))
-                let self = this;
-                let sourceURL = self._getSourceURL(self.URLS.JSON_VERSICHERTE.path, self.URLS.JSON_VERSICHERTE.port);
-                let myHeaders = new Headers();
-                myHeaders.set("Content-Type", "application/json");
-
-                let tosend = JSON.stringify(versicherte);
-
-                let myInit = {
-                    method: 'POST',
-                    headers: myHeaders,
-                    mode: 'cors',
-                    cache: 'default',
-                    credentials: 'omit',
-                    body: tosend
-                };
-
-                let myRequest = new Request(sourceURL, myInit);
-
-                return fetch(myRequest).then((response) => {
-                    console.log("postVersicherteAsJSON antwort" + JSON.stringify(response));
+                    console.log("post " + domainName + " AsJSON antwort" + JSON.stringify(response));
                     if (response && response.ok) {
                         return response.json();
                     } else return undefined;
-
-
                 }).catch(() => {
-                    console.log('postVersicherteAsJSON die Anfrage an' + sourceURL + ' war nicht erfolgreich')
+                    console.warn('post ' + domainName + ' AsJSON die Anfrage an' + urlInfo.path + ' war nicht erfolgreich')
                 });
             }
 
-            getUnklareVersicherteAsJSON() {
+            updateAsJSON(data, domainName, ...params) {
                 let self = this;
-                let sourceURL = self._getSourceURL(self.URLS.JSON_UNKLARE_VERSICHERTE.path, self.URLS.JSON_UNKLARE_VERSICHERTE.port);
-
-                let myRequest = new Request(sourceURL, self.HEADERINFO.GET_HEADER);
-
-                return fetch(myRequest).then((response) => {
-                    if (response.status && response.status === 204) {
-                        console.log("getUnklareVersicherte as JSON status 204")
-                        return undefined;
-                    } else {
-                        return response.json();
+                let urlInfo = null;
+                let putConfig = self._getRestPutConfig();
+                putConfig.body = JSON.stringify(data);
+                Object.keys(self.URLS).forEach((key) => {
+                    if (self.URLS[key].path.indexOf(domainName, 5) === 5) {
+                        urlInfo = self.URLS[key];
                     }
-                }).then((data) => {
-                    console.log('firstclient unklare versicherte as json wird gesetzt auf' + JSON.stringify(data))
-                    return Promise.resolve(data);
-                }).catch((err) => {
-                    console.log('getUnklareVersicherteAsJSON die Anfrage war nicht erfolgreich' + JSON.stringify(error))
-                });
-            }
-
-            postUnklareVersicherteAsJSON(unklareFaelle) {
-                let self = this;
-                let sourceURL = self._getSourceURL(self.URLS.JSON_UNKLARE_VERSICHERTE.path, self.URLS.JSON_UNKLARE_VERSICHERTE.port);
-                let myHeaders = new Headers();
-                myHeaders.set("Content-Type", "application/json");
-
-                let tosend = JSON.stringify(unklareFaelle);
-
-                let myInit = {
-                    method: 'POST',
-                    headers: myHeaders,
-                    mode: 'cors',
-                    cache: 'default',
-                    credentials: 'omit',
-                    body: tosend
-                };
-
-                let myRequest = new Request(sourceURL, myInit);
+                })
+                let myRequest = new Request(self._getSourceURL(urlInfo, params), putConfig);
 
                 return fetch(myRequest).then((response) => {
-                    console.log("postUnklareVersicherteAsJSON antwort" + JSON.stringify(response));
+                    console.log("update " + domainName + " AsJSON antwort" + JSON.stringify(response));
                     if (response && response.ok) {
                         return response.json();
                     } else return undefined;
-
-
                 }).catch(() => {
-                    console.log('postUnklareVersicherteAsJSON die Anfrage an' + sourceURL + ' war nicht erfolgreich')
+                    console.warn('update ' + domainName + ' AsJSON die Anfrage an' + urlInfo.path + ' war nicht erfolgreich')
                 });
-
             }
 
-            getOnePachter(ganr) {
+            deleteOne(domainName, ...args) {
                 let self = this;
-                let sourceURL = self._getSourceURL(self.URLS.JSON_PAECHTER.path + "/" + ganr, self.URLS.JSON_PAECHTER.port);
+                let urlInfo = null;
+                let deleteConfig = self._getRestDeleteConfig();
+                Object.keys(self.URLS).forEach((key) => {
+                    if (self.URLS[key].path.indexOf(domainName, 5) === 5) {
+                        urlInfo = self.URLS[key];
+                    }
+                })
 
-                let myRequest = new Request(sourceURL, self.HEADERINFO.GET_HEADER);
+                let myRequest = new Request(self._getSourceURL(urlInfo, args), deleteConfig);
 
                 return fetch(myRequest).then((response) => {
                     if (response.status && response.status === 204) {
-                        console.log("getOnePaechter as JSON status 204")
+                        console.log("deleteOne" + domainName + " as JSON status 204")
                         return undefined;
                     } else {
                         return response.json();
                     }
                 }).then((data) => {
-                    console.log('firstclient onepaechter wird gesetzt auf' + JSON.stringify(data))
+                    console.log('firstclient delete ' + domainName + ' as json wird gesetzt auf' + JSON.stringify(data))
                     return Promise.resolve(data);
                 }).catch((err) => {
-                    console.log('getOnePaechter die Anfrage an api/paechter war nicht erfolgreich' + JSON.stringify(error))
-                });
-
-            }
-
-            postOnePaechter(theOne) {
-                let self = this;
-                let sourceURL = self._getSourceURL(self.URLS.JSON_PAECHTER.path + "/" + theOne.GARTENNUMMER, self.URLS.JSON_PAECHTER.port);
-                let myHeaders = new Headers();
-
-                myHeaders.set("Content-Type", "application/json");
-
-                let tosend = JSON.stringify(theOne);
-
-                let myInit = {
-                    method: 'POST',
-                    headers: myHeaders,
-                    mode: 'cors',
-                    cache: 'default',
-                    credentials: 'omit',
-                    body: tosend
-                };
-
-                let myRequest = new Request(sourceURL, myInit);
-
-                return fetch(myRequest).then((response) => {
-                    if (!response.ok) {
-                        throw response;
-                    } else if (response && response.ok) {
-                        return response.json();
-                    } else return undefined;
-                }).catch(() => {
-                    console.log('postOnePaechter die Anfrage an' + sourceURL + ' war nicht erfolgreich')
-                    return Promise.reject();
+                    console.log('deleteOne ' + domainName + ' - die Anfrage an' + self._getSourceURL(urlInfo, args) + ' war nicht erfolgreich' + JSON.stringify(error))
                 });
             }
 
-            postOneVersicherter(theOne) {
-                let self = this;
-                let sourceURL = self._getSourceURL(self.URLS.JSON_ONE_VERSICHERTER.path, self.URLS.JSON_ONE_VERSICHERTER.port);
-                let myHeaders = new Headers();
-                myHeaders.set("Content-Type", "application/json");
-
-                let tosend = JSON.stringify(theOne);
-
-                let myInit = {
-                    method: 'POST',
-                    headers: myHeaders,
-                    mode: 'cors',
-                    cache: 'default',
-                    credentials: 'omit',
-                    body: tosend
-                };
-
-                let myRequest = new Request(sourceURL, myInit);
-
-                return fetch(myRequest).then((response) => {
-                    console.log("postOneVersicherter antwort" + JSON.stringify(response));
-                    if (!response.ok) {
-                        throw response;
-                    } else if (response && response.ok) {
-                        return response.json();
-                    } else return undefined;
-
-
-                }).catch(() => {
-                    console.log('postOneVersicherter die Anfrage an' + sourceURL + ' war nicht erfolgreich')
-                    return Promise.reject();
-                });
-
-            }
-
-            deleteUngeklaerterVersicherter(gartennummer) {
-                let self = this;
-                let sourceURL = self._getSourceURL(self.URLS.JSON_UNKLARE_VERSICHERTE.path, self.URLS.JSON_UNKLARE_VERSICHERTE.port);
-                let myHeaders = new Headers();
-
-                let myInit = {
-                    method: 'DELETE',
-                    headers: myHeaders,
-                    mode: 'cors',
-                    cache: 'default',
-                    credentials: 'omit'
-                };
-
-                let myRequest = new Request(sourceURL + '/' + gartennummer, myInit);
-
-                return fetch(myRequest).then((response) => {
-                    if (response.status && response.status === 204) {
-                        console.log("deleteUngeklaerterVersicherter as JSON status 204")
-                        return undefined;
-                    } else {
-                        return response.json();
-                    }
-                }).then((data) => {
-                    console.log('firstclient deleteUngeklaerterVersicherter wird gesetzt auf' + JSON.stringify(data))
-                    return Promise.resolve(data);
-                }).catch((err) => {
-                    console.log('deleteUngeklaerterVersicherter die Anfrage an api/paechter war nicht erfolgreich' + JSON.stringify(error))
-                });
-
-            }
-
-            deleteOnePaechter(gartennummer) {
-                let self = this;
-                let sourceURL = self._getSourceURL(self.URLS.JSON_PAECHTER.path, self.URLS.JSON_PAECHTER.port);
-                let myHeaders = new Headers();
-
-                let myInit = {
-                    method: 'DELETE',
-                    headers: myHeaders,
-                    mode: 'cors',
-                    cache: 'default',
-                    credentials: 'omit'
-                };
-
-                let myRequest = new Request(sourceURL + '/' + gartennummer, myInit);
-
-                return fetch(myRequest).then((response) => {
-                    if (response.status && response.status === 204) {
-                        console.log("deleteOnePaechter as JSON status 204")
-                        return undefined;
-                    } else {
-                        return response.json();
-                    }
-                }).then((data) => {
-                    console.log('firstclient delete paechter as json wird gesetzt auf' + JSON.stringify(data))
-                    return Promise.resolve(data);
-                }).catch((err) => {
-                    console.log('deleteOne Paechter - die Anfrage an api/paechter war nicht erfolgreich' + JSON.stringify(error))
-                });
-
-            }
-
-            deleteOneVersicherter(gartennummer) {
-                let self = this;
-                let sourceURL = self._getSourceURL(self.URLS.JSON_VERSICHERTE.path, self.URLS.JSON_VERSICHERTE.port);
-                let myHeaders = new Headers();
-
-                let myInit = {
-                    method: 'DELETE',
-                    headers: myHeaders,
-                    mode: 'cors',
-                    cache: 'default',
-                    credentials: 'omit'
-                };
-
-                let myRequest = new Request(sourceURL + '/' + gartennummer, myInit);
-
-                return fetch(myRequest).then((response) => {
-                    if (response.status && response.status === 204) {
-                        console.log("deleteVersicherter as JSON status 204")
-                        return undefined;
-                    } else {
-                        return response.json();
-                    }
-                }).then((data) => {
-                    console.log('firstclient delete versicherter as json wird gesetzt auf' + JSON.stringify(data))
-                    return Promise.resolve(data);
-                }).catch((err) => {
-                    console.log('getVersicherteAsJSON die Anfrage an api/paechter war nicht erfolgreich' + JSON.stringify(error))
-                });
-
-            }
-
-            postPaechterAsJSON(paechter) {
-                console.log('topost' + JSON.stringify(paechter))
-                let self = this;
-                let sourceURL = self._getSourceURL(self.URLS.JSON_PAECHTER.path, self.URLS.JSON_PAECHTER.port);
-                let myHeaders = new Headers();
-                myHeaders.set("Content-Type", "application/json");
-
-                let tosend = JSON.stringify(paechter);
-
-                let myInit = {
-                    method: 'POST',
-                    headers: myHeaders,
-                    mode: 'cors',
-                    cache: 'default',
-                    credentials: 'omit',
-                    body: tosend
-                };
-
-                let myRequest = new Request(sourceURL, myInit);
-
-                return fetch(myRequest).then((response) => {
-                    console.log("postVersicherteAsJSON antwort" + JSON.stringify(response));
-                    if (response && response.ok) {
-                        return response.json();
-                    } else return undefined;
-
-
-                }).catch(() => {
-                    console.log('postVersicherteAsJSON die Anfrage an' + sourceURL + ' war nicht erfolgreich')
-                });
-
-            }
-
-            updatePaechterAsJSON(paechter) {
-                console.log('toupdate' + JSON.stringify(paechter))
-                let self = this;
-                let sourceURL = self._getSourceURL(self.URLS.JSON_PAECHTER.path, self.URLS.JSON_PAECHTER.port);
-                let myHeaders = new Headers();
-                myHeaders.set("Content-Type", "application/json");
-
-                let tosend = JSON.stringify(paechter);
-
-                let myInit = {
-                    method: 'PUT',
-                    headers: myHeaders,
-                    mode: 'cors',
-                    cache: 'default',
-                    credentials: 'omit',
-                    body: tosend
-                };
-
-                let myRequest = new Request(sourceURL, myInit);
-
-                return fetch(myRequest).then((response) => {
-                    console.log("updatePaechterAsJSON antwort" + JSON.stringify(response));
-                    if (response && response.ok) {
-                        return response.json();
-                    } else return undefined;
-
-
-                }).catch(() => {
-                    console.log('updatePaechterAsJSON die Anfrage an' + sourceURL + ' war nicht erfolgreich')
-                });
-
-            }
-
-            getVersicherteAsJSON() {
-                let self = this;
-                let sourceURL = self._getSourceURL(self.URLS.JSON_VERSICHERTE.path, self.URLS.JSON_VERSICHERTE.port);
-
-                let myRequest = new Request(sourceURL, self.HEADERINFO.GET_HEADER);
-
-                return fetch(myRequest).then((response) => {
-                    if (response.status && response.status === 204) {
-                        console.log("getVersicherte as JSON status 204")
-                        return undefined;
-                    } else {
-                        return response.json();
-                    }
-                }).then((data) => {
-                    console.log('firstclient paechter as json wird gesetzt auf' + JSON.stringify(data))
-                    return Promise.resolve(data);
-                }).catch((err) => {
-                    console.log('getVersicherteAsJSON die Anfrage an api/paechter war nicht erfolgreich' + JSON.stringify(error))
-                });
-            }
-
-            getPaechterAsJSON() {
-                let self = this;
-                let sourceURL = self._getSourceURL(self.URLS.JSON_PAECHTER.path, self.URLS.JSON_PAECHTER.port);
-
-                let myRequest = new Request(sourceURL, self.HEADERINFO.GET_HEADER);
-
-                return fetch(myRequest).then((response) => {
-                    if (response.status && response.status === 204) {
-                        console.log("getPaechter as JSON status 204")
-                        return undefined;
-                    } else {
-                        return response.json();
-                    }
-                }).then((data) => {
-                    console.log('firstclient paechter as jason wird gesetzt auf' + JSON.stringify(data))
-                    return Promise.resolve(data);
-                }).catch((err) => {
-                    console.log('getPaechterAsJSON die Anfrage an api/paechter war nicht erfolgreich' + JSON.stringify(error))
-                });
-            }
-
+            /**
+             * CSV - Exports 
+             */
             exportVersicherteAsCSV(versicherte, destination) {
                 let self = this;
                 let asCSV = self.mapToCSV(versicherte);
-                let sourceURL = self._getSourceURL(self.URLS.CSV_VERSICHERTE.path, self.URLS.CSV_VERSICHERTE.port);
-                console.log('topost' + JSON.stringify(versicherte))
                 if (destination === "server") {
-                    return self._exportRemote(asCSV, sourceURL);
+                    return self.postAsCSV(asCSV, 'versicherte');
                 } else if (destination === "lokal") {
                     return self._saveLokalAsCSV(asCSV, "versicherte_");
                 } else {
-                    return self._exportRemote(asCSV, sourceURL);
+                    return self.postAsCSV(asCSV, 'versicherte');;
                 }
             }
 
             exportUnklareAsCSV(unklare, destination) {
                 let self = this;
                 let asCSV = self.mapToCSV(unklare);
-                let sourceURL = self._getSourceURL(self.URLS.CSV_UNKLARE.path, self.URLS.CSV_UNKLARE.port);
-                console.log('topost' + JSON.stringify(unklare))
                 if (destination === "server") {
-                    return self._exportRemote(asCSV, sourceURL);
+                    return self.postAsCSV(asCSV, 'unklare');
                 } else if (destination === "lokal") {
                     return self._saveLokalAsCSV(asCSV, "unklare_");
                 } else {
-                    return self._exportRemote(asCSV, sourceURL);
+                    return self.postAsCSV(asCSV, 'unklare');
                 }
             }
 
             exportPaechterAsCSV(paechter, destination) {
                 let self = this;
                 let asCSV = self.mapToCSV(paechter);
-                let sourceURL = self._getSourceURL(self.URLS.CSV_PAECHTER.path, self.URLS.CSV_PAECHTER.port);
-                console.log('topost' + JSON.stringify(paechter))
                 if (destination === "server") {
-                    return self._exportRemote(asCSV, sourceURL);
+                    return self.postAsCSV(asCSV, 'paechter');
                 } else if (destination === "lokal") {
                     return self._saveLokalAsCSV(asCSV, "paechter_");
                 } else {
-                    return self._exportRemote(asCSV, sourceURL);
+                    return self.postAsCSV(asCSV, 'paechter');
                 }
-            }
-
-            _exportRemote(asCSV, sourceURL) {
-
-                let myHeaders = new Headers();
-                myHeaders.set("Content-Type", "text/plain");
-
-                let myInit = {
-                    method: 'POST',
-                    headers: myHeaders,
-                    mode: 'cors',
-                    cache: 'default',
-                    credentials: 'omit',
-                    body: asCSV
-                };
-
-                let myRequest = new Request(sourceURL, myInit);
-                return fetch(myRequest).then((response) => {
-                    console.log("post " + sourceURL + " antwort" + response);
-                    if (response && response.ok) {
-                        //debugger;
-                        console.log("post " + sourceURL + " antwort1");
-                        return response.json();
-                    } else { console.log("post " + sourceURL + " antwort2"); return undefined; }
-
-
-                }).catch(() => {
-                    console.log('postAscsv die Anfrage an' + sourceURL + ' war nicht erfolgreich')
-                });
             }
 
             _saveLokalAsCSV(asCSV, saveWas) {
@@ -641,64 +245,60 @@
                 return toSave;
             }
 
-            logdata(theOne, logdata, path) {
+            getCSVForDomain(domainName) {
+
                 let self = this;
-                let usr = JSON.parse(document.querySelector('my-app').getAttribute('user'));
-                try {
-                    if (logdata) {
-                        logdata.data = theOne;
-                        logdata.user = usr.name;
-                        logdata.datetime = moment().format('YYYYMMDD_HHmm');
+                let urlInfo = null;
+                let getConfig = self._getRestGetConfig('text/plain');
+                Object.keys(self.URLS).forEach((key) => {
+                    if (self.URLS[key].path.indexOf(domainName, 9) === 9) {
+                        urlInfo = self.URLS[key];
                     }
-                } catch (err) {
-                    console.warn('nologgs')
-                }
-                let gNr, urlpath, urlport;
-                switch (path) {
-                    case 'paechter':
-                        gNr = logdata.data.GARTENNUMMER;
-                        urlpath = self.URLS.LOGG_PAECHTER_CHANGES.path;
-                        urlport = self.URLS.LOGG_PAECHTER_CHANGES.port;
-                        break;
-                    default:
-                        break;
-                }
+                })
 
-                let sourceURL = self._getSourceURL(urlpath + "/" + gNr, urlport);
-                let myHeaders = new Headers();
-                myHeaders.set("Content-Type", "application/json");
-
-                let tosend = JSON.stringify(logdata);
-
-                let myInit = {
-                    method: 'POST',
-                    headers: myHeaders,
-                    mode: 'cors',
-                    cache: 'default',
-                    credentials: 'omit',
-                    body: tosend
-                };
-
-                let myRequest = new Request(sourceURL, myInit);
+                let myRequest = new Request(self._getSourceURL(urlInfo, params), getConfig);
 
                 return fetch(myRequest).then((response) => {
-                    if (!response.ok) {
-                        throw response;
-                    } else if (response && response.ok) {
-                        let toRespond = response.json();
-                        return toRespond;
-                    } else return undefined;
-                }).catch(() => {
-                    console.warn('logging OnePaechter die Anfrage an' + sourceURL + ' war nicht erfolgreich')
-                    return Promise.reject();
+                    console.log("getCSV for " + domainName + " antwort" + JSON.stringify(response));
+                    if (response.status === 204) {
+                        return undefined;
+                    } else return response.json();
+                }).catch((err) => {
+                    console.log('getCSV for ' + domainName + ' die Anfrage an ' + self._getSourceURL(urlInfo, params) + ' war nicht erfolgreich')
+                    return Promise.reject(err);
                 });
             }
 
+            postAsCSV(data, domainName, ...params) {
+                let self = this;
+                let urlInfo = null;
+                let postConfig = self._getRestPostConfig('text/plain');
+                postConfig.body = JSON.stringify(data);
+                Object.keys(self.URLS).forEach((key) => {
+                    if (self.URLS[key].path.indexOf(domainName, 9) === 9) {
+                        urlInfo = self.URLS[key];
+                    }
+                })
+                let myRequest = new Request(self._getSourceURL(urlInfo, params), postConfig);
+
+                return fetch(myRequest).then((response) => {
+                    console.log("post " + domainName + " AsCSV antwort" + JSON.stringify(response));
+                    if (response && response.ok) {
+                        return response.json();
+                    } else return undefined;
+                }).catch(() => {
+                    console.warn('post ' + domainName + ' AsCSV die Anfrage an' + urlInfo.path + ' war nicht erfolgreich')
+                });
+            }
+
+            /**
+             * Logging Changes
+             */
             getHistoryFor(ganr) {
                 let self = this;
-                let sourceURL = self._getSourceURL(self.URLS.LOGG_PAECHTER_CHANGES.path + "/" + ganr, self.URLS.LOGG_PAECHTER_CHANGES.port);
+                let sourceURL = self._getSourceURL(self.URLS.LOGG_PAECHTER_CHANGES, ganr);
 
-                let myRequest = new Request(sourceURL, self.HEADERINFO.GET_HEADER);
+                let myRequest = new Request(sourceURL, self._getRestGetConfig());
 
                 return fetch(myRequest).then((response) => {
                     if (response.status && response.status === 204) {
@@ -713,46 +313,51 @@
                 }).catch((err) => {
                     console.log('getHistoryFor die Anfrage an api/loggs/paechter war nicht erfolgreich' + JSON.stringify(error))
                 });
-
             }
 
-            postAsJSON(data, domainName) {
+            logdata(theOne, logdata, path) {
                 let self = this;
-                let urlInfo = null;
-                Object.keys(self.URLS).forEach((key)=>{
-                    if (self.URLS[key].path.indexOf(domainName, 5) >= 0){
-                        urlInfo = self.URLS[key];
+                let usr = JSON.parse(document.querySelector('my-app').getAttribute('user'));
+                try {
+                    if (logdata) {
+                        logdata.data = theOne;
+                        logdata.user = usr.name;
+                        logdata.datetime = moment().format('YYYYMMDD_HHmm');
                     }
-                })
-                let sourceURL = self._getSourceURL(urlInfo.path, urlInfo.port);
-                let myHeaders = new Headers();
-                myHeaders.set("Content-Type", "application/json");
+                } catch (err) {
+                    console.warn('nologgs')
+                }
+                let gNr, urlConf;
+                switch (path) {
+                    case 'paechter':
+                        gNr = logdata.data.GARTENNUMMER;
+                        urlConf = self.URLS.LOGG_PAECHTER_CHANGES;
+                        break;
+                    default:
+                        break;
+                }
 
-                let tosend = JSON.stringify(data);
+                let postConfig = self._getRestPostConfig();
+                postConfig.body = JSON.stringify(logdata);
 
-                let myInit = {
-                    method: 'POST',
-                    headers: myHeaders,
-                    mode: 'cors',
-                    cache: 'default',
-                    credentials: 'omit',
-                    body: tosend
-                };
-
-                let myRequest = new Request(sourceURL, myInit);
+                let myRequest = new Request(self._getSourceURL(urlConf, gNr), postConfig);
 
                 return fetch(myRequest).then((response) => {
-                    console.log("post " + domainName + " AsJSON antwort" + JSON.stringify(response));
-                    if (response && response.ok) {
-                        return response.json();
+                    if (!response.ok) {
+                        throw response;
+                    } else if (response && response.ok) {
+                        let toRespond = response.json();
+                        return toRespond;
                     } else return undefined;
-
-
                 }).catch(() => {
-                    console.log('post ' + domainName + ' AsJSON die Anfrage an' + sourceURL + ' war nicht erfolgreich')
+                    console.warn('logging OnePaechter die Anfrage an' + self._getSourceURL(urlConf, gNr) + ' war nicht erfolgreich')
+                    return Promise.reject();
                 });
-
             }
+
+
+
+
 
         }
 

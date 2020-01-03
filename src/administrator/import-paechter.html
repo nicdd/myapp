@@ -159,7 +159,7 @@
 
       ready() {
         super.ready();
-        this.$.firstclient.getPaechterAsJSON().then((paechter) => {
+        this.$.firstclient.getAsJSON('paechter').then((paechter) => {
           if (paechter && paechter.columns && paechter.columns.length && paechter.data && paechter.data.length) {
             this.set('completed', true)
           }
@@ -234,7 +234,7 @@
       }
 
       _importRemotePaechterPressed() {
-        this.$.firstclient.getPaechterCSV().then((resp) => {
+        this.$.firstclient.getCSVForDomain('paechter').then((resp) => {
           if (resp) {
             this.mapToJSON(resp);
             let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
@@ -260,7 +260,7 @@
       }
 
       saveToDB(dataAndColumns) {
-        return this.$.firstclient.postPaechterAsJSON(dataAndColumns);
+        return this.$.firstclient.postAsJSON(dataAndColumns, 'paechter');
       }
 
       _importLocalPaechterPressed(localPaechterFromCSVAsArray) {

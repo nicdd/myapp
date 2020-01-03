@@ -36,7 +36,7 @@
                 }
 
                 if (!paechter) {
-                    this.$.firstclient.getPaechterAsJSON().then((ps) => {
+                    this.$.firstclient.getAsJSON('paechter').then((ps) => {
                         thePaechter = ps.data;
                     }).catch(() => {
                         return;

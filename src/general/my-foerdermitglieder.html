@@ -299,7 +299,7 @@
                                                 <div slot="collapse-content" class="corrected-margin">
                                                     <div class="mcard strong-text-color">
                                                         <grt-gartler id="grtl[[index]]" gartler="[[item]]"
-                                                            on-savegartler="_postOnePaechter">
+                                                            on-savegartler="_postOneFM">
                                                             <h4 slot="title">Pächter</h4>>
                                                         </grt-gartler>
 
@@ -454,7 +454,7 @@
                     }
                 });
             
-                this.$.firstclient.getPaechterAsJSON().then((resp) => {
+                this.$.firstclient.getAsJSON('paechter').then((resp) => {
                     if (resp) {
                         this.splitToObjects(resp).finally(() => {
                             //wenn pageSize nur an einer stelle initialisiert wird (in then von splitToObjects)
@@ -649,7 +649,7 @@
             _activeChanged(newV, oldV) {
                 console.log('selected changed newV:' + newV + " oldV:" + oldV)
                 if (newV) {
-                    this.$.firstclient.getPaechterAsJSON().then((resp) => {
+                    this.$.firstclient.getAsJSON('paechter').then((resp) => {
                         if (resp) {
                             this.splitToObjects(resp).finally(() => {
                                 this.changePage();
@@ -718,18 +718,18 @@
                 self.splice('mvdata', self._pageStart, 0, e.detail);
             }
 
-            _postOnePaechter(e) {
+            _postOneFM(e) {
                 let toSave = null;
                 if (e.type && e.type === 'savegartler') {
                     toSave = e.detail.data;
                     let mid = e.target.id;
                     toSave = this._removeMetadata(toSave);
-                    this.$.firstclient.postOnePaechter(toSave).then(() => {
+                    this.$.firstclient.postAsJSON(toSave, 'foerdermitglieder', toSave.AUFNAHMEDATUM).then(() => {
                         this.$[mid].pushSuccesfullEvent(e.type);
                         this._insertChangedPaechter(e);
                         if (this.logg){
                             let historyID = "history" + mid.substring(4);
-                            this.$[historyID].postLogData(toSave, e.detail.logdata, 'paechter');
+                            this.$[historyID].postLogData(toSave, e.detail.logdata, 'foerdermitglieder');
                         }
                         showToast(this, 'Die Änderungen des Pächters wurden erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
                     }).catch((error) => {
@@ -749,7 +749,7 @@
                 } else {
                     let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
                     this.$.sandhour.showDialog();
-                    this.$.firstclient.postPaechterAsJSON(dataAndColumns).then(() => {
+                    this.$.firstclient.postAsJSON(dataAndColumns, 'foerdermitglieder').then(() => {
                         console.log('paechter gespeichert')
                         showToast(this, 'Die Paechter wurden erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
                     }).catch(() => {
@@ -852,7 +852,7 @@
                 });
                 let idx = this.mvdata.indexOf(elem);
                 if (idx >= 0) {
-                    this.$.firstclient.deleteOnePaechter(elem.GARTENNUMMER).then(() => {
+                    this.$.firstclient.deleteOne('foerdermitglieder', elem.GARTENNUMMER).then(() => {
                         this.splice('mvdata', idx, 1);
                         showToast(this, 'Der Pächter wurde erfolgreich gelöscht', TOAST_TYPE.SUCCESS);
                     }).catch(() => {
@@ -861,7 +861,7 @@
                 } else if (!elem && idx === -1) {
                     // ist ein fehlerhafter Datensatz ohne Gartennummer, womöglich aus einer leeren Zeile der Importdatei
                     const rowIdx = id.substring(1); // ab dem minus-Zeichen, befindet sich die Zeilenindex
-                    this.$.firstclient.deleteOnePaechter(null).then(() => {
+                    this.$.firstclient.deleteOne('foerdermitglieder', null).then(() => {
                         this.splice('mvdata', rowIdx, 1);
                         showToast(this, 'Der Pächter wurde erfolgreich gelöscht', TOAST_TYPE.SUCCESS);
                     }).catch(() => {
