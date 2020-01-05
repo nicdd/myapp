@@ -80,7 +80,7 @@
             on-grtconfirm="_removeItem"></grt-dialog>
         <grt-dialog id="grtinfodialog" dialog-type="info"></grt-dialog>
         <export-chooser id="exportdialog" dialog-type="info" confirmation-name="Schließen"
-            on-export-data="exportPaechter"></export-chooser>
+            on-export-data="exportFoerdermitglieder"></export-chooser>
         <apps-dialog id="appsdialog" action-buttons="[[actionButtons]]" tasks="[[getSelected(mvdata.*)]]"></apps-dialog>
         <grt-sand-clock id="sandhour"></grt-sand-clock>
         <div>
@@ -96,7 +96,7 @@
                         <iron-icon icon="apps" id="appsicon" slot="item-icon" on-click="_showApps"></iron-icon>
                     </button>
                     <paper-button disabled="[[isSaveAllDisabled(mvdata.*, openeddetails.*, _isAenderung)]]" bottom
-                        raised on-click="postPaechter">Speichern</paper-button>
+                        raised on-click="postFoerdermitglieder">Speichern</paper-button>
                     <paper-button disabled="[[isExportDisabled(mvdata.*, openeddetails.*)]]" bottom raised
                         on-click="_showExportDialog">Exportieren</paper-button>
                 </div>
@@ -166,7 +166,7 @@
                         </thead>
                         <tbody>
                             <template is="dom-repeat" items="[[mvpagedata]]">
-                                <tr class$="[[item.paechter.status]]">
+                                <tr class$="[[item.foerdermitglied.status]]">
                                     <td class="centered-cell">
                                         <paper-checkbox class="[[getClassByBeitrag(item.BEITRAG)]]"
                                             id="[[getGridElementID(index, _pageStart, 'scb')]]" on-change="_checkOne"
@@ -431,8 +431,8 @@
                 e.stopPropagation();
             }
 
-            _removeMetadata(paechter) {
-                let vToSave = JSON.parse(JSON.stringify(paechter))
+            _removeMetadata(foerdermitglied) {
+                let vToSave = JSON.parse(JSON.stringify(foerdermitglied))
                 const keysToReset = ["selected", "_detailsOpened"];
                 Object.keys(vToSave).forEach((vkey) => {
                     if (keysToReset.some((elem) => elem === vkey)) {
@@ -454,7 +454,7 @@
                     }
                 });
             
-                this.$.firstclient.getAsJSON('paechter').then((resp) => {
+                this.$.firstclient.getAsJSON('foerdermitglieder').then((resp) => {
                     if (resp) {
                         this.splitToObjects(resp).finally(() => {
                             //wenn pageSize nur an einer stelle initialisiert wird (in then von splitToObjects)
@@ -467,7 +467,7 @@
                         showToast(this, 'Bei der Initialisierung der Seite wurden keine Pächterdaten gefunden', TOAST_TYPE.ERROR);
                     }
                 }).catch((err) => {
-                    console.log("Fehler beim get fuer paechter  kam:" + JSON.stringify(err))
+                    console.log("Fehler beim get fuer foerdermitglieder  kam:" + JSON.stringify(err))
                     showToast(this, 'Die Paecheterdaten konnten nicht geladen werden', TOAST_TYPE.ERROR);
                 })
             }
@@ -609,13 +609,13 @@
             }
 
             splitToObjects(resp) {
-                let paechterData = resp.data;
+                let foerdermitgliederData = resp.data;
                 let columns = resp.columns;
                 let promises = [];
 
                 return Promise.all(promises).then(() => {
                     this.set('columnNames', columns);
-                    this.set('mvdata', paechterData);
+                    this.set('mvdata', foerdermitgliederData);
                     this.set('pageSize', parseInt(10));
                 })
             }
@@ -649,7 +649,7 @@
             _activeChanged(newV, oldV) {
                 console.log('selected changed newV:' + newV + " oldV:" + oldV)
                 if (newV) {
-                    this.$.firstclient.getAsJSON('paechter').then((resp) => {
+                    this.$.firstclient.getAsJSON('foerdermitglieder').then((resp) => {
                         if (resp) {
                             this.splitToObjects(resp).finally(() => {
                                 this.changePage();
@@ -681,9 +681,9 @@
                 }
             }
 
-            exportPaechter(e) {
+            exportFoerdermitglieder(e) {
                 let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
-                this.$.firstclient.exportPaechterAsCSV(dataAndColumns, e.detail).then((savePath) => {
+                this.$.firstclient.exportFoerdermitgliederAsCSV(dataAndColumns, e.detail).then((savePath) => {
                     if (savePath && savePath.path) {
                         this.$.grtinfodialog.showDialog(
                             {
@@ -698,7 +698,7 @@
                 });
             }
 
-            //paechterdata save
+            //foerdermitgliederdata save
             _saveItemData(e) {
                 if (e && e.target && e.target.id && !e.target.disabled) {
                     let idxOrigTable = idxActiveTable + (parseInt(this._pageStart) || 0);
@@ -708,12 +708,12 @@
                 e.stopPropagation();
             }
 
-            _insertChangedPaechter(e) {
+            _insertChangedFoerdermitglied(e) {
                 this.splice('mvdata', e.detail.index, 1, e.detail.data)
                 this.changePage();
             }
 
-            _insertNewPaechter(e) {
+            _insertNewFoerdermitglied(e) {
                 let self = this;
                 self.splice('mvdata', self._pageStart, 0, e.detail);
             }
@@ -726,7 +726,7 @@
                     toSave = this._removeMetadata(toSave);
                     this.$.firstclient.postAsJSON(toSave, 'foerdermitglieder', toSave.AUFNAHMEDATUM).then(() => {
                         this.$[mid].pushSuccesfullEvent(e.type);
-                        this._insertChangedPaechter(e);
+                        this._insertChangedFoerdermitglied(e);
                         if (this.logg){
                             let historyID = "history" + mid.substring(4);
                             this.$[historyID].postLogData(toSave, e.detail.logdata, 'foerdermitglieder');
@@ -738,7 +738,7 @@
                 }
             }
 
-            postPaechter() {
+            postFoerdermitglieder() {
                 if (!this.mvdata || !this.mvdata.length) {
                     this.$.grtinfodialog.showDialog(
                         {
@@ -750,8 +750,8 @@
                     let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
                     this.$.sandhour.showDialog();
                     this.$.firstclient.postAsJSON(dataAndColumns, 'foerdermitglieder').then(() => {
-                        console.log('paechter gespeichert')
-                        showToast(this, 'Die Paechter wurden erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
+                        console.log('foerdermitglieder gespeichert')
+                        showToast(this, 'Die Foerdermitglieder wurden erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
                     }).catch(() => {
                         showToast(this, 'Fehler beim Speichern der Paecheterndaten', TOAST_TYPE.ERROR);
                     }).finally(() => {

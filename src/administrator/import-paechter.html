@@ -53,9 +53,9 @@
     <first-client id="firstclient"></first-client>
     <basic-client id="bclient"></basic-client>
     <div class="toolbar layout horizontal center-justified" flex>
-      <paper-progress-button bottom raised on-click="_importRemotePaechterPressed" loading-label="Nicht so hecktisch ..."
-        loading="[[_loading]]">Pächter-Daten aus CSV-Datei vom Server importieren <iron-icon icon="add-circle-outline"
-          slot="item-icon"></iron-icon>
+      <paper-progress-button bottom raised on-click="_importRemotePaechterPressed"
+        loading-label="Nicht so hecktisch ..." loading="[[_loading]]">Pächter-Daten aus CSV-Datei vom Server importieren
+        <iron-icon icon="add-circle-outline" slot="item-icon"></iron-icon>
       </paper-progress-button>
       <granite-file-reader read-as="dataURL" accept=".csv" on-file-read="_doOnFileRead">
         <div class="clickHere">Pächter-Daten aus lokaler CSV-Datei importieren</div>
@@ -223,15 +223,56 @@
         let finalArray = [];
         if (this.mfile) {
           let firstArr = this.mfile.split('\n');
+          if (Array.isArray(firstArr) && firstArr.length > 0 && !firstArr[firstArr.length - 1].length) {
+            firstArr.pop();
+          }
           let secondArray = null;
           firstArr.forEach((el) => {
             secondArray = el.split(',');
-            finalArray.push(secondArray);
+            let thirdArray = [];
+            for (let i = 0; i < secondArray.length - 1; i++) {
+              if (secondArray[i].startsWith('"')) {
+                let indexOfLastFalsyKomaSplited = null;
+                let k = i + 1;
+                while (!indexOfLastFalsyKomaSplited && k < secondArray.length) {
+                  if (secondArray[k].endsWith('"')) {
+                    indexOfLastFalsyKomaSplited = k;
+                  }
+                  k++;
+                }
+                // Eine Zelle mit schliessendem Komma gefunden
+                if (indexOfLastFalsyKomaSplited) {
+                  let newZelle = secondArray[i].substring(1);
+                  while (i < indexOfLastFalsyKomaSplited) {
+                    i++;
+                    if (i === indexOfLastFalsyKomaSplited) {
+                      //entferne das " an Ende des Strings, das ist die letzte Zelle die 
+                      // zum ursprünglichen Inhalt gehört
+                      newZelle += secondArray[i].substring(0, secondArray[i].length - 1);
+                    } else {
+                      // noch nicht die letzte Zelle die 
+                      // zum ursprünglichen Inhalt gehört
+                      newZelle += secondArray[i];
+                    }
+                  }
+                  thirdArray.push(newZelle);
+                } else {
+                  thirdArray.push(newZelle);
+                }
+
+
+              } else {
+                thirdArray.push(secondArray[i]);
+              }
+            }
+
+            finalArray.push(thirdArray);
           })
           this._importLocalPaechterPressed(finalArray);
         }
-        
       }
+
+
 
       _importRemotePaechterPressed() {
         this.$.firstclient.getCSVForDomain('paechter').then((resp) => {

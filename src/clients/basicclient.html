@@ -60,7 +60,8 @@
                     self.set('versicherungconfig', data);
                     return Promise.resolve(data);
                 }).catch((err) => {
-                    console.log('getVersicherungconfig die Anfrage an api/versicherungconfig war nicht erfolgreich' + JSON.stringify(error))
+                    console.log('getVersicherungconfig die Anfrage an api/versicherungconfig war nicht erfolgreich' + JSON.stringify(error));
+                    return Promise.reject(err);
                 });
             }
 
@@ -77,8 +78,9 @@
                 }).then((data) => {
                     self.set('versicherungconfig', data);
                     return Promise.resolve(data);
-                }).catch(() => {
-                    console.warn('postVersicherungconfig die Anfrage an api/versicherungconfig war nicht erfolgreich')
+                }).catch((err) => {
+                    console.warn('postVersicherungconfig die Anfrage an api/versicherungconfig war nicht erfolgreich');
+                    return Promise.reject(err);
                 });
 
             }

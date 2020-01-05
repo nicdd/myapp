@@ -247,15 +247,53 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
         let finalArray = [];
         if (this.mfile) {
           let firstArr = this.mfile.split('\n');
-          console.log('firstArray' + JSON.stringify(firstArr))
+          if (Array.isArray(firstArr) && firstArr.length > 0 && !firstArr[firstArr.length - 1].length) {
+            firstArr.pop();
+          }
           let secondArray = null;
           firstArr.forEach((el) => {
             secondArray = el.split(',');
-            finalArray.push(secondArray);
+            let thirdArray = [];
+            for (let i = 0; i < secondArray.length - 1; i++) {
+              if (secondArray[i].startsWith('"')) {
+                let indexOfLastFalsyKomaSplited = null;
+                let k = i + 1;
+                while (!indexOfLastFalsyKomaSplited && k < secondArray.length) {
+                  if (secondArray[k].endsWith('"')) {
+                    indexOfLastFalsyKomaSplited = k;
+                  }
+                  k++;
+                }
+                // Eine Zelle mit schliessendem Komma gefunden
+                if (indexOfLastFalsyKomaSplited) {
+                  let newZelle = secondArray[i].substring(1);
+                  while (i < indexOfLastFalsyKomaSplited) {
+                    i++;
+                    if (i === indexOfLastFalsyKomaSplited) {
+                      //entferne das " an Ende des Strings, das ist die letzte Zelle die 
+                      // zum ursprünglichen Inhalt gehört
+                      newZelle += secondArray[i].substring(0, secondArray[i].length - 1);
+                    } else {
+                      // noch nicht die letzte Zelle die 
+                      // zum ursprünglichen Inhalt gehört
+                      newZelle += secondArray[i];
+                    }
+                  }
+                  thirdArray.push(newZelle);
+                } else {
+                  thirdArray.push(newZelle);
+                }
+
+
+              } else {
+                thirdArray.push(secondArray[i]);
+              }
+            }
+
+            finalArray.push(thirdArray);
           })
           this._importLocalVersichertePressed(finalArray);
         }
-        
       }
 
       _importRemoteVersichertePressed() {
@@ -381,7 +419,6 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
         let newData = [];
         data.forEach((versichertenData) => {
           let newVersicherte = new Versicherter(this.entPaars);
-        // debugger;
           Object.keys(versichertenData).forEach((key) => {
             let correspondingPaar = this.entPaars.find((p) => p.right === key);
             if (correspondingPaar) {

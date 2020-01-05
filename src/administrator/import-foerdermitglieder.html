@@ -68,13 +68,13 @@
         <div class="clickHere">Lokale CSV-Datei importieren</div>
       </granite-file-reader>
     </div>
-    <template is="dom-if" if="[[generalConf.length]]">
+    <template is="dom-if" if="[[spaltenConf.length]]">
       <div class="layout vertical card">
         <div class="layout horizontal ">
           <paper-input class="labelgroup" min="1" max="100" always-float-label label="Anzahl der Spalten" type="number"
             required value="{{tempAnzahlSpalten}}"></paper-input>
-          <paper-button bottom raised disabled="[[isUebernehmenDisabled(tempAnzahlSpalten, generalConf.length)]]"
-            on-click="_addReduceColumns">[[getUebernehmenButtonName(tempAnzahlSpalten, generalConf.length)]]
+          <paper-button bottom raised disabled="[[isUebernehmenDisabled(tempAnzahlSpalten, spaltenConf.length)]]"
+            on-click="_addReduceColumns">[[getUebernehmenButtonName(tempAnzahlSpalten, spaltenConf.length)]]
           </paper-button>
 
         </div>
@@ -92,7 +92,7 @@
               <th class="contentcol" title="Spaltenname entfernen">Löschen</th>
             </thead>
             <tbody>
-              <template is="dom-repeat" items="[[generalConf]]">
+              <template is="dom-repeat" items="[[spaltenConf]]">
                 <tr>
                   <td class="metacol">
                     [[getOrdnungsnummer(index)]]
@@ -197,7 +197,7 @@
             value: null
           },
 
-          generalConf: {
+          spaltenConf: {
             type: Array,
             value: null,
             notify: true
@@ -250,7 +250,7 @@
 
         let transformedResult = [];
         let columns = resp[0];
-
+        console.warn('resplength ist' + resp.length)
         for (let i = 1; i < resp.length; i++) {
           if (resp[i][0] !== 'Ende der Liste') {
             let myRowObj = {};
@@ -275,14 +275,53 @@
         let finalArray = [];
         if (this.mfile) {
           let firstArr = this.mfile.split('\n');
+          if (Array.isArray(firstArr) && firstArr.length > 0 && !firstArr[firstArr.length - 1].length) {
+            firstArr.pop();
+          }
           let secondArray = null;
           firstArr.forEach((el) => {
             secondArray = el.split(',');
-            finalArray.push(secondArray);
+            let thirdArray = [];
+            for (let i = 0; i < secondArray.length - 1; i++) {
+              if (secondArray[i].startsWith('"')) {
+                let indexOfLastFalsyKomaSplited = null;
+                let k = i + 1;
+                while (!indexOfLastFalsyKomaSplited && k < secondArray.length) {
+                  if (secondArray[k].endsWith('"')) {
+                    indexOfLastFalsyKomaSplited = k;
+                  }
+                  k++;
+                }
+                // Eine Zelle mit schliessendem Komma gefunden
+                if (indexOfLastFalsyKomaSplited) {
+                  let newZelle = secondArray[i].substring(1);
+                  while (i < indexOfLastFalsyKomaSplited) {
+                    i++;
+                    if (i === indexOfLastFalsyKomaSplited) {
+                      //entferne das " an Ende des Strings, das ist die letzte Zelle die 
+                      // zum ursprünglichen Inhalt gehört
+                      newZelle += secondArray[i].substring(0, secondArray[i].length - 1);
+                    } else {
+                      // noch nicht die letzte Zelle die 
+                      // zum ursprünglichen Inhalt gehört
+                      newZelle += secondArray[i];
+                    }
+                  }
+                  thirdArray.push(newZelle);
+                } else {
+                  thirdArray.push(newZelle);
+                }
+
+
+              } else {
+                thirdArray.push(secondArray[i]);
+              }
+            }
+
+            finalArray.push(thirdArray);
           })
           this._importLocalFoerdermitgliederPressed(finalArray);
         }
-
       }
 
       saveToDB(dataAndColumns) {
@@ -290,11 +329,32 @@
 
       }
 
+      _checkForMustColumns(conf) {
+        if (this.domainname === "foerdermitglieder") {
+          let aufnahmeDatumColumn = conf.find((elem) => elem.colname === "AUFNAHMEDATUM");
+          if (!aufnahmeDatumColumn || !aufnahmeDatumColumn.colname || !aufnahmeDatumColumn.coltype || !aufnahmeDatumColumn.alias || !aufnahmeDatumColumn.rolen || !(Array.isArray(aufnahmeDatumColumn.rolen))) {
+            aufnahmeDatumColumn = {
+              "colname": "AUFNAHMEDATUM",
+              "coltype": "string",
+              "alias": "Aufnahme",
+              "rolen": [
+                "paechter",
+                "versicherung",
+                "foerdermitglieder"
+              ]
+            }
+            conf.unshift(aufnahmeDatumColumn);
+          }
+        }
+        return conf;
+      }
+
       _initData(conf, csvData) {
         if (conf && Array.isArray(conf) && csvData && csvData.length) {
+          conf = this._checkForMustColumns(conf);
           let anzC = conf.length;
           this.set('tempAnzahlSpalten', anzC)
-          this.set('generalConf', conf);
+          this.set('spaltenConf', conf);
           this.set('completed', true)
           this.mapToJSON(csvData);
           let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
@@ -304,9 +364,10 @@
           this.set('secondColumns', secondColumns);
           showToast(this, 'Die Daten wurden aus der lokalen Datei erfolgreich geladen. Damit diese auch dauerhaft importiert werden können, setzen Sie die Konfiguration durch die Zuordnung der Tabellenspalten fort.', TOAST_TYPE.WARN, 'center');
         } else {
+          this.set('_defaultColumnConf', this._checkForMustColumns(this._defaultColumnConf))
           let anzC = this._defaultColumnConf.length;
           this.set('tempAnzahlSpalten', anzC)
-          this.set('generalConf', this._defaultColumnConf);
+          this.set('spaltenConf', this._defaultColumnConf);
           this.set('completed', true)
           showToast(this, 'Bei der Importierung der Vereinsdaten wurden keine Foerdermitgliederdaten gefunden', TOAST_TYPE.ERROR);
         }
@@ -314,13 +375,24 @@
 
       _importLocalFoerdermitgliederPressed(localFoerdermitgliederFromCSVAsArray) {
         this.$.bclient.getDomaenenColumnConfig(this.domainname).then((domConf) => {
-          this._initData(domConf, localFoerdermitgliederFromCSVAsArray);
-          showToast(this, 'Die Domänen-Spaltenkonfiguration wurde erfolgreich geladen', TOAST_TYPE.SUCCESS);
-        }).catch(() => {
+          if (!domConf) {
+            throw 'nicht gefunden';
+          } else {
+            this._initData(domConf, localFoerdermitgliederFromCSVAsArray);
+            showToast(this, 'Die domänenspezifische Spaltenkonfiguration wurde erfolgreich geladen', TOAST_TYPE.SUCCESS);
+          }
+
+        }).catch((err) => {
+          showToast(this, 'Die domänenspezifische Spaltenkonfiguration konnte nicht geladen werden, die allgemeine Spaltenkofiguration wird benutzt', TOAST_TYPE.WARN);
           this.$.bclient.getDomaenenColumnConfig('general').then((generalConf) => {
-            this._initData(generalConf, localFoerdermitgliederFromCSVAsArray);
-            showToast(this, 'Die Domänen-Spaltenkonfiguration konnte nicht geladen werden, die allgemeine Spaltenkofiguration wird benutzt', TOAST_TYPE.WARN);
-          }).catch(()=>{
+            if (!generalConf) {
+              throw 'nicht gefunden';
+            } else {
+              this._initData(generalConf, localFoerdermitgliederFromCSVAsArray);
+              showToast(this, 'Die allgemeine Spaltenkonfiguration wurde erfolgreich geladen', TOAST_TYPE.SUCCESS);
+            }
+          }).catch((err) => {
+            showToast(this, 'Keine Spaltenkonfiguration konnte geladen werden', TOAST_TYPE.ERROR);
             this._initData(this._defaultColumnConf, localFoerdermitgliederFromCSVAsArray);
           })
         })
@@ -340,7 +412,7 @@
         if (e && e.target) {
           let myelemId = e.target.id;
           let realIndex = myelemId.substring(3);
-          let wertLinks = self.generalConf[realIndex].colname;
+          let wertLinks = self.spaltenConf[realIndex].colname;
           let wertRechts = e.target.selected;
           let path = 'entPaars.' + realIndex;
 
@@ -356,22 +428,22 @@
             self.set(path, { zeile: (parseInt(realIndex) + 1), left: wertLinks, right: wertRechts });
           }
           console.warn('entpaars :' + JSON.stringify(self.entPaars))
-          console.warn('columnconfig :' + JSON.stringify(self.generalConf))
+          console.warn('columnconfig :' + JSON.stringify(self.spaltenConf))
         }
         this.validate();
       }
 
       validate(e) {
         let invalidFound = false;
-        if (this.entPaars && this.generalConf) {
-          console.warn('this.entPaars.length:' + this.entPaars.length + " this.generalConf.length:" + this.generalConf.length)
+        if (this.entPaars && this.spaltenConf) {
+          console.warn('this.entPaars.length:' + this.entPaars.length + " this.spaltenConf.length:" + this.spaltenConf.length)
         } else {
           console.warn('this.entPaars oder conf nicht ready')
         }
-        if (this.domainname && this.domainname.length && this.entPaars && this.generalConf && this.entPaars.length === this.generalConf.length) {
+        if (this.domainname && this.domainname.length && this.entPaars && this.spaltenConf && this.entPaars.length === this.spaltenConf.length) {
           let bothLaenge = this.entPaars.length;
           for (let i = 0; i < bothLaenge; i++) {
-            let gCElem = this.generalConf[i];
+            let gCElem = this.spaltenConf[i];
             let invConfFound = (!gCElem.colname || !gCElem.colname.length || !gCElem.coltype || !gCElem.coltype.length || !gCElem.alias || !gCElem.alias.length);
             let entPElem = this.entPaars[i];
             let invEntPFound = (!entPElem || !entPElem.right || !entPElem.right.length);
@@ -386,9 +458,44 @@
         this.set('formInvalid', invalidFound);
       }
 
+      _checkDataForMustContent(newFoerdermitglied) {
+        if (this.domainname === 'foerdermitglieder') {
+          let aufnahmeDatum = newFoerdermitglied.AUFNAHMEDATUM;
+          let mDateTime = moment(aufnahmeDatum, 'DD.MM.YYYY');
+          console.warn('fm aufnahmedatum davor' + aufnahmeDatum)
+          if (!mDateTime.isValid()) {
+            console.warn('is not valid')
+            newFoerdermitglied['AUFNAHMEDATUM'] = moment().toISOString();
+          } else {
+            console.warn('is valid but will be changed')
+            newFoerdermitglied['AUFNAHMEDATUM'] = mDateTime.toISOString(true);
+          }
+        }
+        return newFoerdermitglied;
+      }
+
+      _makeUnicIds(newData) {
+        if (this.domainname === 'foerdermitglieder') {
+          newData.sort((a, b) => {
+            return (a.AUFNAHMEDATUM < b.AUFNAHMEDATUM) ? -1 : ((a.AUFNAHMEDATUM > b.AUFNAHMEDATUM) ? 1 : 0);
+          });
+          newData.forEach((fm, idx) => {
+            let k = idx + 1;
+            // Da das Array nach AUFNAHMEDATUM sortiert ist, nehme alle folgenden mit dem gleichen Aufnahmedatum
+            // und erhöhe es um eine Minute - es könnten keine oder 2 oder mehrere aufeinanderfolgende sein
+            while ((k <= (newData.length - 1)) && (fm.AUFNAHMEDATUM === newData[k].AUFNAHMEDATUM) && moment(fm.AUFNAHMEDATUM).isValid()) {
+              newData[k].AUFNAHMEDATUM = moment(fm.AUFNAHMEDATUM).add((k - idx), 'minutes').toISOString(true);
+              k++;
+            }
+          })
+        }
+
+        return newData;
+      }
+
       _mergeImportedAndSave() {
         let columns = [];
-        this.generalConf.forEach((col) => {
+        this.spaltenConf.forEach((col) => {
           columns.push(col.alias);
         })
         let data = JSON.parse(JSON.stringify(this.dataAndColumns.data));
@@ -401,8 +508,11 @@
               newFoerdermitglied[correspondingPaar.left] = foerdermitgliedData[key];
             }
           })
+          newFoerdermitglied = this._checkDataForMustContent(newFoerdermitglied);
+          console.warn('newfoerdermitglied' + JSON.stringify(newFoerdermitglied))
           newData.push(newFoerdermitglied);
         })
+        newData = this._makeUnicIds(newData);
         let newDataAndColumns = { data: newData, columns: columns }
         console.warn('dataandcoltosave:' + JSON.stringify(newDataAndColumns))
         this.saveToDB(newDataAndColumns).then(() => {
@@ -411,12 +521,12 @@
         }).catch(() => {
           this.set('completed', false)
           showToast(this, 'Fehler bei der Übertragung der importierten Daten in die Datenbank.', TOAST_TYPE.ERROR);
-        }).finally(()=>{
-          this.$.bclient.postDomaenenColumnConfig(this.generalConf, this.domainname).then(() => {
-                    showToast(this, 'Die Konfiguration der Spalten für die Domäne' + this.domainname + 'wurde erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
-                }).catch(() => {
-                    showToast(this, 'Fehler bei der Speicherung der Spaltenkonfiguration für die Domäne ' + this.domainname, TOAST_TYPE.ERROR);
-                });
+        }).finally(() => {
+          this.$.bclient.postDomaenenColumnConfig(this.spaltenConf, this.domainname).then(() => {
+            showToast(this, 'Die Konfiguration der Spalten für die Domäne' + this.domainname + 'wurde erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
+          }).catch(() => {
+            showToast(this, 'Fehler bei der Speicherung der Spaltenkonfiguration für die Domäne ' + this.domainname, TOAST_TYPE.ERROR);
+          });
         })
 
       }
@@ -442,19 +552,19 @@
       }
 
       _addReduceColumns() {
-        if (!this.generalConf) {
-          this.generalConf = [];
+        if (!this.spaltenConf) {
+          this.spaltenConf = [];
         }
-        if (this.tempAnzahlSpalten > this.generalConf.length) {
-          let diff = this.tempAnzahlSpalten - this.generalConf.length;
+        if (this.tempAnzahlSpalten > this.spaltenConf.length) {
+          let diff = this.tempAnzahlSpalten - this.spaltenConf.length;
           while (diff) {
             this._addColumn();
             diff--;
           }
-        } else if (this.tempAnzahlSpalten < this.generalConf.length) {
-          let diff = this.generalConf.length - this.tempAnzahlSpalten;
+        } else if (this.tempAnzahlSpalten < this.spaltenConf.length) {
+          let diff = this.spaltenConf.length - this.tempAnzahlSpalten;
           while (diff) {
-            this._removeColumn(this.generalConf.length - 1);
+            this._removeColumn(this.spaltenConf.length - 1);
             diff--;
           }
         }
@@ -462,7 +572,7 @@
       }
 
       _addColumn() {
-        this.push('generalConf', { colname: null, coltype: "string", alias: null, rolen: [] });
+        this.push('spaltenConf', { colname: null, coltype: "string", alias: null, rolen: [] });
         this.validate();
       }
 
@@ -476,9 +586,9 @@
           indexParam.stopPropagation();
         }
         if (index || index === 0) {
-          this.splice('generalConf', index, 1)
+          this.splice('spaltenConf', index, 1)
         }
-        this.set('tempAnzahlSpalten', this.generalConf.length);
+        this.set('tempAnzahlSpalten', this.spaltenConf.length);
         this.validate();
       }
 
@@ -504,10 +614,10 @@
             break;
         }
         if (e.currentTarget.checked) {
-          let path = "generalConf." + realIndex + ".rolen";
+          let path = "spaltenConf." + realIndex + ".rolen";
           this.push(path, role);
         } else {
-          let path = "generalConf." + realIndex + ".rolen";
+          let path = "spaltenConf." + realIndex + ".rolen";
           let rolen = this.get(path);
           let idx = rolen.indexOf(role);
           this.splice(path, idx, 1);

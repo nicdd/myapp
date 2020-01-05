@@ -96,6 +96,7 @@
                     return Promise.resolve(data);
                 }).catch((err) => {
                     console.log('get' + domainName + ' AsJSON die Anfrage an' + self._getSourceURL(urlInfo, params) + ' war nicht erfolgreich' + JSON.stringify(error))
+                    return Promise.reject(err);
                 });
             }
 
@@ -115,9 +116,13 @@
                     console.log("post " + domainName + " AsJSON antwort" + JSON.stringify(response));
                     if (response && response.ok) {
                         return response.json();
-                    } else return undefined;
-                }).catch(() => {
+                    } else {
+                        return undefined;
+                    }
+                }).catch((err) => {
+                    console.warn('post as json catch')
                     console.warn('post ' + domainName + ' AsJSON die Anfrage an' + urlInfo.path + ' war nicht erfolgreich')
+                    return Promise.reject(err);
                 });
             }
 
@@ -138,8 +143,9 @@
                     if (response && response.ok) {
                         return response.json();
                     } else return undefined;
-                }).catch(() => {
+                }).catch((err) => {
                     console.warn('update ' + domainName + ' AsJSON die Anfrage an' + urlInfo.path + ' war nicht erfolgreich')
+                    return Promise.reject(err);
                 });
             }
 
@@ -167,6 +173,7 @@
                     return Promise.resolve(data);
                 }).catch((err) => {
                     console.log('deleteOne ' + domainName + ' - die Anfrage an' + self._getSourceURL(urlInfo, args) + ' war nicht erfolgreich' + JSON.stringify(error))
+                    return Promise.reject(err);
                 });
             }
 
@@ -286,8 +293,9 @@
                     if (response && response.ok) {
                         return response.json();
                     } else return undefined;
-                }).catch(() => {
-                    console.warn('post ' + domainName + ' AsCSV die Anfrage an' + urlInfo.path + ' war nicht erfolgreich')
+                }).catch((err) => {
+                    console.warn('post ' + domainName + ' AsCSV die Anfrage an' + urlInfo.path + ' war nicht erfolgreich');
+                    return Promise.reject(err);
                 });
             }
 
@@ -311,7 +319,8 @@
                     console.log('firstclient getHistoryFor antwortet' + JSON.stringify(data))
                     return Promise.resolve(data);
                 }).catch((err) => {
-                    console.log('getHistoryFor die Anfrage an api/loggs/paechter war nicht erfolgreich' + JSON.stringify(error))
+                    console.log('getHistoryFor die Anfrage an api/loggs/paechter war nicht erfolgreich' + JSON.stringify(error));
+                    return Promise.reject(err);
                 });
             }
 
@@ -349,15 +358,11 @@
                         let toRespond = response.json();
                         return toRespond;
                     } else return undefined;
-                }).catch(() => {
+                }).catch((err) => {
                     console.warn('logging OnePaechter die Anfrage an' + self._getSourceURL(urlConf, gNr) + ' war nicht erfolgreich')
-                    return Promise.reject();
+                    return Promise.reject(err);
                 });
             }
-
-
-
-
 
         }
 
