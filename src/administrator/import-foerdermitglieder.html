@@ -44,7 +44,7 @@
       }
 
       .metacol {
-        width: 7rem;
+        width: 3rem;
         text-align: center;
       }
 
@@ -54,6 +54,10 @@
       .contentcol {
         text-align: center;
         padding-left: 1rem;
+      }
+
+      paper-input.schmal {
+        max-width: 90px !important;
       }
     </style>
 
@@ -78,10 +82,13 @@
           </paper-button>
 
         </div>
-        <div class="page demo table-responsive-vertical">
-          <table id="table" class="table table-condensed">
+        <div class="page">
+          <table>
             <thead>
               <th class="metacol">#</th>
+              <th class="contentcol" colspan="2"
+                title="Sollen die Daten aus dieser Spalte im Tabellenkopf angezeigt werden? An welcher Stelle?">Anzeigen
+              </th>
               <th class="contentcol" title="Technischer Spaltenname für die Datenbanktabelle">Spaltenname</th>
               <th class="contentcol" title="So wird diese Spalte in der Maske aussehen">Alias</th>
               <th class="contentcol" title="Die Entsprechung in der zu importierenden Tabelle">Entsprechung
@@ -96,6 +103,17 @@
                 <tr>
                   <td class="metacol">
                     [[getOrdnungsnummer(index)]]
+                  </td>
+                  <td class="contentcol">
+                    <paper-checkbox id="shw[[index]]" checked="{{item.th_show}}" on-change="doOnCbChecked">
+                    </paper-checkbox>
+                  </td>
+                  <td class="contentcol">
+                    <paper-input maxlength="3" 
+                      class="schmal" id="pos[[index]]" value="{{item.position}}" auto-validate on-focus="_setPattern"
+                      on-input="_setPattern"
+                      required$="[[item.th_show]]" disabled="[[!item.th_show]]" error-message="mehrmals oder leer">
+                    </paper-input>
                   </td>
                   <td class="contentcol">
                     <paper-input id="cnm[[index]]" on-input="validate" value="{{item.colname}}" auto-validate
@@ -218,6 +236,60 @@
             value: [{ "colname": "GARTENNUMMER", "coltype": "string", "alias": "GNr", "rolen": ["paechter", "versicherung"] }, { "colname": "ANREDE", "coltype": "string", "alias": "Anrede", "rolen": ["paechter", "versicherung"] }, { "colname": "NACHNAME", "coltype": "string", "alias": "Nachname", "rolen": ["paechter", "versicherung"] }, { "colname": "VORNAME", "coltype": "string", "alias": "Vorname", "rolen": ["paechter", "versicherung"] }, { "colname": "STRASSE", "coltype": "string", "alias": "Strasse", "rolen": ["paechter", "versicherung"] }, { "colname": "PLZ", "coltype": "string", "alias": "PLZ", "rolen": ["paechter", "versicherung"] }, { "colname": "WOHNORT", "coltype": "string", "alias": "Wohnort", "rolen": ["paechter", "versicherung"] }, { "colname": "TELEFON", "coltype": "string", "alias": "Telefon", "rolen": ["paechter", "versicherung"] }, { "colname": "WEG", "coltype": "string", "alias": "Weg", "rolen": ["paechter", "versicherung"] }, { "colname": "FLAECHE", "coltype": "string", "alias": "Fläche", "rolen": ["paechter", "versicherung"] }, { "colname": "GEBURTSDATUM", "coltype": "string", "alias": "Geburtsdatum", "rolen": ["paechter"] }, { "colname": "EMAIL", "coltype": "string", "alias": "E-Mail", "rolen": ["paechter", "versicherung"] }, { "colname": "BEMERKUNGEN", "coltype": "string", "alias": "Bemerkung (P)", "rolen": ["paechter"] }, { "colname": "V_BEMERKUNG", "coltype": "string", "alias": "Bemerkung (V)", "rolen": ["versicherung"] }, { "colname": "GBV", "coltype": "number", "alias": "GBV", "rolen": ["versicherung"] }, { "colname": "FED", "coltype": "number", "alias": "FED", "rolen": ["versicherung"] }, { "colname": "HOEV", "coltype": "number", "alias": "HöV", "rolen": ["versicherung"] }, { "colname": "A7_1", "coltype": "number", "alias": "Solar", "rolen": ["versicherung"] }, { "colname": "A7_3", "coltype": "string", "alias": "SA", "rolen": ["versicherung"] }, { "colname": "A7_4", "coltype": "number", "alias": "GS", "rolen": ["versicherung"] }, { "colname": "UV", "coltype": "number", "alias": "Unfall", "rolen": ["versicherung"] }, { "colname": "BEITRAG", "coltype": "number", "alias": "Beitrag", "rolen": ["versicherung"] }]
           }
         }
+      }
+
+
+
+      static get observers() {
+        return ['_validateForAnzeigeOptionen(formInvalid, spaltenConf.*)']
+      }
+
+      _setPattern(e) {
+//on-focus wird das pattern für das aktuelle element gesetzt
+//on-change wird das pattern für die anderen elemente neu berechnet, denn es könnten manche erlaubt werden
+        let ignoreIndex, id;
+        if (e.target){
+          ignoreIndex = parseInt(e.target.id.substring(3));
+          id= e.target.id;
+        } else {
+          ignoreIndex = parseInt(e.target.id.substring(3));
+          id = parseInt(e.substring(3));
+        }
+        
+        let elem = this.shadowRoot.getElementById(id);
+        if (elem) {
+          let patternPrefix = '^(?!(?:';
+          let patternSuffix = ')$)[1-9]\\d{0,2}$';
+          let choosenList = '';
+          if (this.spaltenConf && Array.isArray(this.spaltenConf)) {
+            this.spaltenConf.forEach((spalte, idx) => {
+              if (idx !== ignoreIndex && !!spalte.position) {
+                choosenList = choosenList + (choosenList.length ? "|" : '') + spalte.position;
+              }
+            })
+          }
+          let pt = (patternPrefix + choosenList + patternSuffix)
+          console.warn('prohibited for Index' + ignoreIndex + JSON.stringify(choosenList) + "pt" + pt)
+          elem.setAttribute("pattern", pt);
+          elem.validate();
+          
+        }
+      }
+
+      _getBereitsAusgewaehlte(ignoreIndex) {
+        let patternPrefix = '^(?!(?:';
+        let patternSuffix = ')$)[1-9]\\d{0,2}$';
+        let choosenList = '';
+        if (this.spaltenConf && Array.isArray(this.spaltenConf)) {
+          this.spaltenConf.forEach((spalte, idx) => {
+            if (idx !== ignoreIndex && !!spalte.position) {
+              choosenList = choosenList + (choosenList.length ? "|" : '') + spalte.position;
+            }
+          })
+        }
+
+        console.warn('prohibited for Index' + ignoreIndex + JSON.stringify(choosenList))
+        return (patternPrefix + choosenList + patternSuffix);
       }
 
       _doOnFileRead(e) {
@@ -458,6 +530,20 @@
         this.set('formInvalid', invalidFound);
       }
 
+      _validateForAnzeigeOptionen(formInvalid) {
+        if (!formInvalid) {
+          let checkBoxFeldDissensFound = false;
+          if (this.spaltenConf && Array.isArray(this.spaltenConf)) {
+            this.spaltenConf.forEach((spalte) => {
+              if (spalte.th_show && !spalte.position || isNaN(spalte.position)) {
+                checkBoxFeldDissensFound = true;
+              }
+            })
+          }
+          this.set('formInvalid', (formInvalid || checkBoxFeldDissensFound))
+        }
+      }
+
       _checkDataForMustContent(newFoerdermitglied) {
         if (this.domainname === 'foerdermitglieder') {
           let aufnahmeDatum = newFoerdermitglied.AUFNAHMEDATUM;
@@ -603,16 +689,26 @@
         switch (idprefix) {
           case 'cbp':
             role = 'paechter';
+            this._setRollen(e, realIndex, role);
             break;
           case 'cbv':
             role = 'versicherung';
+            this._setRollen(realIndex, role);
             break;
           case 'cbf':
             role = 'foerdermitglieder';
+            this._setRollen(realIndex, role);
+            break;
+          case 'shw':
+            this._resetPosition(e, realIndex);
             break;
           default:
             break;
         }
+
+      }
+
+      _setRollen(e, realIndex, role) {
         if (e.currentTarget.checked) {
           let path = "spaltenConf." + realIndex + ".rolen";
           this.push(path, role);
@@ -621,6 +717,16 @@
           let rolen = this.get(path);
           let idx = rolen.indexOf(role);
           this.splice(path, idx, 1);
+        }
+      }
+
+      _resetPosition(e, realIndex) {
+        let posElement = this.shadowRoot.getElementById(('pos' + realIndex));
+        if (!e.currentTarget.checked) {
+          console.warn('poselem value:' + posElement.value)
+          posElement.value = null;
+        } else {
+          posElement.validate();
         }
       }
 
