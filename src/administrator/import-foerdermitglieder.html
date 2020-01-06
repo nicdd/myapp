@@ -1,5 +1,6 @@
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/paper-progress-button/paper-progress-button.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../bower_components/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../../bower_components/granite-file-reader/granite-file-reader.html">
 <link rel="import" href="../utils/grt-dropdown-input.html">
@@ -109,10 +110,9 @@
                     </paper-checkbox>
                   </td>
                   <td class="contentcol">
-                    <paper-input maxlength="3" 
-                      class="schmal" id="pos[[index]]" value="{{item.position}}" auto-validate on-focus="_setPattern"
-                      on-input="_setPattern"
-                      required$="[[item.th_show]]" disabled="[[!item.th_show]]" error-message="mehrmals oder leer">
+                    <paper-input id="pos[[index]]" class="schmal" value="{{item.position}}" auto-validate
+                      required$="[[item.th_show]]" disabled="[[!item.th_show]]" on-focus="_setPattern"
+                      on-input="_setPattern" maxlength="[[_getMaxLength(item.position, spaltenConf.length)]]" error-message="mehrmals oder leer">
                     </paper-input>
                   </td>
                   <td class="contentcol">
@@ -244,35 +244,56 @@
         return ['_validateForAnzeigeOptionen(formInvalid, spaltenConf.*)']
       }
 
-      _setPattern(e) {
-//on-focus wird das pattern für das aktuelle element gesetzt
-//on-change wird das pattern für die anderen elemente neu berechnet, denn es könnten manche erlaubt werden
-        let ignoreIndex, id;
-        if (e.target){
-          ignoreIndex = parseInt(e.target.id.substring(3));
-          id= e.target.id;
+      _getMaxLength(position, sClength){
+        if (position > sClength){
+          return 0;
         } else {
-          ignoreIndex = parseInt(e.target.id.substring(3));
-          id = parseInt(e.substring(3));
+          let sClengthAsString = '' + sClength;
+          return sClengthAsString.length;
         }
-        
-        let elem = this.shadowRoot.getElementById(id);
+      }
+
+      _setPattern(e) {
+        //on-focus wird das pattern für das aktuelle element gesetzt
+        //on-input wird das pattern für die anderen elemente neu berechnet, denn es könnten manche erlaubt werden
+        let ignoreIndex, id;
+        if (e.target) {
+          
+          if (e.type === "focus") {
+            ignoreIndex = parseInt(e.target.id.substring(3));
+            id = e.target.id;
+            this._refreshPatternForIdExceptingIndex(id, ignoreIndex);
+            let elem = this.shadowRoot.getElementById(id);
+          } else if (e.type === "input"){
+           
+            this.spaltenConf.forEach((spalte, idx) => {
+              if (idx !== ignoreIndex) {
+                this._refreshPatternForIdExceptingIndex(('pos' + idx), idx);
+              }
+            })
+            
+          }
+          this._validateForAnzeigeOptionen(this.formInvalid);
+        }
+      }
+
+      _refreshPatternForIdExceptingIndex(pId, eIdx) {
+        let elem = this.shadowRoot.getElementById(pId);
         if (elem) {
           let patternPrefix = '^(?!(?:';
           let patternSuffix = ')$)[1-9]\\d{0,2}$';
           let choosenList = '';
           if (this.spaltenConf && Array.isArray(this.spaltenConf)) {
             this.spaltenConf.forEach((spalte, idx) => {
-              if (idx !== ignoreIndex && !!spalte.position) {
+              if (idx !== eIdx && !!spalte.position) {
                 choosenList = choosenList + (choosenList.length ? "|" : '') + spalte.position;
               }
             })
           }
           let pt = (patternPrefix + choosenList + patternSuffix)
-          console.warn('prohibited for Index' + ignoreIndex + JSON.stringify(choosenList) + "pt" + pt)
+          console.warn('prohibited for Index' + eIdx + JSON.stringify(choosenList) + "pt" + pt)
           elem.setAttribute("pattern", pt);
           elem.validate();
-          
         }
       }
 
@@ -535,12 +556,18 @@
           let checkBoxFeldDissensFound = false;
           if (this.spaltenConf && Array.isArray(this.spaltenConf)) {
             this.spaltenConf.forEach((spalte) => {
-              if (spalte.th_show && !spalte.position || isNaN(spalte.position)) {
+              if (spalte.th_show && (!spalte.position || isNaN(spalte.position))) {
                 checkBoxFeldDissensFound = true;
               }
             })
           }
-          this.set('formInvalid', (formInvalid || checkBoxFeldDissensFound))
+          console.warn('1:' + formInvalid + ' 2:' + checkBoxFeldDissensFound)
+          let pInputs = this.shadowRoot.querySelectorAll('paper-input');
+          pInputs = Array.from(pInputs).filter((el)=>{
+            return el.invalid === true;
+         });
+         console.warn('1:' + formInvalid + ' 2:' + checkBoxFeldDissensFound + ' 3:' + (Array.isArray(pInputs) && (pInputs.length > 0)))
+         this.set('formInvalid', (formInvalid || checkBoxFeldDissensFound || (Array.isArray(pInputs) && pInputs.length > 0)))
         }
       }
 
@@ -727,6 +754,7 @@
           posElement.value = null;
         } else {
           posElement.validate();
+          this._validateForAnzeigeOptionen(this.formInvalid)
         }
       }
 
