@@ -71,10 +71,9 @@
                 text-align: center !important;
                 vertical-align: middle !important;
             }
-
         </style>
 
-         <first-client id="firstclient"></first-client>
+        <first-client id="firstclient"></first-client>
         <basic-client id="bclient"></basic-client>
         <grt-dialog id="deletedialog" dialog-type="confirmation" confirmation-name="Löschen" cancel-name="Abbrechen"
             on-grtconfirm="_removeItem"></grt-dialog>
@@ -85,7 +84,7 @@
         <grt-sand-clock id="sandhour"></grt-sand-clock>
         <div>
             <div class="toolbar layout horizontal justified" flex>
-                <template is="dom-if" if="[[columnNames.length]]">
+                <template is="dom-if" if="[[spaltenConf.length]]">
                     <grt-grid-pagination id="pagesss" datalength="[[mvdata.length]]" page-size="{{pageSize}}"
                         pstart="{{_pageStart}}" on-pagechanged="changePage" style-domain="first-domain">
                     </grt-grid-pagination>
@@ -109,81 +108,34 @@
                                 <paper-checkbox on-change="_checkAll" checked="[[_areAllSelected(mvdata.*)]]">
                                 </paper-checkbox>
                             </th>
-                            <th>
-                                <column-sorter colname="[[columnNames.0]]" path="GARTENNUMMER"
-                                    on-sorter-changed="_sortChange">
-                                </column-sorter>
-                            </th>
-                            <th>
-                                <column-sorter colname="[[columnNames.1]]" path="ANREDE"
-                                    on-sorter-changed="_sortChange">
-                                </column-sorter>
-                            </th>
-                            <th>
-                                <column-sorter colname="[[columnNames.2]]" path="NACHNAME"
-                                    on-sorter-changed="_sortChange">
-                                </column-sorter>
-                            </th>
-                            <th>
-                                <column-sorter colname="[[columnNames.3]]" path="VORNAME"
-                                    on-sorter-changed="_sortChange">
-                                </column-sorter>
-                            </th>
-                            <th>
-                                <column-sorter colname="[[columnNames.8]]" path="WOHNORT"
-                                    on-sorter-changed="_sortChange">
-                                </column-sorter>
-                            </th>
-                            <th>
-                                <column-sorter colname="[[columnNames.9]]" path="FLAECHE"
-                                    on-sorter-changed="_sortChange">
-                                </column-sorter>
-                            </th>
-                            <th>
-                                <column-sorter colname="Alter" path="GEBURTSDATUM"
-                                    on-sorter-changed="_sortByGeburtsdatum">
-                                </column-sorter>
-                            </th>
-                            <th>
-                                <column-sorter colname="Geb." path="GEBURTSDATUM"
-                                    on-sorter-changed="_sortByGeburtsdatum">
-                                </column-sorter>
-                            </th>
-                            <th>
-                                <column-sorter colname="Jubiläum" path="GEBURTSDATUM"
-                                    on-sorter-changed="_sortByJubilaeum">
-                                </column-sorter>
-                            </th>
-
-
-                            <th>
-                                <column-sorter colname="[[columnNames.12]]" path="BEMERKUNGEN"
-                                    on-sorter-changed="_sortChange">
-                                </column-sorter>
-                            </th>
+                            <template is="dom-repeat" items="[[spaltenConf]]" as="sc1">
+                                <template is="dom-if" if="[[sc1.th_show]]">
+                                    <th>
+                                    <column-sorter id="[[sc1.colname]]" colname="[[sc1.alias]]"
+                                        path="[[sc1.colname]]" on-sorter-changed="_sortChange">
+                                    </column-sorter>
+                                </th>
+                                </template>
+                            </template>
                             <th class="button"></th>
                             <th class="button"></th>
                         </thead>
                         <tbody>
-                            <template is="dom-repeat" items="[[mvpagedata]]">
-                                <tr class$="[[item.foerdermitglied.status]]">
+                            <template is="dom-repeat" items="[[mvpagedata]]" as="fm">
+                                <tr >
                                     <td class="centered-cell">
-                                        <paper-checkbox class="[[getClassByBeitrag(item.BEITRAG)]]"
+                                        <paper-checkbox class="[[getClassByBeitrag(fm.BEITRAG)]]"
                                             id="[[getGridElementID(index, _pageStart, 'scb')]]" on-change="_checkOne"
                                             checked="[[_isItemSelected(_pageStart, index, mvdata.*)]]"></paper-checkbox>
                                     </td>
-                                    <td class="rightalign">[[item.GARTENNUMMER]]</td>
-                                    <td>[[item.ANREDE]]</td>
-                                    <td>[[item.NACHNAME]]</td>
-                                    <td>[[item.VORNAME]]</td>
-                                    <td>[[item.WOHNORT]]</td>
-                                    <td class="rightalign">[[item.FLAECHE]]</td>
-                                    <td class="rightalign">[[getAlterBy(item.GEBURTSDATUM)]]</td>
-                                    <td class="rightalign">[[item.GEBURTSDATUM]]</td>
-                                    <td>[[getJubilaeumBy(item.GEBURTSDATUM)]]</td>
-                                    <td>[[item.BEMERKUNGEN]]</td>
+                                    <template is="dom-repeat" items="[[spaltenConf]]" as="sc2">
+                                        <template is="dom-if" if="[[sc2.th_show]]">
+                                            <td>[[_getFmData(fm, sc2.colname)]]</td>
+                                        </template>
+                                    </template>
+                                    
                                     <td class="button">
-                                        <button id="bto[[item.GARTENNUMMER]]" on-click="_openDetails"
+                                        <button id="bto[[fm]]" on-click="_openDetails"
                                             class="first-domain-endpagebutton action-button">
                                             <iron-icon id="cro[[item.GARTENNUMMER]]"
                                                 icon="[[getIcon(item._detailsOpened)]]" slot="item-icon"
@@ -199,7 +151,7 @@
                                         </button>
                                     </td>
                                 </tr>
-                                <template is="dom-if" if="[[item._detailsOpened]]">
+                                <!-- <template is="dom-if" if="[[item._detailsOpened]]">
                                     <tr class="details">
                                         <td colspan="13" class="no-padding">
                                             <iron-collapse-button expand-icon="add-circle-outline"
@@ -300,7 +252,7 @@
                                                     <div class="mcard strong-text-color">
                                                         <grt-gartler id="grtl[[index]]" gartler="[[item]]"
                                                             on-savegartler="_postOneFM">
-                                                            <h4 slot="title">Pächter</h4>>
+                                                            <h4 slot="title">Fördermitglied</h4>>
                                                         </grt-gartler>
 
                                                     </div>
@@ -310,8 +262,8 @@
                                     </tr>
                                     <tr class="details">
                                         <td colspan="13" class="no-padding">
-                                            <iron-collapse-button id="history_clps[[index]]" expand-icon="add-circle-outline"
-                                                collapse-icon="remove-circle-outline"
+                                            <iron-collapse-button id="history_clps[[index]]"
+                                                expand-icon="add-circle-outline" collapse-icon="remove-circle-outline"
                                                 class="detailelement light-element flex">
                                                 <div slot="collapse-trigger" class="flex">
                                                     <div class="layout horizontal justified">
@@ -320,8 +272,9 @@
                                                 </div>
                                                 <div slot="collapse-content" class="corrected-margin">
                                                     <div class="mcard strong-text-color">
-                                                        <grt-gartler-history id="history[[index]]" garten="[[item.GARTENNUMMER]]">
-                                                            <h4 slot="title">Pächter</h4>
+                                                        <grt-gartler-history id="history[[index]]"
+                                                            garten="[[item.GARTENNUMMER]]">
+                                                            <h4 slot="title">Fördermitglied</h4>
                                                         </grt-gartler-history>
 
                                                     </div>
@@ -329,7 +282,7 @@
                                             </iron-collapse-button>
                                         </td>
                                     </tr>
-                                </template>
+                                </template> -->
                             </template>
                         </tbody>
                     </table>
@@ -348,11 +301,11 @@
 
             static get properties() {
                 return {
-                    mbgclr:{
+                    mbgclr: {
                         type: String,
                         value: "red"
                     },
-                    logg:{
+                    logg: {
                         type: Boolean,
                     },
                     actionButtons: {
@@ -414,17 +367,55 @@
 
                     _isAenderung: {
                         type: Boolean
+                    },
+
+                    spaltenConf: {
+                        type: Array,
+                        value: null,
+                        notify: true,
+                        observer: '_spaltenConfReady'
+                    },
+
+                    _defaultColumnConf: {
+                        type: Array,
+                        value: [{ "colname": "AUFNAHMEDATUM", "coltype": "string", "alias": "Aufnahme", "rolen": ["paechter", "foerdermitglieder"], "position": "1", "th_show": true }, { "colname": "ANREDE", "coltype": "string", "alias": "Anrede", "rolen": ["paechter", "foerdermitglieder"], "position": null, "th_show": false }, { "colname": "NACHNAME", "coltype": "string", "alias": "Nachname", "rolen": ["paechter", "foerdermitglieder"], "position": "2", "th_show": true }, { "colname": "VORNAME", "coltype": "string", "alias": "Vorname", "rolen": ["paechter", "foerdermitglieder"], "position": "3", "th_show": true }, { "colname": "GEBURTSDATUM", "coltype": "string", "alias": "Geburtsdatum", "rolen": ["paechter", "foerdermitglieder"], "position": "" }, { "colname": "STRASSE", "coltype": "string", "alias": "Strasse", "rolen": ["paechter", "foerdermitglieder"], "position": "" }, { "colname": "HAUSNUMMER", "coltype": "string", "alias": "Hausnummer", "rolen": ["paechter", "foerdermitglieder"], "position": "" }, { "colname": "PLZ", "coltype": "string", "alias": "Postleitzahl", "rolen": ["paechter", "foerdermitglieder"], "position": "" }, { "colname": "WOHNORT", "coltype": "string", "alias": "Wohnort", "rolen": ["paechter", "foerdermitglieder"], "position": "" }, { "colname": "TELEFON", "coltype": "string", "alias": "Telefon", "rolen": ["paechter", "foerdermitglieder"], "position": "" }, { "colname": "EMAIL", "coltype": "string", "alias": "E-Mail", "rolen": ["paechter", "foerdermitglieder"], "position": "" }, { "colname": "BEMERKUNGEN", "coltype": "string", "alias": "Bemerkungen", "rolen": ["paechter", "foerdermitglieder"], "position": "5", "th_show": true }, { "colname": "BERUF", "coltype": "string", "alias": "Beruf", "rolen": ["paechter", "foerdermitglieder"], "position": "" }, { "colname": "BEZUGSPERSON", "coltype": "string", "alias": "Bezugsperson", "rolen": ["paechter", "foerdermitglieder"], "position": null, "th_show": false }, { "colname": "ABLOESE", "coltype": "string", "alias": "Abloese", "rolen": ["paechter", "foerdermitglieder"], "position": "4", "th_show": true }, { "colname": "MITGLIEDART", "coltype": "string", "alias": "Art", "rolen": ["paechter", "foerdermitglieder"], "position": "6", "th_show": true }, { "colname": "ZAHLUNGSSTATUS", "coltype": "string", "alias": "ZStatus", "rolen": ["paechter", "foerdermitglieder"], "position": "7", "th_show": true }, { "colname": "WARTETGARTEN", "coltype": "string", "alias": "Garten", "rolen": ["paechter", "foerdermitglieder"], "position": "" }]
                     }
                 }
             }
 
-            
+            _getFmData(fm, cname){
+                return fm[cname];
+            }
+
+            _spaltenConfReady() {
+                if (this.spaltenConf && this.spaltenConf.length) {
+                    this.$.firstclient.getAsJSON('foerdermitglieder').then((resp) => {
+                        if (resp) {
+                            this.splitToObjects(resp).finally(() => {
+                                //wenn pageSize nur an einer stelle initialisiert wird (in then von splitToObjects)
+                                // dann der gleiche wert 10 wird nicht noch mal zu der pagination Componente getriggert
+                                // denn er sich noch nicht geändert hatte, die Komp beim ersten mal aber nicht da war
+                                this.set('pageSize', parseInt(0));
+                                this.changePage();
+                            });
+                        } else {
+                            showToast(this, 'Bei der Initialisierung der Seite wurden keine Fördermitgliederdaten gefunden', TOAST_TYPE.ERROR);
+                        }
+                    }).catch((err) => {
+                        console.log("Fehler beim get fuer foerdermitglieder  kam:" + JSON.stringify(err))
+                        showToast(this, 'Die Paecheterdaten konnten nicht geladen werden', TOAST_TYPE.ERROR);
+                    })
+
+                }
+            }
+
+
 
             _confirmRemove(e) {
                 e.preventDefault();
                 this.$.deletedialog.showDialog(
                     {
-                        "title": "Pächterdaten Löschen",
+                        "title": "Fördermitgliedsdaten Löschen",
                         "message": "Bitte bestätigen Sie, dass Sie den Datensatz wirklich entfernen möchten.",
                         "origData": e.target.id.substring(3)
                     })
@@ -444,31 +435,39 @@
 
             ready() {
                 super.ready();
-                
+
                 if (this.$)
-                this.$ = new Proxy(this.$, {
-                    get: ($, id) => $[id] || this.shadowRoot.getElementById(id),
-                    set: ($, id, element) => {
-                        $[id] = element;
-                        return true;
-                    }
-                });
-            
-                this.$.firstclient.getAsJSON('foerdermitglieder').then((resp) => {
-                    if (resp) {
-                        this.splitToObjects(resp).finally(() => {
-                            //wenn pageSize nur an einer stelle initialisiert wird (in then von splitToObjects)
-                            // dann der gleiche wert 10 wird nicht noch mal zu der pagination Componente getriggert
-                            // denn er sich noch nicht geändert hatte, die Komp beim ersten mal aber nicht da war
-                            this.set('pageSize', parseInt(0));
-                            this.changePage();
-                        });
+                    this.$ = new Proxy(this.$, {
+                        get: ($, id) => $[id] || this.shadowRoot.getElementById(id),
+                        set: ($, id, element) => {
+                            $[id] = element;
+                            return true;
+                        }
+                    });
+                this._loadColumnConfigThenData();
+
+            }
+
+            _loadColumnConfigThenData() {
+                this.$.bclient.getDomaenenColumnConfig('foerdermitglieder').then((domConf) => {
+                    if (!domConf) {
+                        throw 'nicht gefunden';
                     } else {
-                        showToast(this, 'Bei der Initialisierung der Seite wurden keine Pächterdaten gefunden', TOAST_TYPE.ERROR);
+                        domConf.sort((a, b) => {
+                            return (a.th_show && a.postion && !isNaN(a.position) && b.th_show && b.position && !isNaN(b.position) && parseInt(a.position) < parseInt(b.position) ? 1 : -1)
+                        })
+                        console.warn('conf ist' + JSON.stringify(domConf))
+                        this.set('spaltenConf', domConf);
+                        showToast(this, 'Die FM-Spaltenkonfiguration wurde erfolgreich geladen', TOAST_TYPE.SUCCESS);
                     }
+
                 }).catch((err) => {
-                    console.log("Fehler beim get fuer foerdermitglieder  kam:" + JSON.stringify(err))
-                    showToast(this, 'Die Paecheterdaten konnten nicht geladen werden', TOAST_TYPE.ERROR);
+                    this._defaultColumnConf.sort((a, b) => {
+                        return (a.th_show && a.postion && !isNaN(a.position) && b.th_show && b.position && !isNaN(b.position) && parseInt(a.position) < parseInt(b.position) ? 1 : -1)
+                    })
+                    console.warn('default conf ist' + JSON.stringify(this._defaultColumnConf))
+                    this.set('spaltenConf', this._defaultColumnConf);
+                    showToast(this, 'Keine Spaltenkonfiguration für die FM konnte geladen werden, default wird benutzt', TOAST_TYPE.ERROR);
                 })
             }
 
@@ -581,11 +580,11 @@
                         if (direction === 'asc') {
                             if (moment((self.getJubilaeumBy(a[key]) || 'Dec'), 'MMM').isBefore(moment((self.getJubilaeumBy(b[key]) || 'Dec'), 'MMM'))) return -1;
                             if (moment((self.getJubilaeumBy(a[key]) || 'Dec'), 'MMM').isAfter(moment((self.getJubilaeumBy(b[key]) || 'Dec'), 'MMM'))) return 1;
-                            
+
                         } else {
                             if (moment((self.getJubilaeumBy(a[key]) || 'Dec'), 'MMM').isBefore(moment((self.getJubilaeumBy(b[key]) || 'Dec'), 'MMM'))) return 1;
                             if (moment((self.getJubilaeumBy(a[key]) || 'Dec'), 'MMM').isAfter(moment((self.getJubilaeumBy(b[key]) || 'Dec'), 'MMM'))) return -1;
-                            
+
                         }
                         return 1;
                     });
@@ -610,11 +609,11 @@
 
             splitToObjects(resp) {
                 let foerdermitgliederData = resp.data;
-                let columns = resp.columns;
+                //let columns = resp.columns;
                 let promises = [];
 
                 return Promise.all(promises).then(() => {
-                    this.set('columnNames', columns);
+                    // this.set('columnNames', columns);
                     this.set('mvdata', foerdermitgliederData);
                     this.set('pageSize', parseInt(10));
                 })
@@ -655,7 +654,7 @@
                                 this.changePage();
                             });
                         } else {
-                            showToast(this, 'Bei der erneuten Initialisierung der Seite wurden keine Pächterdaten gefunden', TOAST_TYPE.ERROR);
+                            showToast(this, 'Bei der erneuten Initialisierung der Seite wurden keine Fördermitgliederdaten gefunden', TOAST_TYPE.ERROR);
                         }
                     }).catch((err) => {
                         console.log("Fehler beim get fuer Paecheter  kam:" + JSON.stringify(err))
@@ -669,7 +668,7 @@
                     this.$.grtinfodialog.showDialog(
                         {
                             "title": "Keine Daten",
-                            "message": "Es gibt keine Pächterdaten, die man exportieren könnte."
+                            "message": "Es gibt keine Fördermitgliederdaten, die man exportieren könnte."
                         })
 
                 } else {
@@ -688,13 +687,13 @@
                         this.$.grtinfodialog.showDialog(
                             {
                                 "title": "Daten als CSV - exportieren",
-                                "message": "Die Daten der Pächter wurden erfolgreich unter " + savePath.path + " gespeichert."
+                                "message": "Die Daten der Fördermitglieder wurden erfolgreich unter " + savePath.path + " gespeichert."
                             })
                     } else if (savePath) {
-                        showToast(this, "Die Daten der Pächter werden unter " + savePath + " gespeichert.", TOAST_TYPE.WARN, 'topRight');
+                        showToast(this, "Die Daten der Fördermitglieder werden unter " + savePath + " gespeichert.", TOAST_TYPE.WARN, 'topRight');
                     }
                 }).catch((err) => {
-                    showToast(this, 'Der Datenexport der Pächter ist fehlgeschlagen', TOAST_TYPE.ERROR);
+                    showToast(this, 'Der Datenexport der Fördermitglieder ist fehlgeschlagen', TOAST_TYPE.ERROR);
                 });
             }
 
@@ -727,11 +726,11 @@
                     this.$.firstclient.postAsJSON(toSave, 'foerdermitglieder', toSave.AUFNAHMEDATUM).then(() => {
                         this.$[mid].pushSuccesfullEvent(e.type);
                         this._insertChangedFoerdermitglied(e);
-                        if (this.logg){
+                        if (this.logg) {
                             let historyID = "history" + mid.substring(4);
                             this.$[historyID].postLogData(toSave, e.detail.logdata, 'foerdermitglieder');
                         }
-                        showToast(this, 'Die Änderungen des Pächters wurden erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
+                        showToast(this, 'Die Änderungen des Fördermitglieders wurden erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
                     }).catch((error) => {
                         showToast(this, 'Fehler bei der Speicherung der Änderungen', TOAST_TYPE.ERROR);
                     })
@@ -743,7 +742,7 @@
                     this.$.grtinfodialog.showDialog(
                         {
                             "title": "Keine Daten",
-                            "message": "Es gibt keine Pächterdaten, die man speichern könnte."
+                            "message": "Es gibt keine Fördermitgliederdaten, die man speichern könnte."
                         })
 
                 } else {
@@ -854,18 +853,18 @@
                 if (idx >= 0) {
                     this.$.firstclient.deleteOne('foerdermitglieder', elem.GARTENNUMMER).then(() => {
                         this.splice('mvdata', idx, 1);
-                        showToast(this, 'Der Pächter wurde erfolgreich gelöscht', TOAST_TYPE.SUCCESS);
+                        showToast(this, 'Der Fördermitglied wurde erfolgreich gelöscht', TOAST_TYPE.SUCCESS);
                     }).catch(() => {
-                        showToast(this, 'Fehler bei der Löschung des Pächters. Versuchen Sie später noch einmal.', TOAST_TYPE.ERROR);
+                        showToast(this, 'Fehler bei der Löschung des Fördermitglieders. Versuchen Sie später noch einmal.', TOAST_TYPE.ERROR);
                     })
                 } else if (!elem && idx === -1) {
                     // ist ein fehlerhafter Datensatz ohne Gartennummer, womöglich aus einer leeren Zeile der Importdatei
                     const rowIdx = id.substring(1); // ab dem minus-Zeichen, befindet sich die Zeilenindex
                     this.$.firstclient.deleteOne('foerdermitglieder', null).then(() => {
                         this.splice('mvdata', rowIdx, 1);
-                        showToast(this, 'Der Pächter wurde erfolgreich gelöscht', TOAST_TYPE.SUCCESS);
+                        showToast(this, 'Der Fördermitglied wurde erfolgreich gelöscht', TOAST_TYPE.SUCCESS);
                     }).catch(() => {
-                        showToast(this, 'Fehler bei der Löschung des Pächters. Versuchen Sie später noch einmal.', TOAST_TYPE.ERROR);
+                        showToast(this, 'Fehler bei der Löschung des Fördermitglieders. Versuchen Sie später noch einmal.', TOAST_TYPE.ERROR);
                     })
                 }
             }

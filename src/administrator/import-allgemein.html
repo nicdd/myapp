@@ -1,0 +1,857 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/paper-progress-button/paper-progress-button.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../../bower_components/granite-file-reader/granite-file-reader.html">
+<link rel="import" href="../utils/grt-dropdown-input.html">
+<link rel="import" href="../clients/firstclient.html">
+<link rel="import" href="../clients/basicclient.html">
+<link rel="import" href="../first-domain-styles.html">
+<link rel="import" href="../table-styles.html">
+<link rel="import" href="../shared-styles.html">
+
+<dom-module id="import-allgemein">
+  <template>
+    <style include="first-domain-styles table-styles shared-styles">
+      :host {
+        /* Stretch this element to fill viewport */
+        height: 85vh;
+        /* Make a flex column layout of children */
+        display: flex;
+        flex-direction: column;
+
+        --paper-input-error: {
+          white-space: normal;
+        }
+
+
+      }
+
+      .clickHere {
+        border-radius: 3px;
+        background-color: var(--app-primary-color);
+        color: white;
+        padding: 0.5rem 1rem;
+      }
+
+      .page {
+        /* Stretch this element in the parent flex */
+        flex: 1;
+        /* Make a flex column layout of children */
+        display: flex;
+        flex-direction: column;
+
+        -webkit-overflow-scrolling: touch;
+        padding: 3rem;
+      }
+
+      .metacol {
+        width: 3rem;
+        text-align: center;
+      }
+
+      /* .contentcol {
+        text-align: start;
+      } */
+      .contentcol {
+        text-align: center;
+        padding-left: 1rem;
+      }
+
+      .labelbutton{
+        padding: 3px 3px;
+      }
+      .labelbutton div {
+        display:inline-block;
+      }
+
+      paper-input.schmal_1 {
+        max-width: 90px !important;
+      }
+
+      paper-input.schmal_2 {
+        max-width: 50px !important;
+      }
+    </style>
+
+    <first-client id="firstclient"></first-client>
+    <basic-client id="bclient"></basic-client>
+    <div class="toolbar layout horizontal center-justified" flex>
+      <paper-input always-float-label minlength="1" maxlength="100" allowed-pattern="^[a-zA-Z0-9]$" required
+        auto-validate label="Domänenname" error-message="Pflichteingabe - nur Kleinbuchstaben"
+        on-input="_validateForSNameAliasEntsprechung" value="{{domainname}}"></paper-input>
+      <granite-file-reader disabled="[[domainname.length]]" read-as="dataURL" accept=".csv"
+        on-file-read="_doOnFileRead">
+        <div class="clickHere">Lokale CSV-Datei importieren</div>
+      </granite-file-reader>
+    </div>
+    <template is="dom-if" if="[[spaltenConf]]">
+      <div class="layout vertical card">
+        <div class="mcard">
+          <div class="cardcontent layout horizontal">
+            <paper-input class="labelgroup" min="1" max="100" always-float-label label="Anzahl der Spalten"
+              type="number" required value="{{tempAnzahlSpalten}}"></paper-input>
+            <paper-button bottom raised
+              disabled="[[_isUebernehmenDisabled(tempAnzahlSpalten, spaltenConf.columns.length)]]"
+              on-click="_addReduceColumns">[[_getUebernehmenButtonName(tempAnzahlSpalten, spaltenConf.columns.length)]]
+            </paper-button>
+          </div>
+        </div>
+        <div class="mcard layout vertical ">
+          <b class="cardtitle">
+            Spaltengruppen
+          </b>
+          <div class="cardcontent layout horizontal">
+            <paper-input class="labelgroup" always-float-label label="Neue Spaltengruppe" value="{{lastNewGroup}}">
+            </paper-input>
+            <paper-button bottom raised disabled="[[!lastNewGroup]]" on-click="_addNewColumnGroup">Neue Gruppe
+              hinzufügen</paper-button>
+          </div>
+          <div class="cardcontent">
+            <template is="dom-repeat" items="[[spaltenConf.column_groups]]">
+              <button class="labelbutton" title="Zum Löschen auf  drucken">
+                <div >
+                  <div>[[item]]</div>
+                  <iron-icon title="Gruppe entfernen" id="rmg[[index]]" icon="remove-circle-outline" slot="item-icon"
+                    on-click="_removeGroup"></iron-icon>
+                </div>
+              </button>
+            </template>
+          </div>
+        </div>
+        <div class="page">
+          <table>
+            <thead>
+              <th class="metacol">#</th>
+              <th class="contentcol" colspan="2"
+                title="Sollen die Daten aus dieser Spalte im Tabellenkopf angezeigt werden? An welcher Stelle?">Anzeigen
+              </th>
+              <th class="contentcol" colspan="2"
+                title="In welcher Spaltengruppe wird diese Spalte eingeteilt und an welcher Stelle?">Gruppe und Gruppenposition</th>
+              <th class="contentcol" title="Technischer Spaltenname für die Datenbanktabelle">Spaltenname</th>
+              <th class="contentcol" title="So wird diese Spalte in der Maske aussehen">Alias</th>
+              <th class="contentcol" title="Die Entsprechung in der zu importierenden Tabelle">Entsprechung
+                Import</th>
+              <th class="contentcol" title="Darf für den Pächter-Bereich verfügbar sein">Pächter</th>
+              <th class="contentcol" title="Darf für den Versicherungs-Bereich verfügbar sein">Versicherung</th>
+              <th class="contentcol" title="Darf für den FM-Bereich verfügbar sein">F-Mitglieder</th>
+              <th class="contentcol" title="Spaltenname entfernen">Löschen</th>
+            </thead>
+            <tbody>
+              <template is="dom-repeat" items="[[spaltenConf.columns]]">
+                <tr>
+                  <td class="metacol">
+                    [[_getOrdnungsnummer(index)]]
+                  </td>
+                  <td class="contentcol">
+                    <paper-checkbox id="shw[[index]]" checked="{{item.th_show}}" on-change="_doOnCbChecked">
+                    </paper-checkbox>
+                  </td>
+                  <td class="contentcol">
+                    <paper-input id="pos[[index]]" class="schmal_1" value="{{item.position}}" auto-validate
+                      required$="[[item.th_show]]" disabled="[[!item.th_show]]" on-focus="_setPattern"
+                      on-input="_setPattern" maxlength="[[_getMaxLength(item.position, spaltenConf.columns.length)]]"
+                      error-message="mehrmals oder leer">
+                    </paper-input>
+                  </td>
+                  <td class="contentcol">
+                    <grt-dropdown-input id="ctg[[index]]" items="[[spaltenConf.column_groups]]" selected="{{spaltenConf.columns.index.gruppe}}"
+                      on-iron-select="_doOnSelectGruppe" required error-message="Pflichtauswahl">
+                    </grt-dropdown-input>
+                  </td>
+                  <td class="contentcol">
+                    <paper-input id="gos[[index]]" class="schmal_2" value="{{item.gruppen_position}}" auto-validate
+                      required$="[[item.gruppe.length]]" disabled="[[!item.gruppe.length]]" on-focus="_setPattern"
+                      on-input="_setPattern" maxlength="[[_getMaxLength(item.gruppen_position, spaltenConf.column_groups.length)]]"
+                      error-message="Einmaliges Pflichtfeld">
+                    </paper-input>
+                  </td>
+                  
+                  <td class="contentcol">
+                    <paper-input id="cnm[[index]]" on-input="_validateForSNameAliasEntsprechung"
+                      value="{{item.colname}}" auto-validate allowed-pattern="^[A-Z0-9_]$" required
+                      error-message="Das Feld muss einen durch- und großgeschriebenen technischen Spaltennamen enthalten">
+                    </paper-input>
+                  </td>
+                  <td class="contentcol">
+                    <paper-input id="als[[index]]" on-input="_validateForSNameAliasEntsprechung" value="{{item.alias}}"
+                      auto-validate allowed-pattern="^[a-zA-Z0-9 ]$" required
+                      error-message="Das Feld muss einen Spaltennamen enthalten"></paper-input>
+                  </td>
+                  <td class="contentcol">
+                    <grt-dropdown-input id="ctp[[index]]" items="[[secondColumns]]" selected="{{entPaars.index.right}}"
+                      on-iron-select="_doOnSelect" required error-message="Pflichtauswahl oder **Keine**">
+                    </grt-dropdown-input>
+                  </td>
+                  <td class="contentcol">
+                    <paper-checkbox id="cbp[[index]]" checked="[[_hasRole('paechter', item)]]"
+                      on-change="_doOnCbChecked">
+                    </paper-checkbox>
+                  </td>
+                  <td class="contentcol">
+                    <paper-checkbox id="cbv[[index]]" checked="[[_hasRole('versicherung', item)]]"
+                      on-change="_doOnCbChecked"></paper-checkbox>
+
+                  </td>
+                  <td class="contentcol">
+                    <paper-checkbox id="cbf[[index]]" checked="[[_hasRole('foerdermitglieder', item)]]"
+                      on-change="_doOnCbChecked"></paper-checkbox>
+
+                  </td>
+                  <td class="metacol">
+                    <button id="dlb[[index]]" on-click="_removeColumn" class="first-domain-endpagebutton action-button">
+                      <iron-icon id="dli[[index]]" icon="delete" slot="item-icon" on-click="_removeColumn"></iron-icon>
+                    </button>
+                  </td>
+
+                </tr>
+              </template>
+
+            </tbody>
+          </table>
+        </div>
+        showSpaltenConf()[[showSpaltenConf(spaltenConf.columns.*)]]
+        <paper-button disabled="[[_isDisabled(formInvalid, anzeigeOptsInvalid)]]" on-click="_mergeImportedAndSave">
+          Weiter</paper-button>
+      </div>
+    </template>
+
+  </template>
+
+  <script>
+    class ImportAllgemein extends Polymer.Element {
+      static get is() { return 'import-allgemein'; }
+
+      static get properties() {
+        return {
+
+          domainname: {
+            type: String,
+          },
+
+          tempAnzahlSpalten: {
+            type: Number,
+            value: null,
+            notify: true
+          },
+
+          tabledata: {
+            type: Array,
+            value: [],
+            notify: true,
+            reflectToAttribute: true
+          },
+
+          mfile: {
+            type: Object,
+            value: null,
+            notify: true,
+            observer: '_transformCSVToArray'
+          },
+
+          secondColumns: {
+            type: Array,
+            value: null
+          },
+
+          entPaars: {
+            type: Object,
+            value: [],
+            notify: true,
+            reflectToAttribute: true
+          },
+
+          dataAndColumns: {
+            type: Object,
+            value: null
+          },
+
+          spaltenConf: {
+            type: Object,
+            value: null,
+            notify: true
+          },
+
+          formInvalid: {
+            type: Boolean,
+            notify: true
+          },
+
+          anzeigeOptsInvalid: {
+            type: Boolean,
+            notify: true
+          },
+
+          completed: {
+            type: Boolean,
+            value: false,
+            notify: true
+          },
+
+          _defaultColumnConf: {
+            type: Array,
+            value: [{ "colname": "GARTENNUMMER", "coltype": "string", "alias": "GNr", "rolen": ["paechter", "versicherung"] }, { "colname": "ANREDE", "coltype": "string", "alias": "Anrede", "rolen": ["paechter", "versicherung"] }, { "colname": "NACHNAME", "coltype": "string", "alias": "Nachname", "rolen": ["paechter", "versicherung"] }, { "colname": "VORNAME", "coltype": "string", "alias": "Vorname", "rolen": ["paechter", "versicherung"] }, { "colname": "STRASSE", "coltype": "string", "alias": "Strasse", "rolen": ["paechter", "versicherung"] }, { "colname": "PLZ", "coltype": "string", "alias": "PLZ", "rolen": ["paechter", "versicherung"] }, { "colname": "WOHNORT", "coltype": "string", "alias": "Wohnort", "rolen": ["paechter", "versicherung"] }, { "colname": "TELEFON", "coltype": "string", "alias": "Telefon", "rolen": ["paechter", "versicherung"] }, { "colname": "WEG", "coltype": "string", "alias": "Weg", "rolen": ["paechter", "versicherung"] }, { "colname": "FLAECHE", "coltype": "string", "alias": "Fläche", "rolen": ["paechter", "versicherung"] }, { "colname": "GEBURTSDATUM", "coltype": "string", "alias": "Geburtsdatum", "rolen": ["paechter"] }, { "colname": "EMAIL", "coltype": "string", "alias": "E-Mail", "rolen": ["paechter", "versicherung"] }, { "colname": "BEMERKUNGEN", "coltype": "string", "alias": "Bemerkung (P)", "rolen": ["paechter"] }, { "colname": "V_BEMERKUNG", "coltype": "string", "alias": "Bemerkung (V)", "rolen": ["versicherung"] }, { "colname": "GBV", "coltype": "number", "alias": "GBV", "rolen": ["versicherung"] }, { "colname": "FED", "coltype": "number", "alias": "FED", "rolen": ["versicherung"] }, { "colname": "HOEV", "coltype": "number", "alias": "HöV", "rolen": ["versicherung"] }, { "colname": "A7_1", "coltype": "number", "alias": "Solar", "rolen": ["versicherung"] }, { "colname": "A7_3", "coltype": "string", "alias": "SA", "rolen": ["versicherung"] }, { "colname": "A7_4", "coltype": "number", "alias": "GS", "rolen": ["versicherung"] }, { "colname": "UV", "coltype": "number", "alias": "Unfall", "rolen": ["versicherung"] }, { "colname": "BEITRAG", "coltype": "number", "alias": "Beitrag", "rolen": ["versicherung"] }]
+          },
+
+          lastNewGroup: {
+            type: String,
+          }
+        }
+      }
+      showSpaltenConf(){
+        return JSON.stringify(this.spaltenConf)
+      }
+
+      static get observers() {
+        return ['_bothValidations(spaltenConf.columns.length, entPaars.length)'];
+      }
+
+      _addNewColumnGroup() {
+        if (this.lastNewGroup && !this.spaltenConf.column_groups.some((elem) => elem === this.lastNewGroup)) {
+          this.push('spaltenConf.column_groups', this.lastNewGroup);
+          this.set('lastNewGroup', null);
+        }
+      }
+
+      _removeGroup(e) {
+        if (e && e.target && e.target.id) {
+          let idx = e.target.id.substring(3);
+          console.warn('idx' + idx)
+          this.splice('spaltenConf.column_groups', idx, 1);
+        }
+      }
+
+      // Laden
+      _doOnFileRead(e) {
+        let self = this;
+        let b64Result = e.detail;
+        self._urltoFile(b64Result, (self.domainname + '.csv'), 'text/csv').then((file) => {
+          let reader = new FileReader();
+          reader.onload = function (e) {
+            let text = reader.result;
+            self.set('mfile', text);
+          }
+          reader.readAsText(file, 'base64');
+        })
+      }
+
+      _urltoFile(url, filename, mimeType) {
+        let self = this;
+        return (fetch(url)
+          .then(function (res) { return res.arrayBuffer(); })
+          .then(function (buf) { return new File([buf], filename, { type: mimeType }); })
+          .catch((err) => {
+            showToast(self, 'Fehler bei der Importierung der Daten aus der lokalen Datei', TOAST_TYPE.ERROR);
+          })
+        );
+      }
+
+      _transformCSVToArray() {
+        let finalArray = [];
+        if (this.mfile) {
+          let firstArr = this.mfile.split('\n');
+          if (Array.isArray(firstArr) && firstArr.length > 0 && !firstArr[firstArr.length - 1].length) {
+            firstArr.pop();
+          }
+          let secondArray = null;
+          firstArr.forEach((el, zIdx) => {
+            secondArray = el.split(',');
+            let thirdArray = [];
+            for (let i = 0; i < secondArray.length - 1; i++) {
+              if (secondArray[i].startsWith('"') && !(secondArray[i].length > 1 && secondArray[i].endsWith('"'))) {
+                let indexOfLastFalsyKomaSplited = null;
+                let k = i + 1;
+                while (!indexOfLastFalsyKomaSplited && k < secondArray.length) {
+                  if (secondArray[k].endsWith('"') && !(secondArray[k].length > 1 && secondArray[k].startsWith('"'))) {
+                    console.warn('zidx: ' + zIdx + ' startswith gf sa-i: ' + i + ' => ' + secondArray[i] + ' endswith gf sA-k: ' + k + ' => ' + secondArray[k])
+                    indexOfLastFalsyKomaSplited = k;
+                  }
+                  k++;
+                }
+                // Eine Zelle mit schliessendem Komma gefunden
+                if (indexOfLastFalsyKomaSplited) {
+                  let newZelle = secondArray[i].substring(1);
+                  while (i < indexOfLastFalsyKomaSplited) {
+                    i++;
+                    if (i === indexOfLastFalsyKomaSplited) {
+                      //entferne das " an Ende des Strings, das ist die letzte Zelle die 
+                      // zum ursprünglichen Inhalt gehört
+                      newZelle += secondArray[i].substring(0, secondArray[i].length - 1);
+                    } else {
+                      // noch nicht die letzte Zelle die 
+                      // zum ursprünglichen Inhalt gehört
+                      newZelle += secondArray[i];
+                    }
+                  }
+                  thirdArray.push(newZelle);
+                } else {
+                  thirdArray.push(secondArray[i]);
+                }
+              } else {
+                thirdArray.push(secondArray[i]);
+              }
+            }
+            finalArray.push(thirdArray);
+          })
+          this._importLocalFoerdermitgliederPressed(finalArray);
+        }
+      }
+
+      _importLocalFoerdermitgliederPressed(localFoerdermitgliederFromCSVAsArray) {
+        this.$.bclient.getDomaenenColumnConfig(this.domainname).then((domConf) => {
+          if (!domConf) {
+            throw 'nicht gefunden';
+          } else {
+            console.warn('configNow:' + JSON.stringify(domConf))
+            this._initData(domConf, localFoerdermitgliederFromCSVAsArray);
+            showToast(this, 'Die domänenspezifische Spaltenkonfiguration wurde erfolgreich geladen', TOAST_TYPE.SUCCESS);
+          }
+
+        }).catch((err) => {
+          showToast(this, 'Die domänenspezifische Spaltenkonfiguration konnte nicht geladen werden, die allgemeine Spaltenkofiguration wird benutzt', TOAST_TYPE.WARN);
+          this.$.bclient.getDomaenenColumnConfig('general').then((generalConf) => {
+            if (!generalConf) {
+              throw 'nicht gefunden';
+            } else {
+              this._initData(generalConf, localFoerdermitgliederFromCSVAsArray);
+              showToast(this, 'Die allgemeine Spaltenkonfiguration wurde erfolgreich geladen', TOAST_TYPE.SUCCESS);
+            }
+          }).catch((err) => {
+            showToast(this, 'Keine Spaltenkonfiguration konnte geladen werden', TOAST_TYPE.ERROR);
+            this._initData(this._defaultColumnConf, localFoerdermitgliederFromCSVAsArray);
+          })
+        })
+      }
+
+      _initData(conf, csvData) {
+        console.warn('if configNow initdata:' + (conf && conf.columns && Array.isArray(conf.columns) && csvData && csvData.length))
+        if (conf && conf.columns && Array.isArray(conf.columns) && csvData && csvData.length) {
+          conf.columns = this._checkForMustColumns(conf.columns);
+          console.warn('if configNow 1')
+          let anzC = conf.columns.length;
+          console.warn('if configNow 1.1')
+          this.set('tempAnzahlSpalten', anzC)
+          console.warn('if configNow 1.2')
+          this.set('spaltenConf', conf);
+          console.warn('if configNow 1.3')
+          this.set('completed', true)
+          console.warn('if configNow 1.5')
+          this.mapToJSON(csvData);
+          console.warn('if configNow 2')
+          let dataAndColumns = { data: this.tabledata, columns: this.columnNames }
+          this.set('dataAndColumns', dataAndColumns);
+          let secondColumns = JSON.parse(JSON.stringify(dataAndColumns.columns));
+          secondColumns.unshift('**Keine**');
+          this.set('secondColumns', secondColumns);
+          showToast(this, 'Die Daten wurden aus der lokalen Datei erfolgreich geladen. Damit diese auch dauerhaft importiert werden können, setzen Sie die Konfiguration durch die Zuordnung der Tabellenspalten fort.', TOAST_TYPE.WARN, 'center');
+        } else {
+          this.set('_defaultColumnConf', this._checkForMustColumns(this._defaultColumnConf))
+          let anzC = this._defaultColumnConf.columns.length;
+          this.set('tempAnzahlSpalten', anzC)
+          this.set('spaltenConf', this._defaultColumnConf);
+          this.set('completed', true)
+          showToast(this, 'Bei der Importierung der Vereinsdaten wurden keine Foerdermitgliederdaten gefunden', TOAST_TYPE.ERROR);
+        }
+      }
+
+      _checkForMustColumns(conf) {
+        if (this.domainname === "foerdermitglieder") {
+          let aufnahmeDatumColumn = conf.find((elem) => elem.colname === "AUFNAHMEDATUM");
+          if (!aufnahmeDatumColumn || !aufnahmeDatumColumn.colname || !aufnahmeDatumColumn.coltype || !aufnahmeDatumColumn.alias || !aufnahmeDatumColumn.rolen || !(Array.isArray(aufnahmeDatumColumn.rolen))) {
+            aufnahmeDatumColumn = {
+              "colname": "AUFNAHMEDATUM",
+              "coltype": "string",
+              "alias": "Aufnahme",
+              "rolen": [
+                "paechter",
+                "versicherung",
+                "foerdermitglieder"
+              ]
+            }
+            conf.unshift(aufnahmeDatumColumn);
+          }
+        }
+        return conf;
+      }
+
+      mapToJSON(resp) {
+        let usr = document.querySelector('my-app').getAttribute('user')
+        usr = JSON.parse(usr);
+        let transformedResult = [];
+        let columns = resp[0];
+        for (let i = 1; i < resp.length; i++) {
+          if (resp[i][0] !== 'Ende der Liste') {
+            let myRowObj = {};
+            for (let j = 0; j < columns.length; j++) {
+              let attrName = columns[j];
+              let attrValue = (attrName === "GBV" || attrName === "FED" || attrName === "Beitrag" || attrName === "UV" || attrName === "HöV") ? (isFinite(resp[i][j]) && !isNaN(resp[i][j]) ? (parseInt(resp[i][j]) || 0) : 0) : resp[i][j];
+              myRowObj[attrName] = attrValue;
+            }
+            myRowObj['created'] = { user: usr.name, datum: moment().format('YYYYMMDD_HHmm'), source: 'csv' };
+            transformedResult.push(myRowObj);
+          } else {
+            break;
+          }
+        }
+        this.set('columnNames', columns);
+        this.set('tabledata', transformedResult);
+      }
+
+      // Speichern
+
+      _mergeImportedAndSave() {
+        let columns = [];
+        this.spaltenConf.columns.forEach((col) => {
+          columns.push(col.alias);
+        })
+        let data = JSON.parse(JSON.stringify(this.dataAndColumns.data));
+        let newData = [];
+        data.forEach((foerdermitgliedData) => {
+          let newFoerdermitglied = new Foerdermitglied(this.entPaars);
+          Object.keys(foerdermitgliedData).forEach((key) => {
+            let correspondingPaar = this.entPaars.find((p) => p.right === key);
+            if (correspondingPaar) {
+              newFoerdermitglied[correspondingPaar.left] = foerdermitgliedData[key];
+            }
+          })
+          newFoerdermitglied = this._checkDataForMustContent(newFoerdermitglied);
+          newData.push(newFoerdermitglied);
+        })
+        newData = this._makeUnicIds(newData);
+        let newDataAndColumns = { data: newData, columns: columns }
+        this.saveToDB(newDataAndColumns).then(() => {
+          showToast(this, 'Sie haben die Daten erfolgreich importiert.', TOAST_TYPE.SUCCESS);
+          this.set('completed', true)
+        }).catch(() => {
+          this.set('completed', false)
+          showToast(this, 'Fehler bei der Übertragung der importierten Daten in die Datenbank.', TOAST_TYPE.ERROR);
+        }).finally(() => {
+          this.$.bclient.postDomaenenColumnConfig(this.spaltenConf, this.domainname).then(() => {
+            showToast(this, 'Die Konfiguration der Spalten für die Domäne' + this.domainname + 'wurde erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
+          }).catch(() => {
+            showToast(this, 'Fehler bei der Speicherung der Spaltenkonfiguration für die Domäne ' + this.domainname, TOAST_TYPE.ERROR);
+          });
+        })
+      }
+
+      _checkDataForMustContent(newFoerdermitglied) {
+        if (this.domainname === 'foerdermitglieder') {
+          let aufnahmeDatum = newFoerdermitglied.AUFNAHMEDATUM;
+          let mDateTime = moment(aufnahmeDatum, 'DD.MM.YYYY');
+          if (!mDateTime.isValid()) {
+            newFoerdermitglied['AUFNAHMEDATUM'] = moment().toISOString();
+          } else {
+            newFoerdermitglied['AUFNAHMEDATUM'] = mDateTime.toISOString(true);
+          }
+        }
+        return newFoerdermitglied;
+      }
+
+      _makeUnicIds(newData) {
+        if (this.domainname === 'foerdermitglieder') {
+          newData.sort((a, b) => {
+            return (a.AUFNAHMEDATUM < b.AUFNAHMEDATUM) ? -1 : ((a.AUFNAHMEDATUM > b.AUFNAHMEDATUM) ? 1 : 0);
+          });
+          newData.forEach((fm, idx) => {
+            let k = idx + 1;
+            // Da das Array nach AUFNAHMEDATUM sortiert ist, nehme alle folgenden mit dem gleichen Aufnahmedatum
+            // und erhöhe es um eine Minute - es könnten keine oder 2 oder mehrere aufeinanderfolgende sein
+            while ((k <= (newData.length - 1)) && (fm.AUFNAHMEDATUM === newData[k].AUFNAHMEDATUM) && moment(fm.AUFNAHMEDATUM).isValid()) {
+              newData[k].AUFNAHMEDATUM = moment(fm.AUFNAHMEDATUM).add((k - idx), 'minutes').toISOString(true);
+              k++;
+            }
+          })
+        }
+        return newData;
+      }
+
+      saveToDB(dataAndColumns) {
+        return this.$.firstclient.postAsJSON(dataAndColumns, this.domainname);
+      }
+
+      // Bearbeitungsmethoden
+      _addReduceColumns() {
+        if (!this.spaltenConf || !this.spaltenConf.columns) {
+          this.spaltenConf.columns = [];
+        }
+        if (this.tempAnzahlSpalten > this.spaltenConf.columns.length) {
+          let diff = this.tempAnzahlSpalten - this.spaltenConf.columns.length;
+          while (diff) {
+            this._addColumn();
+            diff--;
+          }
+        } else if (this.tempAnzahlSpalten < this.spaltenConf.columns.length) {
+          let diff = this.spaltenConf.columns.length - this.tempAnzahlSpalten;
+          while (diff) {
+            this._removeColumn(this.spaltenConf.columns.length - 1);
+            diff--;
+          }
+        }
+      }
+
+      _addColumn() {
+        this.push('spaltenConf.columns', { colname: null, coltype: "string", alias: null, rolen: [] });
+      }
+
+      _removeColumn(indexParam) {
+        let index = null;
+        if ((typeof indexParam === 'number')) {
+          index = indexParam;
+        } else if (indexParam.target && indexParam.target.id) {
+          index = parseInt(indexParam.target.id.substring(3));
+          indexParam.preventDefault();
+          indexParam.stopPropagation();
+        }
+        if (index || index === 0) {
+          let spToDel = this.spaltenConf.columns[index];
+          this.splice('spaltenConf.columns', index, 1)
+          if (this.entPaars && this.entPaars[index] && this.entPaars[index].left === spToDel.colname) {
+            this.splice('entPaars', index, 1);
+          }
+        }
+        this.set('tempAnzahlSpalten', this.spaltenConf.columns.length);
+      }
+
+      _bothValidations() {
+        this._validateForSNameAliasEntsprechung();
+        this._validateForAnzeigeOptionen();
+      }
+
+      _validateForSNameAliasEntsprechung(e) {
+        let invalidFound = false;
+        if (this.domainname && this.domainname.length && this.entPaars && this.spaltenConf && this.spaltenConf.columns && this.entPaars.length === this.spaltenConf.columns.length) {
+          let bothLaenge = this.entPaars.length;
+          for (let i = 0; i < bothLaenge; i++) {
+            let gCElem = this.spaltenConf.columns[i];
+            let invConfFound = (!gCElem.colname || !gCElem.colname.length || !gCElem.coltype || !gCElem.coltype.length || !gCElem.alias || !gCElem.alias.length);
+            let entPElem = this.entPaars[i];
+            let invEntPFound = (!entPElem || !entPElem.right || !entPElem.right.length);
+            invalidFound = invalidFound || invConfFound || invEntPFound;
+          }
+        } else {
+          invalidFound = true;
+        }
+        this.set('formInvalid', invalidFound);
+      }
+
+      _validateForAnzeigeOptionen() {
+        let checkBoxFeldDissensFound = false;
+        if (this.spaltenConf && this.spaltenConf.columns && Array.isArray(this.spaltenConf.columns)) {
+          this.spaltenConf.columns.forEach((spalte, idx) => {
+            if (spalte.th_show && (!spalte.position || isNaN(spalte.position))) {
+              checkBoxFeldDissensFound = true;
+            }
+          })
+        }
+        let pInputs = this.shadowRoot.querySelectorAll('paper-input.schmal_1');
+        pInputs = Array.from(pInputs).filter((el) => {
+          return el.invalid === true;
+        });
+        this.set('anzeigeOptsInvalid', (checkBoxFeldDissensFound || (Array.isArray(pInputs) && pInputs.length > 0)))
+      }
+
+      _setPattern(e) {
+        //on-focus wird das pattern für das aktuelle element gesetzt
+        //on-input wird das pattern für die anderen elemente neu berechnet, denn es könnten manche erlaubt werden
+        let ignoreIndex, id, keyToSearch;
+        if (e.target) {
+          let idPrefix = e.target.id.substring(0, 3);
+          ignoreIndex = parseInt(e.target.id.substring(3));
+          console.warn('idpref' + idPrefix + 'e.type' + e.type)
+          let iterateOver;
+          if(idPrefix === 'pos'){
+            keyToSearch = 'position';
+            iterateOver = this.spaltenConf.columns;
+          } else if (idPrefix === 'gos'){
+            let grDD = this.shadowRoot.querySelector(('#ctg' + ignoreIndex));
+            let selectedGruppe = grDD.selected;
+            keyToSearch = 'gruppen_position';
+            iterateOver = this.spaltenConf.columns.filter((col)=> col.gruppe === selectedGruppe);
+          }
+          if((e.type === "focus") || (e.type === "input")){
+          //   debugger;
+          //   id = e.target.id;
+          //   this._refreshPatternForIdExceptingIndex(iterateOver, id, keyToSearch, ignoreIndex);
+            
+          // } else if (e.type === "input") {
+
+            iterateOver.forEach((spalte, idx) => {
+              //if (idx !== ignoreIndex) {
+                this._refreshPatternForIdExceptingIndex(iterateOver, (idPrefix + idx), keyToSearch, idx);
+             // }
+            })
+
+          }
+          if(idPrefix === 'pos'){
+            this._validateForAnzeigeOptionen();
+          }
+          
+        }
+      }
+
+      _refreshPatternForIdExceptingIndex(iterateOver, pId, keyToSearch, eIdx) {
+        let elem = this.shadowRoot.getElementById(pId);
+        if (elem) {
+          let patternPrefix = '^(?!(?:';
+          let patternSuffix = ')$)[1-9]\\d{0,2}$';
+          let choosenList = '';
+          if (iterateOver && Array.isArray(iterateOver)) {
+            iterateOver.forEach((spalte, idx) => {
+              if (idx !== eIdx && !!spalte[keyToSearch]) {
+                choosenList = choosenList + (choosenList.length ? "|" : '') + spalte[keyToSearch];
+              }
+            })
+          }
+          let pt = (patternPrefix + choosenList + patternSuffix)
+          console.warn('prohibited for Index' + eIdx + JSON.stringify(choosenList) + "pt" + pt)
+          elem.setAttribute("pattern", pt);
+          elem.validate();
+        }
+      }
+
+      _doOnSelect(e) {
+        let self = this;
+        if (e && e.target) {
+          let myelemId = e.target.id;
+          let realIndex = myelemId.substring(3);
+          let wertLinks = self.spaltenConf.columns[realIndex].colname;
+          let wertRechts = e.target.selected;
+          let path = 'entPaars.' + realIndex;
+
+          let bereitsBelegt = self.entPaars.find((elem) => (!!elem) && (elem.right === wertRechts) && (wertRechts !== self.secondColumns[0]));
+          if (bereitsBelegt) {
+            self.splice('entPaars', realIndex, 1, { zeile: (parseInt(realIndex) + 1), left: wertLinks, right: null });
+            let thehashid = '#' + myelemId;
+            let melem = self.shadowRoot.querySelector(thehashid);
+            melem.resetItem(true);
+            melem.selected = null;
+            melem.errorMessage = "Spaltenname in Zeile " + bereitsBelegt.zeile + " bereits zugeordnet"
+          } else {
+            self.set(path, { zeile: (parseInt(realIndex) + 1), left: wertLinks, right: wertRechts });
+          }
+        }
+        this._validateForSNameAliasEntsprechung();
+      }
+
+      _doOnSelectGruppe(e) {
+        let self = this;
+        if (e && e.target) {
+          let myelemId = e.target.id;
+          let realIndex = myelemId.substring(3);
+          let selectedGruppe = e.target.selected;
+          let path = 'spaltenConf.columns.' + realIndex + '.gruppe';
+          self.set(path, selectedGruppe);
+        }
+      }
+
+      _doOnCbChecked(e) {
+        let idprefix = e.target.id.substring(0, 3);
+        let realIndex = e.target.id.substring(3);
+        let role = null;
+        switch (idprefix) {
+          case 'cbp':
+            role = 'paechter';
+            this._setRollen(e, realIndex, role);
+            break;
+          case 'cbv':
+            role = 'versicherung';
+            this._setRollen(e, realIndex, role);
+            break;
+          case 'cbf':
+            role = 'foerdermitglieder';
+            this._setRollen(e, realIndex, role);
+            break;
+          case 'shw':
+            this._resetPosition(e, realIndex);
+            break;
+          default:
+            break;
+        }
+      }
+
+      _setRollen(e, realIndex, role) {
+        if (e.currentTarget.checked) {
+          let path = "spaltenConf.columns" + realIndex + ".rolen";
+          this.push(path, role);
+        } else {
+          let path = "spaltenConf.columns" + realIndex + ".rolen";
+          let rolen = this.get(path);
+          let idx = rolen.indexOf(role);
+          this.splice(path, idx, 1);
+        }
+      }
+
+      _resetPosition(e, realIndex) {
+        let posElement = this.shadowRoot.getElementById(('pos' + realIndex));
+        if (!e.currentTarget.checked) {
+          posElement.value = (this.spaltenConf.length + 1)
+          posElement.value = null;
+        } else {
+          posElement.validate();
+        }
+        this._validateForAnzeigeOptionen();
+      }
+
+      _getOrdnungsnummer(index) {
+        return index + 1;
+      }
+
+      _hasRole(rolename, item) {
+        return item.rolen && Array.isArray(item.rolen) && item.rolen.indexOf(rolename) >= 0;
+      }
+
+      _isDisabled(formInvalid, anzeigeOptsInvalid) {
+        return (formInvalid || anzeigeOptsInvalid);
+      }
+
+      _getMaxLength(position, sClength) {
+        // Trick um die Feldinvalidierung bei Eingaben über die Anzahl der Spalten zu erzwingen
+        if (position > sClength) {
+          return 0;
+        } else {
+          let sClengthAsString = '' + sClength;
+          return sClengthAsString.length;
+        }
+      }
+
+      _getUebernehmenButtonName(tempAnzahlSpalten, anzahlColumns) {
+        if (!tempAnzahlSpalten) {
+          return "Übernehmen";
+        } else {
+          if (parseInt(tempAnzahlSpalten) > (parseInt(anzahlColumns) || 0)) {
+            return "Erhöhen";
+          } else if (parseInt(tempAnzahlSpalten) < (parseInt(anzahlColumns) || 0)) {
+            return "Reduzieren";
+          } else return "Ändern"
+        }
+      }
+
+      _isUebernehmenDisabled(tempAnzahlSpalten, anzahlColumns) {
+        if (tempAnzahlSpalten && anzahlColumns && (parseInt(tempAnzahlSpalten) === parseInt(anzahlColumns))) {
+          return true;
+        } else {
+          return false;
+        }
+      }
+
+
+    }
+
+    class Foerdermitglied {
+      constructor(foerdermitgliedKeys) {
+        if (foerdermitgliedKeys) {
+          this._createEmptyFoerdermitglied(foerdermitgliedKeys)
+        }
+      }
+
+      _createEmptyFoerdermitglied(foerdermitgliedKeys) {
+        foerdermitgliedKeys.forEach((paar) => {
+          this[paar.left] = null;
+        })
+      }
+
+    }
+
+    window.customElements.define(ImportAllgemein.is, ImportAllgemein);
+  </script>
+</dom-module>

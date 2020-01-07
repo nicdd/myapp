@@ -5,7 +5,7 @@
 <link rel="import" href="../administrator/general-column-configuration.html">
 <link rel="import" href="../administrator/import-paechter.html">
 <link rel="import" href="../administrator/import-versicherte.html">
-<link rel="import" href="../administrator/import-foerdermitglieder.html">
+<link rel="import" href="../administrator/import-allgemein.html">
 
 <dom-module id="my-paechter-imports">
   <template>
@@ -38,7 +38,7 @@
         <ud-step title="Fördermitglieder importieren" completed="[[stepsCompletion.importingfoerdermitglieder]]" editable="[[stepsCompletion.gencols]]" 
         optional="[[stepsCompletion.gencols]]" optional-text="" hide-actions>
           <div >
-            <import-foerdermitglieder completed="{{stepsCompletion.importingfoerdermitglieder}}"></import-foerdermitglieder>
+            <import-allgemein completed="{{stepsCompletion.importingfoerdermitglieder}}"></import-allgemein>
           </div>
         </ud-step>
         
