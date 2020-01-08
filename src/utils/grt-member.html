@@ -14,12 +14,12 @@ Pagination Element for Vaadin-Grid Tables
                 flex: 1;
                 /* Make a flex column layout of children */
                 display: flex;
-                flex-direction: column;
+
                 overflow: auto;
             }
 
             .cardtitle {
-                padding: 0px 16px 16px 16px;
+                padding: 16px 16px 16px 16px;
             }
 
             .flex-container {
@@ -31,10 +31,11 @@ Pagination Element for Vaadin-Grid Tables
    * Remember this is the same as:
    * flex-direction: row;
    * flex-wrap: wrap;
-   */flex-direction: row;
-                flex-wrap: wrap;
+   */
+                flex-flow: row wrap;
 
                 /* Then we define how is distributed the remaining space */
+                justify-content:flex-start;
 
             }
 
@@ -44,39 +45,68 @@ Pagination Element for Vaadin-Grid Tables
             }
 
             .dubble_wide {
-                width: 453px;
+                width: 410px;
             }
+
+            .break {
+                flex-basis: 100%;
+                height: 0;
+            }
+
+            .break_vertical {
+                flex-basis: 100%;
+                width: 0;
+                border: 1px solid black;
+            }
+
+            .nix {
+                height: 0;
+                width: 0;
+            }
+
+            .mlabelgroup {
+                padding: 5px;
+            }
+
+            .innercard{
+                margin: 10px;
+                padding: 0px !important;
+            }
+            .underline{
+                background-color: #f5f5f5;;
+                border-bottom: 1px solid black;
+            }
+            
         </style>
 
-
-        <div class="flex-container ">
-            <div class="flex-container">
-                <template is="dom-repeat" items="[[colConf.column_groups]]" as="gname" index-as="groupindex">
-                    <div class$="[[_getGroupClass('mcard layout vertical', gname)]]">
-                        <p class="cardtitle">
-                            [[gname]]
-                        </p>
-                        <div class="cardcontent">
-                            <div>
-                                <div>
-                                    <template is="dom-repeat" items="[[_getDataFor(gname)]]" as="field">
-                                        <paper-input id="[[field.colname]]" class="labelgroup"
-                                            style="display:inline-block;" always-float-label label="{{field.alias]]" 
-                                        value="[[_getData(gartler, field.colname)]]" on-input="_changeThisField"></paper-input>
-                                    </template>
-                                </div>
-                                
-                            </div>
-                        </div>
-                    </div>
-                </template>
-            </div>
-                <div class="mcard layout vertical justified">
-                    <paper-button disabled="[[_originalEqualThisGartler(originalGartler.*, gartler.*)]]" bottom
-                        raised on-click="_resetGartler">Zurücksetzen</paper-button>
-                    <paper-button disabled="[[_originalEqualThisGartler(originalGartler.*, gartler.*)]]" bottom
-                        raised on-click="_saveGartler">Speichern</paper-button>
+<div class="mcard layout horizontal">
+    <div class="flex-container">
+        <template is="dom-repeat" items="[[colConf.column_groups]]" as="gname" index-as="groupindex">
+            <div class="mcard innercard layout vertical">
+                <b class="cardtitle underline">
+                    [[gname]]
+                </b>
+                <div class$="[[_getGroupClass('cardcontent', gname)]]">
+                    <template is="dom-repeat" items="[[_getDataFor(gname)]]" as="field" index-as="fieldindex">
+                        <paper-input id="[[field.colname]]" class="mlabelgroup" always-float-label label="{{field.alias]]" 
+                        value="[[_getData(gartler, field.colname)]]" on-input="_changeThisField"></paper-input>
+                        <div class$="[[_getPIClass(gname, fieldindex)]]"></div>
+                    </template>
                 </div>
+            </div>
+        </template>
+    </div>
+
+    <div class="mcard layout vertical justified">
+        <paper-button disabled="[[_originalEqualThisGartler(originalGartler.*, gartler.*)]]" bottom
+            raised on-click="_resetGartler">Zurücksetzen</paper-button>
+        <paper-button disabled="[[_originalEqualThisGartler(originalGartler.*, gartler.*)]]" bottom
+            raised on-click="_saveGartler">Speichern</paper-button>
+    </div>
+</div>
+
+        
+            
                 
                 <!-- <div class="mcard layout vertical">
                     <p class="cardtitle">
@@ -88,73 +118,71 @@ Pagination Element for Vaadin-Grid Tables
                                 value="{{gartler.GARTENNUMMER]]"></paper-input>
                             <paper-input class="labelgroup" always-float-label label="Weg"
                                 value="{{gartler.WEG}}">
-                                        </paper-input>
-                                        <paper-input class="labelgroup" always-float-label label="Fläche"
-                                            value="{{gartler.FLAECHE}}"></paper-input>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mcard layout vertical ">
-                            <p class="cardtitle">
-                                Pächterdaten
-                            </p>
-                            <div class="cardcontent">
-                                <div class="layout vertical">
-                                    <div class="flex-container ">
-                                        <paper-input class="labelgroup" always-float-label label="Geburtsdatum"
-                                            value="{{gartler.GEBURTSDATUM}}"></paper-input>
-                                        <paper-input class="labelgroup" always-float-label label="Anrede"
-                                            value="{{gartler.ANREDE}}"></paper-input>
-                                    </div>
-                                    <div class="flex-container ">
-                                        <paper-input class="labelgroup" always-float-label label="Vorname"
-                                            value="{{gartler.VORNAME}}"></paper-input>
-                                        <paper-input class="labelgroup" always-float-label label="Name"
-                                            value="{{gartler.NACHNAME}}"></paper-input>
-                                    </div>
-                                    <div class="flex-container ">
-                                        <paper-input class="labelgroup" always-float-label label="Strasse"
-                                            value="{{gartler.STRASSE}}"></paper-input>
-                                        <paper-input class="labelgroup" always-float-label label="Hausnummer"
-                                            value="{{gartler.HAUSNUMMER}}"></paper-input>
-                                    </div>
-                                    <div class="flex-container ">
-                                        <paper-input class="labelgroup" always-float-label label="PLZ"
-                                            value="{{gartler.PLZ}}">
-                                        </paper-input>
-                                        <paper-input class="labelgroup" always-float-label label="Ort"
-                                            value="{{gartler.WOHNORT}}">
-                                        </paper-input>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mcard layout vertical">
-                            <p class="cardtitle">
-                                Kontaktdaten
-                            </p>
-                            <div class="cardcontent">
-                                <div class="layout vertical">
-                                    <paper-input class="labelgroup" always-float-label label="Telefon"
-                                        value="{{gartler.TELEFON}}"></paper-input>
-                                    <paper-input class="labelgroup" always-float-label label="E-Mail"
-                                        value="{{gartler.EMAIL}}"></paper-input>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mcard layout vertical justified">
-                            <paper-button disabled="[[_originalEqualThisGartler(originalGartler.*, gartler.*)]]" bottom
-                                raised on-click="_resetGartler">Zurücksetzen</paper-button>
-                            <paper-button disabled="[[_originalEqualThisGartler(originalGartler.*, gartler.*)]]" bottom
-                                raised on-click="_saveGartler">Speichern</paper-button>
-                        </div>
+                            </paper-input>
+                            <paper-input class="labelgroup" always-float-label label="Fläche"
+                                value="{{gartler.FLAECHE}}"></paper-input>
                     </div>
-                    <div class="mcard">
-                        <div class="cardcontent">
-                            <paper-textarea label="Bemerkungen" value="{{gartler.BEMERKUNGEN}}"></paper-textarea>
-                        </div>
-                    </div> -->
+                </div>
+        </div>
+        <div class="mcard layout vertical ">
+            <p class="cardtitle">
+                Pächterdaten
+            </p>
+            <div class="cardcontent">
+                <div class="layout vertical">
+                    <div class="flex-container ">
+                        <paper-input class="labelgroup" always-float-label label="Geburtsdatum"
+                            value="{{gartler.GEBURTSDATUM}}"></paper-input>
+                        <paper-input class="labelgroup" always-float-label label="Anrede" value="{{gartler.ANREDE}}">
+                        </paper-input>
+                    </div>
+                    <div class="flex-container ">
+                        <paper-input class="labelgroup" always-float-label label="Vorname" value="{{gartler.VORNAME}}">
+                        </paper-input>
+                        <paper-input class="labelgroup" always-float-label label="Name" value="{{gartler.NACHNAME}}">
+                        </paper-input>
+                    </div>
+                    <div class="flex-container ">
+                        <paper-input class="labelgroup" always-float-label label="Strasse" value="{{gartler.STRASSE}}">
+                        </paper-input>
+                        <paper-input class="labelgroup" always-float-label label="Hausnummer"
+                            value="{{gartler.HAUSNUMMER}}"></paper-input>
+                    </div>
+                    <div class="flex-container ">
+                        <paper-input class="labelgroup" always-float-label label="PLZ" value="{{gartler.PLZ}}">
+                        </paper-input>
+                        <paper-input class="labelgroup" always-float-label label="Ort" value="{{gartler.WOHNORT}}">
+                        </paper-input>
+                    </div>
+                </div>
             </div>
+        </div>
+        <div class="mcard layout vertical">
+            <p class="cardtitle">
+                Kontaktdaten
+            </p>
+            <div class="cardcontent">
+                <div class="layout vertical">
+                    <paper-input class="labelgroup" always-float-label label="Telefon" value="{{gartler.TELEFON}}">
+                    </paper-input>
+                    <paper-input class="labelgroup" always-float-label label="E-Mail" value="{{gartler.EMAIL}}">
+                    </paper-input>
+                </div>
+            </div>
+        </div>
+        <div class="mcard layout vertical justified">
+            <paper-button disabled="[[_originalEqualThisGartler(originalGartler.*, gartler.*)]]" bottom raised
+                on-click="_resetGartler">Zurücksetzen</paper-button>
+            <paper-button disabled="[[_originalEqualThisGartler(originalGartler.*, gartler.*)]]" bottom raised
+                on-click="_saveGartler">Speichern</paper-button>
+        </div>
+        </div>
+        <div class="mcard">
+            <div class="cardcontent">
+                <paper-textarea label="Bemerkungen" value="{{gartler.BEMERKUNGEN}}"></paper-textarea>
+            </div>
+        </div> -->
+
 
     </template>
 
@@ -201,7 +229,14 @@ Pagination Element for Vaadin-Grid Tables
                 let nrOfF = this.colConf.columns.filter((c) => {
                     return c.gruppe === gname;
                 })
-                return initialClass + ((nrOfF.length > 4) ? ' dubble_wide' : '');
+                return ((nrOfF.length > 4) ? 'mfcontainer dubble_wide' : initialClass);
+            }
+
+            _getPIClass(gname, fieldindex) {
+                let nrOfF = this.colConf.columns.filter((c) => {
+                    return c.gruppe === gname;
+                })
+                return (((nrOfF.length > 4) && (fieldindex !== (nrOfF.length - 1) && fieldindex % 2 !== 0)) ? 'break' : 'nix')
             }
 
             _changeThisField(e) {
