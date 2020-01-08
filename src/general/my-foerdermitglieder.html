@@ -84,7 +84,7 @@
         <grt-sand-clock id="sandhour"></grt-sand-clock>
         <div>
             <div class="toolbar layout horizontal justified" flex>
-                <template is="dom-if" if="[[spaltenConf.length]]">
+                <template is="dom-if" if="[[spaltenConf.columns.length]]">
                     <grt-grid-pagination id="pagesss" datalength="[[mvdata.length]]" page-size="{{pageSize}}"
                         pstart="{{_pageStart}}" on-pagechanged="changePage" style-domain="first-domain">
                     </grt-grid-pagination>
@@ -108,7 +108,7 @@
                                 <paper-checkbox on-change="_checkAll" checked="[[_areAllSelected(mvdata.*)]]">
                                 </paper-checkbox>
                             </th>
-                            <template is="dom-repeat" items="[[spaltenConf]]" as="sc1">
+                            <template is="dom-repeat" items="[[spaltenConf.columns]]" as="sc1">
                                 <template is="dom-if" if="[[sc1.th_show]]">
                                     <th>
                                     <column-sorter id="[[sc1.colname]]" colname="[[sc1.alias]]"
@@ -128,7 +128,7 @@
                                             id="[[getGridElementID(index, _pageStart, 'scb')]]" on-change="_checkOne"
                                             checked="[[_isItemSelected(_pageStart, index, mvdata.*)]]"></paper-checkbox>
                                     </td>
-                                    <template is="dom-repeat" items="[[spaltenConf]]" as="sc2">
+                                    <template is="dom-repeat" items="[[spaltenConf.columns]]" as="sc2">
                                         <template is="dom-if" if="[[sc2.th_show]]">
                                             <td>[[_getFmData(fm, sc2.colname)]]</td>
                                         </template>
@@ -388,7 +388,7 @@
             }
 
             _spaltenConfReady() {
-                if (this.spaltenConf && this.spaltenConf.length) {
+                if (this.spaltenConf && this.spaltenConf.columns && this.spaltenConf.columns.length) {
                     this.$.firstclient.getAsJSON('foerdermitglieder').then((resp) => {
                         if (resp) {
                             this.splitToObjects(resp).finally(() => {
@@ -450,10 +450,10 @@
 
             _loadColumnConfigThenData() {
                 this.$.bclient.getDomaenenColumnConfig('foerdermitglieder').then((domConf) => {
-                    if (!domConf) {
+                    if (!domConf || !domConf.columns || !Array.isArray(domConf.columns)) {
                         throw 'nicht gefunden';
                     } else {
-                        domConf.sort((a, b) => {
+                        domConf.columns.sort((a, b) => {
                             return (a.th_show && a.postion && !isNaN(a.position) && b.th_show && b.position && !isNaN(b.position) && parseInt(a.position) < parseInt(b.position) ? 1 : -1)
                         })
                         console.warn('conf ist' + JSON.stringify(domConf))
@@ -462,7 +462,7 @@
                     }
 
                 }).catch((err) => {
-                    this._defaultColumnConf.sort((a, b) => {
+                    this._defaultColumnConf.columns.sort((a, b) => {
                         return (a.th_show && a.postion && !isNaN(a.position) && b.th_show && b.position && !isNaN(b.position) && parseInt(a.position) < parseInt(b.position) ? 1 : -1)
                     })
                     console.warn('default conf ist' + JSON.stringify(this._defaultColumnConf))

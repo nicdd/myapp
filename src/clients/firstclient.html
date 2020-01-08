@@ -216,7 +216,20 @@
                 }
             }
 
+            exportFoerdermitgliederAsCSV(fms, destination) {
+                let self = this;
+                let asCSV = self.mapFMsToCSV(fms);
+                if (destination === "server") {
+                    return self.postAsCSV(asCSV, 'foerdermitglieder');
+                } else if (destination === "lokal") {
+                    return self._saveLokalAsCSV(asCSV, "foerdermitglieder_");
+                } else {
+                    return self.postAsCSV(asCSV, 'foerdermitglieder');
+                }
+            }
+
             _saveLokalAsCSV(asCSV, saveWas) {
+                debugger;
                 let nowMoment = moment().format('YYYYMMDD_HHmm')
                 let blob = new Blob([asCSV], { type: "text/csv;charset=utf-8" });
                 saveAs(blob, saveWas + nowMoment + ".csv")
@@ -234,6 +247,36 @@
                         if (d.hasOwnProperty(key)) {
                             myDataArray.push(String(d[key]));
 
+                        }
+                    }
+                    myForCSVArray.push(myDataArray);
+                })
+
+                let paL = myForCSVArray;
+                let toSave = '';
+                paL.forEach((rowArr, idx) => {
+                    if (idx !== 0) {
+                        toSave += '\n';
+                    }
+                    let strRow = rowArr.join(',');
+                    toSave += strRow;
+
+                })
+                return toSave;
+            }
+
+            mapFMsToCSV(data) {
+                let myForCSVArray = [];
+                let cols = [];
+                data.columns.forEach((col)=>{
+                    cols.push(col.alias)
+                })
+                myForCSVArray.push(cols);
+                data.data.forEach((d) => {
+                    let myDataArray = [];
+                    for (var key in d) {
+                        if (d.hasOwnProperty(key)) {
+                            myDataArray.push(String(d[key]));
                         }
                     }
                     myForCSVArray.push(myDataArray);
