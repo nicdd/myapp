@@ -1,0 +1,316 @@
+<!--
+Pagination Element for Vaadin-Grid Tables
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../shared-styles.html">
+
+<dom-module id="grt-member">
+    <template>
+        <style include="shared-styles">
+            :host {
+                flex: 1;
+                /* Make a flex column layout of children */
+                display: flex;
+                flex-direction: column;
+                overflow: auto;
+            }
+
+            .cardtitle {
+                padding: 0px 16px 16px 16px;
+            }
+
+            .flex-container {
+                /* We first create a flex layout context */
+                display: flex;
+
+                /* Then we define the flow direction 
+     and if we allow the items to wrap 
+   * Remember this is the same as:
+   * flex-direction: row;
+   * flex-wrap: wrap;
+   */flex-direction: row;
+                flex-wrap: wrap;
+
+                /* Then we define how is distributed the remaining space */
+
+            }
+
+            .mfcontainer {
+                display: flex;
+                flex-wrap: wrap;
+            }
+
+            .dubble_wide {
+                width: 453px;
+            }
+        </style>
+
+
+        <div class="flex-container ">
+            <div class="flex-container">
+                <template is="dom-repeat" items="[[colConf.column_groups]]" as="gname" index-as="groupindex">
+                    <div class$="[[_getGroupClass('mcard layout vertical', gname)]]">
+                        <p class="cardtitle">
+                            [[gname]]
+                        </p>
+                        <div class="cardcontent">
+                            <div>
+                                <div>
+                                    <template is="dom-repeat" items="[[_getDataFor(gname)]]" as="field">
+                                        <paper-input id="[[field.colname]]" class="labelgroup"
+                                            style="display:inline-block;" always-float-label label="{{field.alias]]" 
+                                        value="[[_getData(gartler, field.colname)]]" on-input="_changeThisField"></paper-input>
+                                    </template>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+                <div class="mcard layout vertical justified">
+                    <paper-button disabled="[[_originalEqualThisGartler(originalGartler.*, gartler.*)]]" bottom
+                        raised on-click="_resetGartler">Zurücksetzen</paper-button>
+                    <paper-button disabled="[[_originalEqualThisGartler(originalGartler.*, gartler.*)]]" bottom
+                        raised on-click="_saveGartler">Speichern</paper-button>
+                </div>
+                
+                <!-- <div class="mcard layout vertical">
+                    <p class="cardtitle">
+                        Gartendaten
+                    </p>
+                    <div class="cardcontent">
+                        <div class="layout vertical">
+                            <paper-input class="labelgroup" always-float-label label="Gartennummer" disabled
+                                value="{{gartler.GARTENNUMMER]]"></paper-input>
+                            <paper-input class="labelgroup" always-float-label label="Weg"
+                                value="{{gartler.WEG}}">
+                                        </paper-input>
+                                        <paper-input class="labelgroup" always-float-label label="Fläche"
+                                            value="{{gartler.FLAECHE}}"></paper-input>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mcard layout vertical ">
+                            <p class="cardtitle">
+                                Pächterdaten
+                            </p>
+                            <div class="cardcontent">
+                                <div class="layout vertical">
+                                    <div class="flex-container ">
+                                        <paper-input class="labelgroup" always-float-label label="Geburtsdatum"
+                                            value="{{gartler.GEBURTSDATUM}}"></paper-input>
+                                        <paper-input class="labelgroup" always-float-label label="Anrede"
+                                            value="{{gartler.ANREDE}}"></paper-input>
+                                    </div>
+                                    <div class="flex-container ">
+                                        <paper-input class="labelgroup" always-float-label label="Vorname"
+                                            value="{{gartler.VORNAME}}"></paper-input>
+                                        <paper-input class="labelgroup" always-float-label label="Name"
+                                            value="{{gartler.NACHNAME}}"></paper-input>
+                                    </div>
+                                    <div class="flex-container ">
+                                        <paper-input class="labelgroup" always-float-label label="Strasse"
+                                            value="{{gartler.STRASSE}}"></paper-input>
+                                        <paper-input class="labelgroup" always-float-label label="Hausnummer"
+                                            value="{{gartler.HAUSNUMMER}}"></paper-input>
+                                    </div>
+                                    <div class="flex-container ">
+                                        <paper-input class="labelgroup" always-float-label label="PLZ"
+                                            value="{{gartler.PLZ}}">
+                                        </paper-input>
+                                        <paper-input class="labelgroup" always-float-label label="Ort"
+                                            value="{{gartler.WOHNORT}}">
+                                        </paper-input>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mcard layout vertical">
+                            <p class="cardtitle">
+                                Kontaktdaten
+                            </p>
+                            <div class="cardcontent">
+                                <div class="layout vertical">
+                                    <paper-input class="labelgroup" always-float-label label="Telefon"
+                                        value="{{gartler.TELEFON}}"></paper-input>
+                                    <paper-input class="labelgroup" always-float-label label="E-Mail"
+                                        value="{{gartler.EMAIL}}"></paper-input>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mcard layout vertical justified">
+                            <paper-button disabled="[[_originalEqualThisGartler(originalGartler.*, gartler.*)]]" bottom
+                                raised on-click="_resetGartler">Zurücksetzen</paper-button>
+                            <paper-button disabled="[[_originalEqualThisGartler(originalGartler.*, gartler.*)]]" bottom
+                                raised on-click="_saveGartler">Speichern</paper-button>
+                        </div>
+                    </div>
+                    <div class="mcard">
+                        <div class="cardcontent">
+                            <paper-textarea label="Bemerkungen" value="{{gartler.BEMERKUNGEN}}"></paper-textarea>
+                        </div>
+                    </div> -->
+            </div>
+
+    </template>
+
+    <script>
+        class GrtMember extends Polymer.Element {
+            static get is() { return 'grt-member'; }
+
+            static get properties() {
+                return {
+
+                    id: String,
+                    gartler: {
+                        type: Object,
+                        observer: "_gartlerChanged"
+                    },
+
+                    originalGartler: {
+                        type: Object
+                    },
+
+                    pendingEvents: {
+                        type: Array,
+                        value: []
+                    },
+
+                    succesfulledEvents: {
+                        type: Array,
+                        value: []
+                    },
+
+                    colConf: {
+                        type: Object,
+                    }
+                }
+            }
+
+            static get observers() {
+                return [
+                    'succesfulledEventsChanged(succesfulledEvents.*)'
+                ];
+            }
+
+            _getGroupClass(initialClass, gname) {
+                let nrOfF = this.colConf.columns.filter((c) => {
+                    return c.gruppe === gname;
+                })
+                return initialClass + ((nrOfF.length > 4) ? ' dubble_wide' : '');
+            }
+
+            _changeThisField(e) {
+                if (e && e.target && e.target.id) {
+                    let path = 'gartler.' + e.target.id;
+                    this.set(path, e.target.value);
+                    console.warn('e.type' + e.target.value);
+                }
+            }
+
+            getgartler() {
+                return JSON.stringify(this.gartler)
+            }
+
+            _getDataFor(gname) {
+                console.warn('gname' + gname)
+                let toLoadingFields = [];
+                toLoadingFields = this.colConf.columns.filter((c) => {
+                    return c.gruppe === gname;
+                });
+
+                toLoadingFields.sort((a, b) => {
+                    ((parseInt(a.group_position) || 0) < (parseInt(a.group_position)) ? 1 : -1);
+                });
+
+                let fieldsData = [];
+
+                toLoadingFields.forEach((spalte) => {
+                    fieldsData.push({ "alias": spalte.alias, "colname": spalte.colname })
+                })
+                console.warn('fieldsData' + JSON.stringify(fieldsData))
+                return fieldsData;
+            }
+
+            _getData(gartler, colname) {
+                return gartler[colname];
+            }
+
+            pushSuccesfullEvent(evName) {
+                this.push('succesfulledEvents', evName + '_' + this.id);
+                if (evName === 'savegartler') {
+                    this.set("originalGartler", JSON.parse(JSON.stringify(this.gartler)))
+                }
+            }
+
+            _gartlerChanged(newV, oldV) {
+                if (newV && !oldV) {
+                    this.set("originalGartler", JSON.parse(JSON.stringify(newV)))
+                }
+            }
+
+            _originalEqualThisGartler() {
+                let response = _.isEqual(this.originalGartler, this.gartler);
+                return response
+            }
+
+            _resetGartler() {
+                this.set("gartler", JSON.parse(JSON.stringify(this.originalGartler)))
+            }
+
+            _saveGartler() {
+                let diff = null;
+                let logdata = null;
+                try {
+                    let actualGartler = JSON.parse(JSON.stringify(this.gartler));
+                    delete actualGartler['_history'];
+                    diff = this.difference(actualGartler, this.originalGartler);
+                    if (diff) {
+                        logdata = { diff: diff, type: 'UPDATE' }
+                    }
+                } catch (fehler) {
+                    console.warn('grt-member - Die Logdataen für _saveGartler:' + JSON.stringify(this.gartler) + ' konnten nicht ERSTELLT werden')
+                }
+                this.push('pendingEvents', 'savegartler' + "_" + this.id)
+                this.dispatchEvent(new CustomEvent('savegartler', { detail: { data: JSON.parse(JSON.stringify(this.gartler)), index: this.id.substring(4), logdata: logdata } }))
+            }
+
+            succesfulledEventsChanged(change) {
+                if (change && change.value && Array.isArray(change.value.indexSplices)) {
+                    let idx = change.value.indexSplices.length - 1;
+                    while (idx >= 0) {
+                        let spliced = change.value.indexSplices[idx];
+                        if (spliced.type === 'splice' && parseInt(spliced.addedCount)) {
+                            for (let i = 0; i < parseInt(spliced.addedCount); i++) {
+                                let pendingEntry = this.pendingEvents.find((el) => el === spliced.object[spliced.index]);
+                                if (pendingEntry === 0 || pendingEntry) {
+                                    this.splice('pendingEvents', pendingEntry, 1);
+                                }
+                            }
+                        }
+                        this.splice('succesfulledEvents', idx, 1)
+                        idx -= 1;
+                    }
+                }
+            }
+
+            difference(object, base) {
+                function changes(object, base) {
+                    return _.transform(object, function (result, value, key) {
+                        if (!_.isEqual(value, base[key])) {
+                            result[key] = (_.isObject(value) && _.isObject(base[key])) ? changes(value, base[key]) : { before: base[key], after: value };
+                        }
+                    });
+                }
+                return changes(object, base);
+            }
+
+        }
+
+        window.customElements.define(GrtMember.is, GrtMember);
+    </script>
+</dom-module>

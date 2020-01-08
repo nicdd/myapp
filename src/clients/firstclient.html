@@ -1,5 +1,6 @@
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="rest-client.html">
+<script src="../../bower_components/file-saver/dist/FileSaver.min.js"></script>
 
 <dom-module id="first-client">
     <script>
@@ -229,7 +230,6 @@
             }
 
             _saveLokalAsCSV(asCSV, saveWas) {
-                debugger;
                 let nowMoment = moment().format('YYYYMMDD_HHmm')
                 let blob = new Blob([asCSV], { type: "text/csv;charset=utf-8" });
                 saveAs(blob, saveWas + nowMoment + ".csv")

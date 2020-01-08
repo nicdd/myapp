@@ -15,7 +15,7 @@
 <link rel="import" href="../utils/apps-dialog.html">
 <link rel="import" href="../utils/column-sorter.html">
 <link rel="import" href="../utils/grt-sand-clock.html">
-<link rel="import" href="../utils/grt-gartler.html">
+<link rel="import" href="../utils/grt-member.html">
 <link rel="import" href="../utils/grt-gartler-history.html">
 
 <dom-module id="my-foerdermitglieder">
@@ -33,6 +33,7 @@
                 background-color: var(--my-yellow-background);
                 padding: var(--content-padding);
             }
+            
 
             .toolbar {
                 /* height: 40px; */
@@ -137,107 +138,21 @@
                                     <td class="button">
                                         <button id="bto[[fm]]" on-click="_openDetails"
                                             class="first-domain-endpagebutton action-button">
-                                            <iron-icon id="cro[[item.GARTENNUMMER]]"
-                                                icon="[[getIcon(item._detailsOpened)]]" slot="item-icon"
+                                            <iron-icon id="cro[[fm.AUFNAHMEDATUM]]"
+                                                icon="[[getIcon(fm._detailsOpened)]]" slot="item-icon"
                                                 on-click="_openDetails"></iron-icon>
                                         </button>
                                     </td>
                                     <td class="button">
-                                        <button id="btr[[item.GARTENNUMMER]]" on-click="_confirmRemove"
+                                        <button id="btr[[fm.AUFNAHMEDATUM]]" on-click="_confirmRemove"
                                             class="first-domain-endpagebutton action-button"
-                                            disabled="[[item._detailsOpened]]">
-                                            <iron-icon id="rmi[[item.GARTENNUMMER]]-[[index]]" icon="delete"
+                                            disabled="[[fm._detailsOpened]]">
+                                            <iron-icon id="rmi[[fm.AUFNAHMEDATUM]]-[[index]]" icon="delete"
                                                 slot="item-icon" on-click="_confirmRemove"></iron-icon>
                                         </button>
                                     </td>
                                 </tr>
-                                <!-- <template is="dom-if" if="[[item._detailsOpened]]">
-                                    <tr class="details">
-                                        <td colspan="13" class="no-padding">
-                                            <iron-collapse-button expand-icon="add-circle-outline"
-                                                collapse-icon="remove-circle-outline"
-                                                class="detailelement light-element flex" opened>
-                                                <div slot="collapse-trigger" class="flex">
-                                                    <span>Pachtvertragsdaten</span>
-                                                </div>
-                                                <div slot="collapse-content" class="corrected-margin">
-                                                    <div class="mcard strong-text-color">
-                                                        <div class="layout horizontal">
-                                                            <table width="25%">
-                                                                <thead>
-                                                                    <th colspan="2">Garten</th>
-                                                                </thead>
-                                                                <tbody>
-                                                                    <tr>
-                                                                        <td>[[columnNames.0]]</td>
-                                                                        <td>[[item.GARTENNUMMER]]</td>
-                                                                    </tr>
-                                                                    <tr>
-                                                                        <td>[[columnNames.22]]</td>
-                                                                        <td>[[item.WEG]]</td>
-                                                                    </tr>
-                                                                    <tr>
-                                                                        <td>[[columnNames.9]]</td>
-                                                                        <td>[[item.FLAECHE]]</td>
-                                                                    </tr>
-                                                                </tbody>
-                                                            </table>
-                                                            <table width="25%">
-                                                                <thead>
-                                                                    <th colspan="2">Anschrift</th>
-                                                                </thead>
-                                                                <tbody>
-                                                                    <tr>
-                                                                        <td>Name</td>
-                                                                        <td>[[item.ANREDE]] [[item.VORNAME]]
-                                                                            [[item.NACHNAME]]</td>
-                                                                    </tr>
-                                                                    <tr>
-                                                                        <td>[[columnNames.5]]</td>
-                                                                        <td>[[item.STRASSE]]</td>
-                                                                    </tr>
-                                                                    <tr>
-                                                                        <td>[[columnNames.8]]</td>
-                                                                        <td>[[item.PLZ]] [[item.WOHNORT]]</td>
-                                                                    </tr>
-                                                                </tbody>
-                                                            </table>
-                                                            <table width="25%">
-                                                                <thead>
-                                                                    <th colspan="2">Kontakt</th>
-                                                                </thead>
-                                                                <tbody>
-                                                                    <tr>
-                                                                        <td>[[columnNames.10]]</td>
-                                                                        <td><a
-                                                                                href="tel:[[item.TELEFON]]">[[item.TELEFON]]</a>
-                                                                        </td>
-                                                                    </tr>
-                                                                    <tr>
-                                                                        <td>[[columnNames.11]]</td>
-                                                                        <td><a
-                                                                                href="mailto:[[item.EMAIL]]">[[item.EMAIL]]</a>
-                                                                        </td>
-                                                                    </tr>
-                                                                </tbody>
-                                                            </table>
-                                                            <table width="25%">
-                                                                <thead>
-                                                                    <th colspan="2">Details</th>
-                                                                </thead>
-                                                                <tbody>
-                                                                    <tr>
-                                                                        <td>[[columnNames.4]]</td>
-                                                                        <td>[[item.GEBURTSDATUM]]</td>
-                                                                    </tr>
-                                                                </tbody>
-                                                            </table>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </iron-collapse-button>
-                                        </td>
-                                    </tr>
+                                <template is="dom-if" if="[[fm._detailsOpened]]">
                                     <tr class="details">
                                         <td colspan="13" class="no-padding">
                                             <iron-collapse-button expand-icon="add-circle-outline"
@@ -250,16 +165,18 @@
                                                 </div>
                                                 <div slot="collapse-content" class="corrected-margin">
                                                     <div class="mcard strong-text-color">
-                                                        <grt-gartler id="grtl[[index]]" gartler="[[item]]"
+                                                        <grt-member id="grtl[[index]]" gartler="[[fm]]" col-conf="[[spaltenConf]]"
                                                             on-savegartler="_postOneFM">
                                                             <h4 slot="title">Fördermitglied</h4>>
-                                                        </grt-gartler>
+                                                        </grt-member>
 
                                                     </div>
                                                 </div>
                                             </iron-collapse-button>
                                         </td>
                                     </tr>
+                                </template>
+                                    <!--
                                     <tr class="details">
                                         <td colspan="13" class="no-padding">
                                             <iron-collapse-button id="history_clps[[index]]"
@@ -282,7 +199,8 @@
                                             </iron-collapse-button>
                                         </td>
                                     </tr>
-                                </template> -->
+                                    -->
+                                
                             </template>
                         </tbody>
                     </table>
@@ -472,8 +390,8 @@
             }
 
             _openDetails(e) {
-                e.model.set("item._detailsOpened", !e.model.item._detailsOpened);
-                if (e.model.item._detailsOpened) {
+                e.model.set("fm._detailsOpened", !e.model.fm._detailsOpened);
+                if (e.model.fm._detailsOpened) {
                     this.push('openeddetails', true);
                 } else {
                     this.shift('openeddetails');
@@ -681,7 +599,7 @@
             }
 
             exportFoerdermitglieder(e) {
-                let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
+                let dataAndColumns = { data: this.mvdata, columns: this.spaltenConf.columns }
                 this.$.firstclient.exportFoerdermitgliederAsCSV(dataAndColumns, e.detail).then((savePath) => {
                     if (savePath && savePath.path) {
                         this.$.grtinfodialog.showDialog(
