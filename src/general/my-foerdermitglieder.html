@@ -175,8 +175,6 @@
                                             </iron-collapse-button>
                                         </td>
                                     </tr>
-                                </template>
-                                    <!--
                                     <tr class="details">
                                         <td colspan="13" class="no-padding">
                                             <iron-collapse-button id="history_clps[[index]]"
@@ -190,7 +188,7 @@
                                                 <div slot="collapse-content" class="corrected-margin">
                                                     <div class="mcard strong-text-color">
                                                         <grt-gartler-history id="history[[index]]"
-                                                            garten="[[item.GARTENNUMMER]]">
+                                                            garten="[[fm.AUFNAHMEDATUM]]" domain="foerdermitglieder">
                                                             <h4 slot="title">Fördermitglied</h4>
                                                         </grt-gartler-history>
 
@@ -199,7 +197,9 @@
                                             </iron-collapse-button>
                                         </td>
                                     </tr>
-                                    -->
+                                </template>
+                                    
+                                    
                                 
                             </template>
                         </tbody>
@@ -271,11 +271,6 @@
                         type: Boolean,
                         value: false,
                         observer: '_activeChanged',
-                    },
-
-                    columnNames: {
-                        type: Array,
-                        value: []
                     },
 
                     openeddetails: {
@@ -506,15 +501,10 @@
                         }
                         return 1;
                     });
-
                     self.set('mvdata', records);
                     self.changePage();
                 }
             }
-
-
-
-
 
             changePage() {
                 if (this._pageStart || this._pageStart === 0) {
@@ -526,12 +516,10 @@
             }
 
             splitToObjects(resp) {
-                let foerdermitgliederData = resp.data;
-                //let columns = resp.columns;
+                let foerdermitgliederData = resp;
                 let promises = [];
 
                 return Promise.all(promises).then(() => {
-                    // this.set('columnNames', columns);
                     this.set('mvdata', foerdermitgliederData);
                     this.set('pageSize', parseInt(10));
                 })
@@ -646,7 +634,7 @@
                         this._insertChangedFoerdermitglied(e);
                         if (this.logg) {
                             let historyID = "history" + mid.substring(4);
-                            this.$[historyID].postLogData(toSave, e.detail.logdata, 'foerdermitglieder');
+                            this.$[historyID].postLogData(toSave, e.detail.logdata);
                         }
                         showToast(this, 'Die Änderungen des Fördermitglieders wurden erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
                     }).catch((error) => {
@@ -664,9 +652,8 @@
                         })
 
                 } else {
-                    let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
                     this.$.sandhour.showDialog();
-                    this.$.firstclient.postAsJSON(dataAndColumns, 'foerdermitglieder').then(() => {
+                    this.$.firstclient.postAsJSON(this.mvdata, 'foerdermitglieder').then(() => {
                         console.log('foerdermitglieder gespeichert')
                         showToast(this, 'Die Foerdermitglieder wurden erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
                     }).catch(() => {

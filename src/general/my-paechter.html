@@ -319,7 +319,7 @@
                                                 </div>
                                                 <div slot="collapse-content" class="corrected-margin">
                                                     <div class="mcard strong-text-color">
-                                                        <grt-gartler-history id="history[[index]]" garten="[[item.GARTENNUMMER]]">
+                                                        <grt-gartler-history id="history[[index]]" garten="[[item.GARTENNUMMER]]" domain="paechter">
                                                             <h4 slot="title">Pächter</h4>
                                                         </grt-gartler-history>
 
@@ -724,7 +724,7 @@
                         this._insertChangedPaechter(e);
                         if (this.logg){
                             let historyID = "history" + mid.substring(4);
-                            this.$[historyID].postLogData(toSave, e.detail.logdata, 'paechter');
+                            this.$[historyID].postLogData(toSave, e.detail.logdata);
                         }
                         showToast(this, 'Die Änderungen des Pächters wurden erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
                     }).catch((error) => {

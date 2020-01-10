@@ -170,7 +170,7 @@
                   </td>
                   <td class="contentcol">
                     <grt-dropdown-input id="ctg[[index]]" class="gosdd" items="[[spaltenConf.column_groups]]"
-                      selected="{{spaltenConf.columns.index.gruppe}}" on-iron-select="_doOnSelectGruppe" required
+                      selected="{{item.gruppe}}" on-iron-select="_doOnSelectGruppe" required
                       error-message="Spaltengruppe darf nicht leer sein">
                     </grt-dropdown-input>
                   </td>
@@ -379,13 +379,12 @@
           firstArr.forEach((el, zIdx) => {
             secondArray = el.split(',');
             let thirdArray = [];
-            for (let i = 0; i < secondArray.length - 1; i++) {
+            for (let i = 0; i < secondArray.length; i++) {
               if (secondArray[i].startsWith('"') && !(secondArray[i].length > 1 && secondArray[i].endsWith('"'))) {
                 let indexOfLastFalsyKomaSplited = null;
                 let k = i + 1;
                 while (!indexOfLastFalsyKomaSplited && k < secondArray.length) {
                   if (secondArray[k].endsWith('"') && !(secondArray[k].length > 1 && secondArray[k].startsWith('"'))) {
-                    console.warn('zidx: ' + zIdx + ' startswith gf sa-i: ' + i + ' => ' + secondArray[i] + ' endswith gf sA-k: ' + k + ' => ' + secondArray[k])
                     indexOfLastFalsyKomaSplited = k;
                   }
                   k++;
@@ -415,6 +414,7 @@
             }
             finalArray.push(thirdArray);
           })
+          
           this._importLocalFoerdermitgliederPressed(finalArray);
         }
       }
@@ -424,7 +424,6 @@
           if (!domConf) {
             throw 'nicht gefunden';
           } else {
-            console.warn('configNow:' + JSON.stringify(domConf))
             this._initData(domConf, localFoerdermitgliederFromCSVAsArray);
             showToast(this, 'Die domänenspezifische Spaltenkonfiguration wurde erfolgreich geladen', TOAST_TYPE.SUCCESS);
           }
@@ -518,10 +517,7 @@
       // Speichern
 
       _mergeImportedAndSave() {
-        let columns = [];
-        this.spaltenConf.columns.forEach((col) => {
-          columns.push(col.alias);
-        })
+        
         let data = JSON.parse(JSON.stringify(this.dataAndColumns.data));
         let newData = [];
         data.forEach((foerdermitgliedData) => {
@@ -536,8 +532,7 @@
           newData.push(newFoerdermitglied);
         })
         newData = this._makeUnicIds(newData);
-        let newDataAndColumns = { data: newData, columns: columns }
-        this.saveToDB(newDataAndColumns).then(() => {
+        this.saveToDB(newData).then(() => {
           showToast(this, 'Sie haben die Daten erfolgreich importiert.', TOAST_TYPE.SUCCESS);
           this.set('completed', true)
         }).catch(() => {
@@ -675,7 +670,6 @@
         if (e.target) {
           let idPrefix = e.target.id.substring(0, 3);
           let idSuffix = parseInt(e.target.id.substring(3));
-          console.warn('idpref:' + idPrefix + 'e.type' + e.type + 'idsuf:' + idSuffix)
           let iterateOverData, iterateOverElements;
           if (idPrefix === 'pos') {
             keyToSearch = 'position';
@@ -719,7 +713,6 @@
         let patternSuffix = ')$)[1-9]\\d{0,2}$';
         let blackList = '';
         let mId = idPrefix + ignoreIdx;
-        //let elem = this.shadowRoot.getElementById(mId);
         if (iterateOverData && Array.isArray(iterateOverData)) {
           iterateOverData.forEach((spalte, idx) => {
             // setze NICHT den Wert des Aufrufenden Elements in die Pattern-Black-List
@@ -730,11 +723,8 @@
           })
         }
         let pt = (patternPrefix + blackList + patternSuffix)
-        console.warn('prohibited for Index' + ignoreIdx + JSON.stringify(blackList) + "pt" + pt)
         iterateOverElements[ignoreIdx].setAttribute("pattern", pt);
         iterateOverElements[ignoreIdx].validate();
-        //elem.setAttribute("pattern", pt);
-        //elem.validate();
       }
 
       _doOnSelect(e) {
@@ -844,23 +834,19 @@
       }
 
       _getMaxLengthGroupPos(idx, position, gruppe) {
-        console.warn('idx' + idx + ' position' + position + 'gruppe' + gruppe + ' this.spaltenConf.columns' + JSON.stringify(this.spaltenConf.columns))
         let allDDWithThisValue = this.spaltenConf.columns.filter((el) => {
           return el.gruppe === gruppe;
         });
         let toReturn = 999;
         // Trick um die Feldinvalidierung bei Eingaben über die Anzahl der Spalten zu erzwingen
         if (position > allDDWithThisValue.length || !this.spaltenConf.column_groups.some((gr) => gr === gruppe)) {
-          console.warn('0 wird returned denn allDDWithThisValue.length:' + allDDWithThisValue.length + ' pos:' + position)
           toReturn = 0;
         } else {
           let sClengthAsString = '' + allDDWithThisValue.length;
-          console.warn(sClengthAsString.length + ' wird returned')
           toReturn = sClengthAsString.length;
         }
         let gosElem = this.shadowRoot.getElementById(('gos' + idx));
         if (gosElem) {
-          console.warn('goselem gefunden')
           gosElem.setAttribute('maxlength', toReturn);
           gosElem.validate();
         }

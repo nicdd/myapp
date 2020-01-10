@@ -216,6 +216,10 @@ Pagination Element for Vaadin-Grid Tables
                         type: Number,
                         value: null,
                         observer: '_selHistoryChanged'
+                    },
+
+                    domain:{
+                        type: String
                     }
                 }
             }
@@ -274,18 +278,19 @@ Pagination Element for Vaadin-Grid Tables
                 }
             }
 
-            postLogData(newGartler, logdata, path){
-                this.$.firstclient.logdata(newGartler, logdata, path).then((resp)=>{
+            postLogData(newGartler, logdata){
+                this.$.firstclient.logdata(newGartler, logdata, this.domain).then((resp)=>{
                     this._loadHistory(this.history.id);
                 }).catch((error) => {
                     showToast(this, 'Fehler bei der Speicherung der History-Daten ', TOAST_TYPE.ERROR);
                 })
             }
 
-            _loadHistory(gartennummer){
-                if(gartennummer){
-                    this.$.firstclient.getHistoryFor(gartennummer).then((response)=>{
-                        this.set("history", response || {id:gartennummer, history:[]});
+            _loadHistory(ident){
+                console.warn('get hist for ' + ident)
+                if(ident){
+                    this.$.firstclient.getHistoryFor(this.domain, ident).then((response)=>{
+                        this.set("history", response || {id:ident, history:[]});
                     })
                 }
 

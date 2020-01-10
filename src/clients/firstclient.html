@@ -33,6 +33,11 @@
                                 port: '8000'
                             },
 
+                            LOGG_FOERDERMITGLIEDER_CHANGES: {
+                                path: '/api/loggs/foerdermitglieder',
+                                port: '8000'
+                            },
+
                             CSV_PAECHTER: {
                                 path: '/loadCSV/paechter',
                                 port: '8000'
@@ -345,11 +350,17 @@
             /**
              * Logging Changes
              */
-            getHistoryFor(ganr) {
+            getHistoryFor(domainName, ...params) {
                 let self = this;
-                let sourceURL = self._getSourceURL(self.URLS.LOGG_PAECHTER_CHANGES, ganr);
+                let urlInfo = null;
+                let getConfig = self._getRestGetConfig();
+                Object.keys(self.URLS).forEach((key) => {
+                    if (self.URLS[key].path.indexOf(domainName, 11) === 11) {
+                        urlInfo = self.URLS[key];
+                    }
+                })
 
-                let myRequest = new Request(sourceURL, self._getRestGetConfig());
+                let myRequest = new Request(self._getSourceURL(urlInfo, params), getConfig);
 
                 return fetch(myRequest).then((response) => {
                     if (response.status && response.status === 204) {
@@ -362,14 +373,21 @@
                     console.log('firstclient getHistoryFor antwortet' + JSON.stringify(data))
                     return Promise.resolve(data);
                 }).catch((err) => {
-                    console.log('getHistoryFor die Anfrage an api/loggs/paechter war nicht erfolgreich' + JSON.stringify(error));
+                    console.log('getHistoryFor die Anfrage an api/loggs/' + domainName +' war nicht erfolgreich' + JSON.stringify(error));
                     return Promise.reject(err);
                 });
             }
 
-            logdata(theOne, logdata, path) {
+            logdata(theOne, logdata, domainName) {
                 let self = this;
                 let usr = JSON.parse(document.querySelector('my-app').getAttribute('user'));
+                let urlInfo = null;
+                
+                Object.keys(self.URLS).forEach((key) => {
+                    if (self.URLS[key].path.indexOf(domainName, 11) === 11) {
+                        urlInfo = self.URLS[key];
+                    }
+                })
                 try {
                     if (logdata) {
                         logdata.data = theOne;
@@ -379,20 +397,24 @@
                 } catch (err) {
                     console.warn('nologgs')
                 }
-                let gNr, urlConf;
-                switch (path) {
+
+                let postConfig = self._getRestPostConfig();
+                postConfig.body = JSON.stringify(logdata);
+
+                let ident;
+                switch (domainName) {
                     case 'paechter':
-                        gNr = logdata.data.GARTENNUMMER;
-                        urlConf = self.URLS.LOGG_PAECHTER_CHANGES;
+                        ident = logdata.data.GARTENNUMMER;
+                        break;
+                    case 'foerdermitglieder':
+                        ident = logdata.data.AUFNAHMEDATUM;
                         break;
                     default:
                         break;
                 }
 
-                let postConfig = self._getRestPostConfig();
-                postConfig.body = JSON.stringify(logdata);
 
-                let myRequest = new Request(self._getSourceURL(urlConf, gNr), postConfig);
+                let myRequest = new Request(self._getSourceURL(urlInfo, ident), postConfig);
 
                 return fetch(myRequest).then((response) => {
                     if (!response.ok) {
@@ -402,7 +424,7 @@
                         return toRespond;
                     } else return undefined;
                 }).catch((err) => {
-                    console.warn('logging OnePaechter die Anfrage an' + self._getSourceURL(urlConf, gNr) + ' war nicht erfolgreich')
+                    console.warn('logging OnePaechter die Anfrage an' + self._getSourceURL(urlConf, ident) + ' war nicht erfolgreich')
                     return Promise.reject(err);
                 });
             }
