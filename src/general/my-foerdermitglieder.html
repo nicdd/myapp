@@ -165,7 +165,7 @@
                                                 </div>
                                                 <div slot="collapse-content" class="corrected-margin">
                                                     <div class="mcard strong-text-color">
-                                                        <grt-member id="grtl[[index]]" gartler="[[fm]]" col-conf="[[spaltenConf]]"
+                                                        <grt-member id="grtl[[_pageStart]]-[[index]]" gartler="[[fm]]" col-conf="[[spaltenConf]]"
                                                             on-savegartler="_postOneFM">
                                                             <h4 slot="title">Fördermitglied</h4>>
                                                         </grt-member>
@@ -177,7 +177,7 @@
                                     </tr>
                                     <tr class="details">
                                         <td colspan="13" class="no-padding">
-                                            <iron-collapse-button id="history_clps[[index]]"
+                                            <iron-collapse-button id="history_clps[[_pageStart]]-[[index]]"
                                                 expand-icon="add-circle-outline" collapse-icon="remove-circle-outline"
                                                 class="detailelement light-element flex">
                                                 <div slot="collapse-trigger" class="flex">
@@ -187,8 +187,8 @@
                                                 </div>
                                                 <div slot="collapse-content" class="corrected-margin">
                                                     <div class="mcard strong-text-color">
-                                                        <grt-gartler-history id="history[[index]]"
-                                                            garten="[[fm.AUFNAHMEDATUM]]" domain="foerdermitglieder">
+                                                        <grt-gartler-history id="history[[_pageStart]]-[[index]]"
+                                                            ident="[[fm.AUFNAHMEDATUM]]" domain="foerdermitglieder">
                                                             <h4 slot="title">Fördermitglied</h4>
                                                         </grt-gartler-history>
 
@@ -375,6 +375,7 @@
                     }
 
                 }).catch((err) => {
+                    console.warn('conf column  err' + err)
                     this._defaultColumnConf.columns.sort((a, b) => {
                         return (a.th_show && a.postion && !isNaN(a.position) && b.th_show && b.position && !isNaN(b.position) && parseInt(a.position) < parseInt(b.position) ? 1 : -1)
                     })

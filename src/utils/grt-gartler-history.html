@@ -205,7 +205,7 @@ Pagination Element for Vaadin-Grid Tables
             static get properties() {
                 return {
                     id: String,
-                    garten: {
+                    ident: {
                         type: String,
                         observer: '_loadHistory'
                     },
@@ -218,7 +218,7 @@ Pagination Element for Vaadin-Grid Tables
                         observer: '_selHistoryChanged'
                     },
 
-                    domain:{
+                    domain: {
                         type: String
                     }
                 }
@@ -254,15 +254,19 @@ Pagination Element for Vaadin-Grid Tables
             }
 
             _getArrayFrom(idx) {
+                console.warn('this.id' + this.id + ' idx' + idx + ' this.history' + JSON.stringify(this.history))
                 let result = [];
-                Object.keys(this.history.history[idx].diff).forEach((key) => {
-                    let newChange = {
-                        label: key,
-                        before: this.history.history[idx].diff[key].before,
-                        after: this.history.history[idx].diff[key].after
-                    }
-                    result.push(newChange);
-                })
+                if (!!this.history.history[idx]) {
+                    Object.keys(this.history.history[idx].diff).forEach((key) => {
+                        let newChange = {
+                            label: key,
+                            before: this.history.history[idx].diff[key].before,
+                            after: this.history.history[idx].diff[key].after
+                        }
+                        result.push(newChange);
+                    })
+                }
+
                 return result;
             }
 
@@ -270,27 +274,30 @@ Pagination Element for Vaadin-Grid Tables
                 return index === 0;
             }
 
-            _getDatum(datetime){
+            _getDatum(datetime) {
                 let mDateTime = moment(datetime, 'YYYYMMDD_HHmm');
 
-                if(mDateTime.isValid()){
+                if (mDateTime.isValid()) {
                     return moment(mDateTime).format('DD.MM.YYYY HH:mm')
                 }
             }
 
-            postLogData(newGartler, logdata){
-                this.$.firstclient.logdata(newGartler, logdata, this.domain).then((resp)=>{
-                    this._loadHistory(this.history.id);
+            postLogData(newGartler, logdata) {
+                this.$.firstclient.logdata(newGartler, logdata, this.domain, this.ident).then((resp) => {
+                    this._loadHistory();
                 }).catch((error) => {
                     showToast(this, 'Fehler bei der Speicherung der History-Daten ', TOAST_TYPE.ERROR);
                 })
             }
 
-            _loadHistory(ident){
-                console.warn('get hist for ' + ident)
-                if(ident){
-                    this.$.firstclient.getHistoryFor(this.domain, ident).then((response)=>{
-                        this.set("history", response || {id:ident, history:[]});
+            _loadHistory() {
+                if (this.ident) {
+                    this.$.firstclient.getHistoryFor(this.domain, this.ident).then((response) => {
+                        console.warn('then in getHIstory this.id' + this.id + 'this.ident' + this.ident + ' response' + JSON.stringify(response))
+
+                        this.set("history", response || { id: this.ident, history: [] });
+                    }).catch(() => {
+                        console.warn('catch in getHIstory this.id' + this.id)
                     })
                 }
 

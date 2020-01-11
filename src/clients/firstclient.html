@@ -378,7 +378,7 @@
                 });
             }
 
-            logdata(theOne, logdata, domainName) {
+            logdata(theOne, logdata, domainName, ident) {
                 let self = this;
                 let usr = JSON.parse(document.querySelector('my-app').getAttribute('user'));
                 let urlInfo = null;
@@ -400,19 +400,6 @@
 
                 let postConfig = self._getRestPostConfig();
                 postConfig.body = JSON.stringify(logdata);
-
-                let ident;
-                switch (domainName) {
-                    case 'paechter':
-                        ident = logdata.data.GARTENNUMMER;
-                        break;
-                    case 'foerdermitglieder':
-                        ident = logdata.data.AUFNAHMEDATUM;
-                        break;
-                    default:
-                        break;
-                }
-
 
                 let myRequest = new Request(self._getSourceURL(urlInfo, ident), postConfig);
 

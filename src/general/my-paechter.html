@@ -297,7 +297,7 @@
                                                 </div>
                                                 <div slot="collapse-content" class="corrected-margin">
                                                     <div class="mcard strong-text-color">
-                                                        <grt-gartler id="grtl[[index]]" gartler="[[item]]"
+                                                        <grt-gartler id="grtl[[_pageStart]]-[[index]]" gartler="[[item]]"
                                                             on-savegartler="_postOnePaechter">
                                                             <h4 slot="title">Pächter</h4>>
                                                         </grt-gartler>
@@ -309,7 +309,7 @@
                                     </tr>
                                     <tr class="details">
                                         <td colspan="13" class="no-padding">
-                                            <iron-collapse-button id="history_clps[[index]]" expand-icon="add-circle-outline"
+                                            <iron-collapse-button id="history_clps[[_pageStart]]-[[index]]" expand-icon="add-circle-outline"
                                                 collapse-icon="remove-circle-outline"
                                                 class="detailelement light-element flex">
                                                 <div slot="collapse-trigger" class="flex">
@@ -319,7 +319,7 @@
                                                 </div>
                                                 <div slot="collapse-content" class="corrected-margin">
                                                     <div class="mcard strong-text-color">
-                                                        <grt-gartler-history id="history[[index]]" garten="[[item.GARTENNUMMER]]" domain="paechter">
+                                                        <grt-gartler-history id="history[[_pageStart]]-[[index]]" ident="[[item.GARTENNUMMER]]" domain="paechter">
                                                             <h4 slot="title">Pächter</h4>
                                                         </grt-gartler-history>
 

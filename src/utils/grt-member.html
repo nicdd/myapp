@@ -90,7 +90,7 @@ Pagination Element for Vaadin-Grid Tables
                         <div class$="[[_getGroupClass('cardcontent', gname)]]">
                             <template is="dom-repeat" items="[[_getDataFor(gname)]]" as="field" index-as="fieldindex">
                                 <paper-input id="[[field.colname]]" class="mlabelgroup" always-float-label label="{{field.alias]]" 
-                        value="[[_getData(gartler, field.colname)]]" on-input="_changeThisField"></paper-input>
+                        value="[[_getData(gartlerCopy, field.colname)]]" on-input="_changeThisField"></paper-input>
                         <div class$="[[_getPIClass(gname, fieldindex)]]"></div>
                     </template>
                 </div>
@@ -99,9 +99,9 @@ Pagination Element for Vaadin-Grid Tables
     </div>
 
     <div class="mcard layout vertical justified">
-        <paper-button disabled="[[_originalEqualThisGartler(originalGartler.*, gartler.*)]]" bottom
+        <paper-button disabled="[[_originalEqualThisGartler(gartler.*, gartlerCopy.*)]]" bottom
             raised on-click="_resetGartler">Zurücksetzen</paper-button>
-        <paper-button disabled="[[_originalEqualThisGartler(originalGartler.*, gartler.*)]]" bottom
+        <paper-button disabled="[[_originalEqualThisGartler(gartler.*, gartlerCopy.*)]]" bottom
             raised on-click="_saveGartler">Speichern</paper-button>
     </div>
 </div>
@@ -204,7 +204,7 @@ Pagination Element for Vaadin-Grid Tables
                         observer: "_gartlerChanged"
                     },
 
-                    originalGartler: {
+                    gartlerCopy: {
                         type: Object
                     },
 
@@ -246,14 +246,10 @@ Pagination Element for Vaadin-Grid Tables
 
             _changeThisField(e) {
                 if (e && e.target && e.target.id) {
-                    let path = 'gartler.' + e.target.id;
+                    let path = 'gartlerCopy.' + e.target.id;
                     this.set(path, e.target.value);
                     console.warn('e.type' + e.target.value);
                 }
-            }
-
-            getgartler() {
-                return JSON.stringify(this.gartler)
             }
 
             _getDataFor(gname) {
@@ -276,47 +272,44 @@ Pagination Element for Vaadin-Grid Tables
                 return fieldsData;
             }
 
-            _getData(gartler, colname) {
-                return gartler[colname];
+            _getData(gartlerCopy, colname) {
+                return gartlerCopy[colname];
             }
 
             pushSuccesfullEvent(evName) {
                 this.push('succesfulledEvents', evName + '_' + this.id);
-                if (evName === 'savegartler') {
-                    this.set("originalGartler", JSON.parse(JSON.stringify(this.gartler)))
-                }
             }
 
-            _gartlerChanged(newV, oldV) {
-                if (newV && !oldV) {
-                    this.set("originalGartler", JSON.parse(JSON.stringify(newV)))
+            _gartlerChanged(newV) {
+                if (newV) {
+                    this.set("gartlerCopy", JSON.parse(JSON.stringify(newV)))
                 }
             }
 
             _originalEqualThisGartler() {
-                let response = _.isEqual(this.originalGartler, this.gartler);
+                let response = _.isEqual(this.gartler, this.gartlerCopy);
                 return response
             }
 
             _resetGartler() {
-                this.set("gartler", JSON.parse(JSON.stringify(this.originalGartler)))
+                this.set("gartlerCopy", JSON.parse(JSON.stringify(this.gartler)))
             }
 
             _saveGartler() {
                 let diff = null;
                 let logdata = null;
                 try {
-                    let actualGartler = JSON.parse(JSON.stringify(this.gartler));
+                    let actualGartler = JSON.parse(JSON.stringify(this.gartlerCopy));
                     delete actualGartler['_history'];
-                    diff = this.difference(actualGartler, this.originalGartler);
+                    diff = this.difference(actualGartler, this.gartler);
                     if (diff) {
                         logdata = { diff: diff, type: 'UPDATE' }
                     }
                 } catch (fehler) {
-                    console.warn('grt-member - Die Logdataen für _saveGartler:' + JSON.stringify(this.gartler) + ' konnten nicht ERSTELLT werden')
+                    console.warn('grt-member - Die Logdataen für _saveGartler:' + JSON.stringify(this.gartlerCopy) + ' konnten nicht ERSTELLT werden')
                 }
                 this.push('pendingEvents', 'savegartler' + "_" + this.id)
-                this.dispatchEvent(new CustomEvent('savegartler', { detail: { data: JSON.parse(JSON.stringify(this.gartler)), index: this.id.substring(4), logdata: logdata } }))
+                this.dispatchEvent(new CustomEvent('savegartler', { detail: { data: JSON.parse(JSON.stringify(this.gartlerCopy)), index: this.id.substring(this.id.lastIndexOf('-') + 1), logdata: logdata } }))
             }
 
             succesfulledEventsChanged(change) {

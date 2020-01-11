@@ -40,12 +40,12 @@ Pagination Element for Vaadin-Grid Tables
                     <div class="cardcontent">
                         <div class="layout vertical">
                             <paper-input class="labelgroup" always-float-label label="Gartennummer" disabled
-                                value="[[gartler.GARTENNUMMER]]"></paper-input>
+                                value="[[gartlerCopy.GARTENNUMMER]]"></paper-input>
                             <paper-input class="labelgroup" always-float-label label="Weg"
-                                value="{{gartler.WEG}}">
+                                value="{{gartlerCopy.WEG}}">
                             </paper-input>
                             <paper-input class="labelgroup" always-float-label label="Fläche"
-                                value="{{gartler.FLAECHE}}"></paper-input>
+                                value="{{gartlerCopy.FLAECHE}}"></paper-input>
                         </div>
                     </div>
                 </div>
@@ -57,27 +57,27 @@ Pagination Element for Vaadin-Grid Tables
                         <div class="layout vertical">
                             <div class="flex-container ">
                                 <paper-input class="labelgroup" always-float-label label="Geburtsdatum"
-                                    value="{{gartler.GEBURTSDATUM}}"></paper-input>
+                                    value="{{gartlerCopy.GEBURTSDATUM}}"></paper-input>
                                 <paper-input class="labelgroup" always-float-label label="Anrede"
-                                    value="{{gartler.ANREDE}}"></paper-input>
+                                    value="{{gartlerCopy.ANREDE}}"></paper-input>
                             </div>
                             <div class="flex-container ">
                                 <paper-input class="labelgroup" always-float-label label="Vorname"
-                                    value="{{gartler.VORNAME}}"></paper-input>
+                                    value="{{gartlerCopy.VORNAME}}"></paper-input>
                                 <paper-input class="labelgroup" always-float-label label="Name"
-                                    value="{{gartler.NACHNAME}}"></paper-input>
+                                    value="{{gartlerCopy.NACHNAME}}"></paper-input>
                             </div>
                             <div class="flex-container ">
                                 <paper-input class="labelgroup" always-float-label label="Strasse"
-                                    value="{{gartler.STRASSE}}"></paper-input>
+                                    value="{{gartlerCopy.STRASSE}}"></paper-input>
                                 <paper-input class="labelgroup" always-float-label label="Hausnummer"
-                                    value="{{gartler.HAUSNUMMER}}"></paper-input>
+                                    value="{{gartlerCopy.HAUSNUMMER}}"></paper-input>
                             </div>
                             <div class="flex-container ">
-                                <paper-input class="labelgroup" always-float-label label="PLZ" value="{{gartler.PLZ}}">
+                                <paper-input class="labelgroup" always-float-label label="PLZ" value="{{gartlerCopy.PLZ}}">
                                 </paper-input>
                                 <paper-input class="labelgroup" always-float-label label="Ort"
-                                    value="{{gartler.WOHNORT}}">
+                                    value="{{gartlerCopy.WOHNORT}}">
                                 </paper-input>
                             </div>
                         </div>
@@ -90,22 +90,22 @@ Pagination Element for Vaadin-Grid Tables
                     <div class="cardcontent">
                         <div class="layout vertical">
                             <paper-input class="labelgroup" always-float-label label="Telefon"
-                                value="{{gartler.TELEFON}}"></paper-input>
+                                value="{{gartlerCopy.TELEFON}}"></paper-input>
                             <paper-input class="labelgroup" always-float-label label="E-Mail"
-                                value="{{gartler.EMAIL}}"></paper-input>
+                                value="{{gartlerCopy.EMAIL}}"></paper-input>
                         </div>
                     </div>
                 </div>
                 <div class="mcard layout vertical justified">
-                    <paper-button disabled="[[_originalEqualThisGartler(originalGartler.*, gartler.*)]]" bottom raised
+                    <paper-button disabled="[[_originalEqualThisGartler(gartler.*, gartlerCopy.*)]]" bottom raised
                         on-click="_resetGartler">Zurücksetzen</paper-button>
-                    <paper-button disabled="[[_originalEqualThisGartler(originalGartler.*, gartler.*)]]" bottom raised
+                    <paper-button disabled="[[_originalEqualThisGartler(gartler.*, gartlerCopy.*)]]" bottom raised
                         on-click="_saveGartler">Speichern</paper-button>
                 </div>
             </div>
             <div class="mcard">
                 <div class="cardcontent">
-                    <paper-textarea label="Bemerkungen" value="{{gartler.BEMERKUNGEN}}"></paper-textarea>
+                    <paper-textarea label="Bemerkungen" value="{{gartlerCopy.BEMERKUNGEN}}"></paper-textarea>
                 </div>
             </div>
         </div>
@@ -125,7 +125,7 @@ Pagination Element for Vaadin-Grid Tables
                         observer: "_gartlerChanged"
                     },
 
-                    originalGartler: {
+                    gartlerCopy: {
                         type: Object
                     },
 
@@ -149,41 +149,38 @@ Pagination Element for Vaadin-Grid Tables
 
             pushSuccesfullEvent(evName){
                 this.push('succesfulledEvents', evName + '_' + this.id);
-                if (evName === 'savegartler'){
-                    this.set("originalGartler", JSON.parse(JSON.stringify(this.gartler)))
-                }
             }
 
-            _gartlerChanged(newV, oldV) {
-                if (newV && !oldV) {
-                    this.set("originalGartler", JSON.parse(JSON.stringify(newV)))
+            _gartlerChanged(newV) {
+                if (newV) {
+                    this.set("gartlerCopy", JSON.parse(JSON.stringify(newV)))
                 }
             }
 
             _originalEqualThisGartler() {
-                let response = _.isEqual(this.originalGartler, this.gartler);
+                let response = _.isEqual(this.gartler, this.gartlerCopy);
                 return response
             }
 
             _resetGartler() {
-                this.set("gartler", JSON.parse(JSON.stringify(this.originalGartler)))
+                this.set("gartlerCopy", JSON.parse(JSON.stringify(this.gartler)))
             }
 
             _saveGartler() {
                 let diff = null;
                 let logdata = null;
                 try {
-                    let actualGartler = JSON.parse(JSON.stringify(this.gartler));
+                    let actualGartler = JSON.parse(JSON.stringify(this.gartlerCopy));
                     delete actualGartler['_history'];
-                    diff = this.difference(actualGartler,this.originalGartler);
+                    diff = this.difference(actualGartler,this.gartler);
                     if (diff){
                         logdata = {diff: diff, type: 'UPDATE'}
                     }
                 }catch(fehler){
-                    console.warn('grt-gartler - Die Logdataen für _saveGartler:' + JSON.stringify(this.gartler) + ' konnten nicht ERSTELLT werden')
+                    console.warn('grt-gartler - Die Logdataen für _saveGartler:' + JSON.stringify(this.gartlerCopy) + ' konnten nicht ERSTELLT werden')
                 }
                 this.push('pendingEvents', 'savegartler' + "_" + this.id)
-                this.dispatchEvent(new CustomEvent('savegartler', { detail: {data: JSON.parse(JSON.stringify(this.gartler)), index: this.id.substring(4), logdata: logdata} }))
+                this.dispatchEvent(new CustomEvent('savegartler', { detail: {data: JSON.parse(JSON.stringify(this.gartlerCopy)), index: this.id.substring(this.id.lastIndexOf('-') + 1), logdata: logdata} }))
             }
 
             succesfulledEventsChanged(change) {
