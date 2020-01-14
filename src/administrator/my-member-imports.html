@@ -5,9 +5,10 @@
 <link rel="import" href="../administrator/general-column-configuration.html">
 <link rel="import" href="../administrator/import-paechter.html">
 <link rel="import" href="../administrator/import-versicherte.html">
+<link rel="import" href="../administrator/import-foerdermitglieder.html">
 <link rel="import" href="../administrator/import-allgemein.html">
 
-<dom-module id="my-paechter-imports">
+<dom-module id="my-member-imports">
   <template>
     <style>
       :host {
@@ -28,16 +29,22 @@
             <import-paechter completed="{{stepsCompletion.importingpaechter}}"></import-paechter>
           </div>
         </ud-step>
-        <ud-step title="Versicherte importieren" completed="[[stepsCompletion.importingversicherte]]" editable="[[stepsCompletion.importingpaechter]]" 
+        <ud-step title="Versicherte importieren" completed="[[stepsCompletion.importingpaechter]]" editable="[[stepsCompletion.importingpaechter]]" 
         optional="[[stepsCompletion.importingpaechter]]" optional-text="" hide-actions>
           <div >
             <import-versicherte completed="{{stepsCompletion.importingversicherte}}"></import-versicherte>
           </div>
         </ud-step>
-        <ud-step title="Fördermitglieder importieren" completed="[[stepsCompletion.importingfoerdermitglieder]]" editable="[[stepsCompletion.gencols]]" 
+        <ud-step title="Fördermitglieder importieren" completed="[[stepsCompletion.importingfoerdermitglieder]]" editable="[[stepsCompletion.importingpaechter]]" 
+        optional="[[stepsCompletion.gencols]]" optional-text="" hide-actions>
+          <div>
+            <import-foerdermitglieder completed="{{stepsCompletion.importingfoerdermitglieder}}"></import-foerdermitglieder>
+          </div>
+        </ud-step>
+        <ud-step title="Allgemeine Tabelle importieren" completed="[[stepsCompletion.importingallgemein]]" editable="[[stepsCompletion.gencols]]" 
         optional="[[stepsCompletion.gencols]]" optional-text="" hide-actions>
           <div >
-            <import-allgemein completed="{{stepsCompletion.importingfoerdermitglieder}}"></import-allgemein>
+            <import-allgemein completed="{{stepsCompletion.importingallgemein}}"></import-allgemein>
           </div>
         </ud-step>
         
@@ -46,8 +53,8 @@
   </template>
 
   <script>
-    class MyPaechterImports extends Polymer.Element {
-      static get is() { return 'my-paechter-imports'; }
+    class MyMemberImports extends Polymer.Element {
+      static get is() { return 'my-member-imports'; }
       static get properties() {
         return {
          stepsCompletion:{
@@ -56,7 +63,8 @@
              gencols: false,
              importingpaechter: false,
              importingversicherte: true,
-             importingfoerdermitglieder: false
+             importingfoerdermitglieder: false,
+             importingallgemein: false
            },
            notify: true
          }
@@ -89,6 +97,6 @@
       }
     }
 
-    window.customElements.define(MyPaechterImports.is, MyPaechterImports);
+    window.customElements.define(MyMemberImports.is, MyMemberImports);
   </script>
 </dom-module>

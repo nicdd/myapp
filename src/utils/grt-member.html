@@ -23,20 +23,9 @@ Pagination Element for Vaadin-Grid Tables
             }
 
             .flex-container {
-                /* We first create a flex layout context */
                 display: flex;
-
-                /* Then we define the flow direction 
-     and if we allow the items to wrap 
-   * Remember this is the same as:
-   * flex-direction: row;
-   * flex-wrap: wrap;
-   */
                 flex-flow: row wrap;
-
-                /* Then we define how is distributed the remaining space */
                 justify-content: flex-start;
-
             }
 
             .mfcontainer {
@@ -90,105 +79,20 @@ Pagination Element for Vaadin-Grid Tables
                         <div class$="[[_getGroupClass('cardcontent', gname)]]">
                             <template is="dom-repeat" items="[[_getDataFor(gname)]]" as="field" index-as="fieldindex">
                                 <paper-input id="[[field.colname]]" class="mlabelgroup" always-float-label label="{{field.alias]]" 
-                        value="[[_getData(gartlerCopy, field.colname)]]" on-input="_changeThisField"></paper-input>
-                        <div class$="[[_getPIClass(gname, fieldindex)]]"></div>
-                    </template>
-                </div>
-            </div>
-        </template>
-    </div>
-
-    <div class="mcard layout vertical justified">
-        <paper-button disabled="[[_originalEqualThisGartler(gartler.*, gartlerCopy.*)]]" bottom
-            raised on-click="_resetGartler">Zurücksetzen</paper-button>
-        <paper-button disabled="[[_originalEqualThisGartler(gartler.*, gartlerCopy.*)]]" bottom
-            raised on-click="_saveGartler">Speichern</paper-button>
-    </div>
-</div>
-
-        
-            
-                
-                <!-- <div class="mcard layout vertical">
-                    <p class="cardtitle">
-                        Gartendaten
-                    </p>
-                    <div class="cardcontent">
-                        <div class="layout vertical">
-                            <paper-input class="labelgroup" always-float-label label="Gartennummer" disabled
-                                value="{{gartler.GARTENNUMMER]]"></paper-input>
-                            <paper-input class="labelgroup" always-float-label label="Weg"
-                                value="{{gartler.WEG}}">
-                                </paper-input>
-                                <paper-input class="labelgroup" always-float-label label="Fläche"
-                                    value="{{gartler.FLAECHE}}"></paper-input>
+                                value="[[_getData(memberCopy, field.colname)]]" on-input="_changeThisField"></paper-input>
+                                <div class$="[[_getPIClass(gname, fieldindex)]]"></div>
+                            </template>
                         </div>
                     </div>
-            </div>
-            <div class="mcard layout vertical ">
-                <p class="cardtitle">
-                    Pächterdaten
-                </p>
-                <div class="cardcontent">
-                    <div class="layout vertical">
-                        <div class="flex-container ">
-                            <paper-input class="labelgroup" always-float-label label="Geburtsdatum"
-                                value="{{gartler.GEBURTSDATUM}}"></paper-input>
-                            <paper-input class="labelgroup" always-float-label label="Anrede"
-                                value="{{gartler.ANREDE}}">
-                            </paper-input>
-                        </div>
-                        <div class="flex-container ">
-                            <paper-input class="labelgroup" always-float-label label="Vorname"
-                                value="{{gartler.VORNAME}}">
-                            </paper-input>
-                            <paper-input class="labelgroup" always-float-label label="Name"
-                                value="{{gartler.NACHNAME}}">
-                            </paper-input>
-                        </div>
-                        <div class="flex-container ">
-                            <paper-input class="labelgroup" always-float-label label="Strasse"
-                                value="{{gartler.STRASSE}}">
-                            </paper-input>
-                            <paper-input class="labelgroup" always-float-label label="Hausnummer"
-                                value="{{gartler.HAUSNUMMER}}"></paper-input>
-                        </div>
-                        <div class="flex-container ">
-                            <paper-input class="labelgroup" always-float-label label="PLZ" value="{{gartler.PLZ}}">
-                            </paper-input>
-                            <paper-input class="labelgroup" always-float-label label="Ort" value="{{gartler.WOHNORT}}">
-                            </paper-input>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="mcard layout vertical">
-                <p class="cardtitle">
-                    Kontaktdaten
-                </p>
-                <div class="cardcontent">
-                    <div class="layout vertical">
-                        <paper-input class="labelgroup" always-float-label label="Telefon" value="{{gartler.TELEFON}}">
-                        </paper-input>
-                        <paper-input class="labelgroup" always-float-label label="E-Mail" value="{{gartler.EMAIL}}">
-                        </paper-input>
-                    </div>
-                </div>
+                </template>
             </div>
             <div class="mcard layout vertical justified">
-                <paper-button disabled="[[_originalEqualThisGartler(originalGartler.*, gartler.*)]]" bottom raised
-                    on-click="_resetGartler">Zurücksetzen</paper-button>
-                <paper-button disabled="[[_originalEqualThisGartler(originalGartler.*, gartler.*)]]" bottom raised
-                    on-click="_saveGartler">Speichern</paper-button>
+                <paper-button disabled="[[_originalEqualThisMember(member.*, memberCopy.*)]]" bottom
+                    raised on-click="_resetMember">Zurücksetzen</paper-button>
+                <paper-button disabled="[[_originalEqualThisMember(member.*, memberCopy.*)]]" bottom
+                    raised on-click="_saveMember">Speichern</paper-button>
             </div>
         </div>
-        <div class="mcard">
-            <div class="cardcontent">
-                <paper-textarea label="Bemerkungen" value="{{gartler.BEMERKUNGEN}}"></paper-textarea>
-            </div>
-        </div> -->
-
-
     </template>
 
     <script>
@@ -199,12 +103,12 @@ Pagination Element for Vaadin-Grid Tables
                 return {
 
                     id: String,
-                    gartler: {
+                    member: {
                         type: Object,
-                        observer: "_gartlerChanged"
+                        observer: "_memberChanged"
                     },
 
-                    gartlerCopy: {
+                    memberCopy: {
                         type: Object
                     },
 
@@ -246,7 +150,7 @@ Pagination Element for Vaadin-Grid Tables
 
             _changeThisField(e) {
                 if (e && e.target && e.target.id) {
-                    let path = 'gartlerCopy.' + e.target.id;
+                    let path = 'memberCopy.' + e.target.id;
                     this.set(path, e.target.value);
                     console.warn('e.type' + e.target.value);
                 }
@@ -272,44 +176,44 @@ Pagination Element for Vaadin-Grid Tables
                 return fieldsData;
             }
 
-            _getData(gartlerCopy, colname) {
-                return gartlerCopy[colname];
+            _getData(memberCopy, colname) {
+                return memberCopy[colname];
             }
 
             pushSuccesfullEvent(evName) {
                 this.push('succesfulledEvents', evName + '_' + this.id);
             }
 
-            _gartlerChanged(newV) {
+            _memberChanged(newV) {
                 if (newV) {
-                    this.set("gartlerCopy", JSON.parse(JSON.stringify(newV)))
+                    this.set("memberCopy", JSON.parse(JSON.stringify(newV)))
                 }
             }
 
-            _originalEqualThisGartler() {
-                let response = _.isEqual(this.gartler, this.gartlerCopy);
+            _originalEqualThisMember() {
+                let response = _.isEqual(this.member, this.memberCopy);
                 return response
             }
 
-            _resetGartler() {
-                this.set("gartlerCopy", JSON.parse(JSON.stringify(this.gartler)))
+            _resetMember() {
+                this.set("memberCopy", JSON.parse(JSON.stringify(this.member)))
             }
 
-            _saveGartler() {
+            _saveMember() {
                 let diff = null;
                 let logdata = null;
                 try {
-                    let actualGartler = JSON.parse(JSON.stringify(this.gartlerCopy));
-                    delete actualGartler['_history'];
-                    diff = this.difference(actualGartler, this.gartler);
+                    let actualMember = JSON.parse(JSON.stringify(this.memberCopy));
+                    delete actualMember['_history'];
+                    diff = this.difference(actualMember, this.member);
                     if (diff) {
                         logdata = { diff: diff, type: 'UPDATE' }
                     }
                 } catch (fehler) {
-                    console.warn('grt-member - Die Logdataen für _saveGartler:' + JSON.stringify(this.gartlerCopy) + ' konnten nicht ERSTELLT werden')
+                    console.warn('grt-member - Die Logdataen für _saveMember:' + JSON.stringify(this.memberCopy) + ' konnten nicht ERSTELLT werden')
                 }
-                this.push('pendingEvents', 'savegartler' + "_" + this.id)
-                this.dispatchEvent(new CustomEvent('savegartler', { detail: { data: JSON.parse(JSON.stringify(this.gartlerCopy)), index: this.id.substring(this.id.lastIndexOf('-') + 1), logdata: logdata } }))
+                this.push('pendingEvents', 'savemember' + "_" + this.id)
+                this.dispatchEvent(new CustomEvent('savemember', { detail: { data: JSON.parse(JSON.stringify(this.memberCopy)), index: this.id.substring(this.id.lastIndexOf('-') + 1), logdata: logdata } }))
             }
 
             succesfulledEventsChanged(change) {

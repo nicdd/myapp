@@ -1,40 +1,4 @@
 <!--
-Die Versicherten-Seite
-Auf dieser Seite werden nur die Pächter dargestellt die eine Versicherung abgeschlossen haben.
-Diese kann beim KVD oder bei einer externen Versicherungsgesellschaft abgeschlossen sein.
-Ein bisher Versicherter der nicht mehr bezahlt hat, wird zuerst telefonisch, per E-Mail oder per Brief erinnert.
-
-Wenn für diesen Pächter keine Zahlung und keinen Versicherungsnachweis erfasst wurden, OBWOHL für ihn die Erinnerungsversuche
-unternommen wurden, wird dieser:
-
-  - authomatisch vom System nach 14 Tagen nach dem Erinnerungskontakt; 
-  - manuell durch den Versicherungsbeauftragten;
-
-in die Liste der "nicht versicherten" verschoben. Die Verschiebung in die Liste der anzumahnenden Pächter setzt
-zwingend voraus, dass der Versicherungsbeauftragter die Erinnerungsversuche unternommen und protokolliert hat.
-
-Für die nicht - versicherten Pächter wird eine Benachrichtigungs-EMail an den Verein samt einem 
-an der E-Mail angehängten Mahnungs-Anschreiben verschickt. Die E-Mail an den Verein enthält zwingend
-die Informationen über die nicht erfolgreichen Versuche, ihn zur Zahlung zu bewegen.
-Der 14-Tage Frist kann vom Versicherungsbeauftragten auf maximal 1 Monat verlängert werden.
-
-***********************************************
-Entstehung und Änderungen der Versichertenliste
-***********************************************
-Die Versichertenliste entsteht initial durch das Importieren der Versichertenbestand aus der CSV-Datei vom KVD.
-Weiterhin, kann der Benutzer, manuell durch die Bearbeitung der "nicht verischerten" Liste, einzelne "nicht Verischerte"
-in die Versichertenliste verschieben. Dabei musste er die Informationen über den letzten gültigen Zahlungseing erfasst haben
-(eingezahlten Zahlungsbetrag, Datum, Vericherungsoptionen(FED usw)).
-
-Man kann Einträge aus dieser Liste in die Nicht-Versicherten-Liste verschieben oder ganz Löschen.
-Eine Löschung aus der Versichertenliste führt nicht zu einer tatsächlichen Löschung, sondern in die Verschiebung der 
-Daten in einer Versicherten-Passivliste, denn es könnte durchaus sein, dass man uach nach einer Kündigung die 
-Daten über die Versicherung noch braucht. Die Einträge in der Passivliste werden vom System nach 2 Jahren aus der Liste entfernt.
-Ab diesem Zeitpunkt kennt das System keine Informationen mehr über die versicherte Person.
-
-
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
 1. Versichertendaten initialisieren
 
 a. durch Import aus excell Tabelle der Pächter des Vereins
@@ -54,274 +18,16 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
 -->
 
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
-<link rel="import" href="../../bower_components/paper-progress-button/paper-progress-button.html">
-<link rel="import" href="../../bower_components/granite-file-reader/granite-file-reader.html">
-<link rel="import" href="../clients/firstclient.html">
-<link rel="import" href="../clients/basicclient.html">
-<link rel="import" href="../second-domain-styles.html">
-<!-- <script src="../../bower_components/webcomponentsjs/webcomponents-lite.js"></script> -->
-
+<link rel="import" href="import-allgemein.html">
 <dom-module id="import-versicherte">
-  <template>
-    <style include="second-domain-styles">
-      :host {
-        /* Stretch this element to fill viewport */
-        height: 85vh;
-
-        /* Make a flex column layout of children */
-        display: flex;
-        flex-direction: column;
-      }
-
-      .clickHere {
-        border-radius: 3px;
-        background-color: var(--second-domain-primary-color);
-        color: white;
-        padding: 0.5rem 1rem;
-      }
-    </style>
-
-    <first-client id="firstclient"></first-client>
-    <basic-client id="bclient"></basic-client>
-    <div class="toolbar layout horizontal center-justified" flex>
-      <paper-progress-button bottom raised on-click="_importRemoteVersichertePressed" loading-label="Nicht so hecktisch ..."
-        loading="[[_loading]]">KVD Daten aus CSV-Datei vom Server importieren <iron-icon icon="add-circle-outline" slot="item-icon"></iron-icon>
-      </paper-progress-button>
-      <granite-file-reader read-as="dataURL" accept=".csv" on-file-read="_doOnFileRead">
-        <div class="clickHere">KVD Daten aus lokaler CSV-Datei importieren</div>
-      </granite-file-reader>
-    </div>
-    <template is="dom-if" if="[[generalConf.length]]">
-      <div class="page">
-        <table>
-          <thead>
-            <th class="metacol">#</th>
-            <th class="contentcol">Spaltenname</th>
-            <th class="contentcol" title="Die Entsprechung in der zu importierenden Versichertentabelle">Entsprechung
-              Versicherte</th>
-          </thead>
-          <tbody>
-            <template is="dom-repeat" items="[[generalConf]]">
-              <tr>
-                <td class="metacol">
-                  [[getOrdnungsnummer(index)]]
-                </td>
-                <td class="contentcol">
-                  <paper-input id="cnm[[index]]" value="[[item.colname]]" readonly></paper-input>
-                </td>
-                <td class="contentcol">
-                  <grt-dropdown-input id="ctp[[index]]" items="[[secondColumns]]" selected="{{entPaars.index.right}}"
-                    on-iron-select="_doOnSelect"></grt-dropdown-input>
-                </td>
-
-              </tr>
-            </template>
-
-          </tbody>
-        </table>
-
-      </div>
-      <paper-button disabled="[[formInvalid]]" on-click="_mergeImportedAndSave">Weiter</paper-button>
-    </template>
-  </template>
-
   <script>
-    class ImportVersicherte extends Polymer.Element {
+    class ImportVersicherte extends customElements.get('import-allgemein') {
       static get is() { return 'import-versicherte'; }
 
-      static get properties() {
-        return {
-
-          _loading: {
-            type: Boolean,
-            value: false
-          },
-
-          mvdata: {
-            type: Array,
-            value: [],
-            notify: true,
-            reflectToAttribute: true
-          },
-
-          mfile: {
-            type: Object,
-            value: null,
-            notify: true,
-            observer: '_transformCSVToArray'
-
-          },
-
-          secondColumns: {
-            type: Array,
-            value: null
-          },
-
-          entPaars: {
-            type: Object,
-            value: [],
-            notify: true,
-            reflectToAttribute: true
-          },
-
-          dataAndColumns: {
-            type: Object,
-            value: null
-          },
-
-          generalConf: {
-            type: Array,
-            value: null,
-            notify: true
-          },
-
-          formInvalid: {
-            type: Boolean,
-            notify: true
-          },
-
-          completed: {
-            type: Boolean,
-            value: false,
-            notify: true
-          }
-        }
-      }
-
-      _doOnFileRead(e) {
-        let self = this;
-        let b64Result = e.detail;
-        self._urltoFile(b64Result, 'versicherte.csv', 'text/csv').then((file) => {
-          let reader = new FileReader();
-          reader.onload = function (e) {
-            let text = reader.result;
-            self.set('mfile', text);
-          }
-          reader.readAsText(file, 'base64');
-        })
-      }
-
-      _urltoFile(url, filename, mimeType) {
-        let self = this;
-        return (fetch(url)
-          .then(function (res) { return res.arrayBuffer(); })
-          .then(function (buf) { return new File([buf], filename, { type: mimeType }); })
-          .catch((err) => {
-            showToast(self, 'Fehler bei der Importierung der KVD-Daten aus der lokalen Datei', TOAST_TYPE.ERROR);
-          })
-        );
-      }
-
-      mapToJSON(resp) {
-        let usr = document.querySelector('my-app').getAttribute('user')
-        console.log('andtheuseris app' + usr + " type of usr" + (typeof usr));
-        usr = JSON.parse(usr);
-
-        let transformedResult = [];
-        let columns = resp[0];//.filter((elem) => elem.length > 0);
-        console.log('das sind die columns' + columns.toString())
-        for (let i = 1; i < resp.length; i++) {
-          if (resp[i][0] !== 'Ende der Liste' && resp[i][0].length) {
-            let myRowObj = {};
-            console.log(i + ' resp[i].length ' + resp[i].length)
-            for (let j = 0; j < columns.length; j++) {
-              console.log('column j' + j)
-              let attrName = columns[j];//.replace(/[\. ,:-]+/g, "");
-             // attrName = attrName.replace(/ü/g, 'ue').replace(/ö/g, 'oe');
-              let attrValue = (attrName === "GBV" || attrName === "FED" || attrName === "Beitrag" || attrName === "UV" || attrName === "HöV") ? (isFinite(resp[i][j]) && !isNaN(resp[i][j]) ? (parseInt(resp[i][j]) || 0) : 0) : resp[i][j];
-              myRowObj[attrName] = attrValue;
-            }
-            myRowObj['created'] = { user: usr.name, datum: moment().format('YYYYMMDD_HHmm'), source: 'csv' };
-            transformedResult.push(myRowObj);
-          } else {
-            break;
-          }
-
-        }
-        this.set('columnNames', columns);
-        this.set('mvdata', transformedResult);
-        console.log('transformeddata' + JSON.stringify(this.mvdata))
-      }
-
-      _transformCSVToArray() {
-        let finalArray = [];
-        if (this.mfile) {
-          let firstArr = this.mfile.split('\n');
-          if (Array.isArray(firstArr) && firstArr.length > 0 && !firstArr[firstArr.length - 1].length) {
-            firstArr.pop();
-          }
-          let secondArray = null;
-          firstArr.forEach((el) => {
-            secondArray = el.split(',');
-            let thirdArray = [];
-            for (let i = 0; i < secondArray.length - 1; i++) {
-              if (secondArray[i].startsWith('"')) {
-                let indexOfLastFalsyKomaSplited = null;
-                let k = i + 1;
-                while (!indexOfLastFalsyKomaSplited && k < secondArray.length) {
-                  if (secondArray[k].endsWith('"')) {
-                    indexOfLastFalsyKomaSplited = k;
-                  }
-                  k++;
-                }
-                // Eine Zelle mit schliessendem Komma gefunden
-                if (indexOfLastFalsyKomaSplited) {
-                  let newZelle = secondArray[i].substring(1);
-                  while (i < indexOfLastFalsyKomaSplited) {
-                    i++;
-                    if (i === indexOfLastFalsyKomaSplited) {
-                      //entferne das " an Ende des Strings, das ist die letzte Zelle die 
-                      // zum ursprünglichen Inhalt gehört
-                      newZelle += secondArray[i].substring(0, secondArray[i].length - 1);
-                    } else {
-                      // noch nicht die letzte Zelle die 
-                      // zum ursprünglichen Inhalt gehört
-                      newZelle += secondArray[i];
-                    }
-                  }
-                  thirdArray.push(newZelle);
-                } else {
-                  thirdArray.push(newZelle);
-                }
-
-
-              } else {
-                thirdArray.push(secondArray[i]);
-              }
-            }
-
-            finalArray.push(thirdArray);
-          })
-          this._importLocalVersichertePressed(finalArray);
-        }
-      }
-
-      _importRemoteVersichertePressed() {
-        //toDo make a backup from the existing data if some, because they will be overridden
-        this.$.firstclient.getCSVForDomain('versicherte').then((resp) => {
-          if (resp) {
-            this.mapToJSON(resp);
-            let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
-            this.set('dataAndColumns', dataAndColumns);
-            let secondColumns = JSON.parse(JSON.stringify(dataAndColumns.columns));
-            secondColumns.unshift('**Keine**');
-            this.set('secondColumns', secondColumns);
-            showToast(this, 'Die KVD-Daten wurden erfolgreich vom Server geladen. Damit diese auch dauerhaft importiert werden können, setzen Sie die Konfiguration durch die Zuordnung der Tabellenspalten fort.', TOAST_TYPE.WARN, 'center');
-          } else {
-            showToast(this, 'Bei der Importierung der KVD-Daten wurden keine Versichertendaten gefunden', TOAST_TYPE.ERROR);
-          }
-        }).then(() => {
-          return this.$.bclient.getDomaenenColumnConfig('general').then((generalConf) => {
-            if (generalConf && Array.isArray(generalConf)) {
-              this.set('generalConf', generalConf);
-            }
-          }).then(() => {
-            this.validate();
-          })
-        }).catch((err) => {
-          showToast(this, 'Fehler bei der Importierung der KVD-Daten vom Server', TOAST_TYPE.ERROR);
-          console.log("Fehler beim importVersicherte fuer versicherte  kam:" + JSON.stringify(err))
-        })
+      ready(){
+        super.ready();
+        this.set('domainname', 'versicherte');
+        this.set('disableDomainNameInput', true);
       }
 
       saveToDB(versicherte) {
@@ -349,102 +55,12 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
 
       }
 
-      _importLocalVersichertePressed(localVersicherteFromCSVAsArray) {
-        this.$.bclient.getDomaenenColumnConfig('general').then((generalConf) => {
-          if (generalConf && Array.isArray(generalConf) && localVersicherteFromCSVAsArray && localVersicherteFromCSVAsArray.length) {
-            this.set('generalConf', generalConf);
-            this.mapToJSON(localVersicherteFromCSVAsArray);
-            let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
-            this.set('dataAndColumns', dataAndColumns);
-            let secondColumns = JSON.parse(JSON.stringify(dataAndColumns.columns));
-            secondColumns.unshift('**Keine**');
-            this.set('secondColumns', secondColumns);
-            showToast(this, 'Die KVD-Daten wurden aus der lokalen Datei erfolgreich geladen. Damit diese auch dauerhaft importiert werden können, setzen Sie die Konfiguration durch die Zuordnung der Tabellenspalten fort.', TOAST_TYPE.WARN, 'center');
-          } else {
-            showToast(this, '2Bei der Importierung der KVD-Daten wurden keine Versichertendaten gefunden', TOAST_TYPE.ERROR);
-          }
-        }).then(() => {
-          this.validate();
-        })
-      }
-
-      _setLoading(val) {
-        this.set('_loading', val);
-      }
-
-      getOrdnungsnummer(index) {
-        return index + 1;
-      }
-
-      _doOnSelect(e) {
-        let self = this;
-        if (e && e.target) {
-          let myelemId = e.target.id;
-          let realIndex = myelemId.substring(3);
-          let wertLinks = self.generalConf[realIndex].colname;
-          let wertRechts = e.target.selected;
-          let path = 'entPaars.' + realIndex;
-          let bereitsBelegt = self.entPaars.some((elem) => (elem.right === wertRechts) && (wertRechts !== self.secondColumns[0]));
-          if (bereitsBelegt) {
-            self.splice('entPaars', realIndex, 1, { left: wertLinks, right: null });
-            let thehashid = '#' + myelemId;
-            let melem = self.shadowRoot.querySelector(thehashid);
-            melem.resetItem(true);
-            melem.selected = null;
-            melem.errorMessage = "Spaltenname bereits zugeordnet"
-          } else {
-            self.set(path, { left: wertLinks, right: wertRechts });
-          }
-        }
-        this.validate();
-      }
-
-      validate(e) {
-        let invalidFound = true;
-        if (this.entPaars && this.entPaars.length === this.generalConf.length) {
-          invalidFound = this.entPaars.some((elem) => {
-            return (!elem.right || !elem.right.length)
-          })
-        }
-        this.set('formInvalid', invalidFound);
-      }
-
-      _mergeImportedAndSave() {
-        let columns = [];
-        this.generalConf.forEach((col) => {
-          columns.push(col.alias);
-        })
-        let data = JSON.parse(JSON.stringify(this.dataAndColumns.data));
-        
-        let newData = [];
-        data.forEach((versichertenData) => {
-          let newVersicherte = new Versicherter(this.entPaars);
-          Object.keys(versichertenData).forEach((key) => {
-            let correspondingPaar = this.entPaars.find((p) => p.right === key);
-            if (correspondingPaar) {
-              newVersicherte[correspondingPaar.left] = versichertenData[key];
-            }
-            
-          })
-          newData.push(newVersicherte);
-
-        })
-        let newDataAndColumns = { data: newData, columns: columns }
-        this.saveToDB(newDataAndColumns).then(() => {
-          showToast(this, 'Sie haben die Pächter-Daten erfolgreich importiert.', TOAST_TYPE.SUCCESS);
-          this.set('completed', true)
-        }).catch(() => {
-          this.set('completed', false)
-          
-        })
-      }
-
       resolveConflicts(paechter, versicherte) {
         let faelle = { 'klare': [], 'unklare': [] }
         versicherte.data.forEach((v) => {
           let isInP = paechter.data.find((p) => p.GARTENNUMMER === v.GARTENNUMMER);
           let grund = null;
-          (!isInP) ? grund = "Keie Entsprechung" : ((isInP.NACHNAME !== v.NACHNAME) ? grund = "Abweichung - Nachname":(isInP.VORNAME !== v.VORNAME)? grund = "Abweichung - Vorname": (isInP.STRASSE !== v.STRASSE) ? grund = "Abweichung- Strasse" : (isInP.PLZ !== v.PLZ) ? grund = "Abweichung PLZ" : grund = null)
+          (!isInP) ? grund = "Keie Entsprechung" : ((isInP.NACHNAME !== v.NACHNAME) ? grund = "Abweichung - Nachname":(isInP.VORNAME !== v.VORNAME)? grund = "Abweichung - Vorname": (isInP.STRASSE !== v.STRASSE) ? grund = "Abweichung- Strasse" : (isInP.PLZ !== v.PLZ) ? grund = "Abweichung PLZ" : (isInP.WOHNORT !== v.WOHNORT) ? grund = "Abweichung Wohnort" : grund = null)
 
           if (grund) { //|| isInP.WOHNORT !== v.WOHNORT
             v['grund'] = grund;
@@ -464,19 +80,22 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
         return Promise.resolve(faelle);
       }
 
-    }
-
-    class Versicherter {
-      constructor(paechterKeys) {
-        if (paechterKeys) {
-          this._createEmptyPaechter(paechterKeys)
-        }
-      }
-
-      _createEmptyPaechter(paechterKeys) {
-        paechterKeys.forEach((paar) => {
-          this[paar.left] = null;
-        })
+      _checkForMustColumns(conf) {
+          let gartenNummer = conf.find((elem) => elem.colname === "GARTENNUMMER");
+          if (!gartenNummer || !gartenNummer.colname || !gartenNummer.coltype || !gartenNummer.alias || !gartenNummer.rolen || !(Array.isArray(gartenNummer.rolen))) {
+            gartenNummer = {
+              "colname": "GARTENNUMMER",
+              "coltype": "string",
+              "alias": "Aufnahme",
+              "rolen": [
+                "paechter",
+                "versicherung",
+                "foerdermitglieder"
+              ]
+            }
+            conf.unshift(gartenNummer);
+          }
+        return conf;
       }
 
     }

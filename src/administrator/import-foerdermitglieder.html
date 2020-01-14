@@ -1,0 +1,64 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="import-allgemein.html">
+
+<dom-module id="import-foerdermitglieder">
+  <script>
+    class ImportFoerdermitglieder extends customElements.get('import-allgemein') {
+      static get is() { return 'import-foerdermitglieder'; }
+
+      ready(){
+        super.ready();
+        this.set('domainname', 'foerdermitglieder');
+        this.set('disableDomainNameInput', true);
+      }
+
+      _checkForMustColumns(conf) {
+          let aufnahmeDatumColumn = conf.find((elem) => elem.colname === "AUFNAHMEDATUM");
+          if (!aufnahmeDatumColumn || !aufnahmeDatumColumn.colname || !aufnahmeDatumColumn.coltype || !aufnahmeDatumColumn.alias || !aufnahmeDatumColumn.rolen || !(Array.isArray(aufnahmeDatumColumn.rolen))) {
+            aufnahmeDatumColumn = {
+              "colname": "AUFNAHMEDATUM",
+              "coltype": "string",
+              "alias": "Aufnahme",
+              "rolen": [
+                "paechter",
+                "versicherung",
+                "foerdermitglieder"
+              ]
+            }
+            conf.unshift(aufnahmeDatumColumn);
+          }
+        return conf;
+      }
+
+      _checkDataForMustContent(newFoerdermitglied) {
+          let aufnahmeDatum = newFoerdermitglied.AUFNAHMEDATUM;
+          let mDateTime = moment(aufnahmeDatum, 'DD.MM.YYYY');
+          if (!mDateTime.isValid()) {
+            newFoerdermitglied['AUFNAHMEDATUM'] = moment().toISOString();
+          } else {
+            newFoerdermitglied['AUFNAHMEDATUM'] = mDateTime.toISOString(true);
+          }
+        return newFoerdermitglied;
+      }
+
+      _makeUnicIds(newData) {
+          newData.sort((a, b) => {
+            return (a.AUFNAHMEDATUM < b.AUFNAHMEDATUM) ? -1 : ((a.AUFNAHMEDATUM > b.AUFNAHMEDATUM) ? 1 : 0);
+          });
+          newData.forEach((fm, idx) => {
+            let k = idx + 1;
+            // Da das Array nach AUFNAHMEDATUM sortiert ist, nehme alle folgenden mit dem gleichen Aufnahmedatum
+            // und erhöhe es um eine Minute - es könnten keine oder 2 oder mehrere aufeinanderfolgende sein
+            while ((k <= (newData.length - 1)) && (fm.AUFNAHMEDATUM === newData[k].AUFNAHMEDATUM) && moment(fm.AUFNAHMEDATUM).isValid()) {
+              newData[k].AUFNAHMEDATUM = moment(fm.AUFNAHMEDATUM).add((k - idx), 'minutes').toISOString(true);
+              k++;
+            }
+          })
+        return newData;
+      }
+
+    }
+
+    window.customElements.define(ImportFoerdermitglieder.is, ImportFoerdermitglieder);
+  </script>
+</dom-module>

@@ -76,8 +76,6 @@
       .cardtitle {
         padding: 0px 16px 16px 16px;
       }
-
-      
     </style>
 
     <first-client id="firstclient"></first-client>
@@ -85,7 +83,7 @@
     <div class="toolbar layout horizontal center-justified" flex>
       <paper-input id="domname" always-float-label minlength="1" maxlength="100" allowed-pattern="^[a-zA-Z0-9]$"
         required auto-validate label="Domänenname" error-message="Pflichteingabe - nur Kleinbuchstaben"
-        on-input="_validateForSNameAliasEntsprechung" value="{{domainname}}"></paper-input>
+        on-input="_validateForSNameAliasEntsprechung" value="{{domainname}}" disabled="[[disableDomainNameInput]]"></paper-input>
       <granite-file-reader disabled="[[domainname.length]]" read-as="dataURL" accept=".csv"
         on-file-read="_doOnFileRead">
         <div class="clickHere">Lokale CSV-Datei importieren</div>
@@ -191,7 +189,7 @@
                   </td>
                   <td class="contentcol">
                     <paper-input id="als[[index]]" on-input="_validateForSNameAliasEntsprechung" value="{{item.alias}}"
-                      auto-validate allowed-pattern="^[a-zA-Z0-9 ]$" required
+                      auto-validate allowed-pattern="^[a-zA-Z0-9 äöüß]$" required
                       error-message="Das Feld muss einen Spaltennamen enthalten"></paper-input>
                   </td>
                   <td class="contentcol">
@@ -243,6 +241,10 @@
           domainname: {
             type: String,
           },
+
+          disableDomainNameInput:{
+            type: Boolean,
+          }, 
 
           tempAnzahlSpalten: {
             type: Number,
@@ -304,17 +306,14 @@
           },
 
           _defaultColumnConf: {
-            type: Array,
-            value: [{ "colname": "GARTENNUMMER", "coltype": "string", "alias": "GNr", "rolen": ["paechter", "versicherung"] }, { "colname": "ANREDE", "coltype": "string", "alias": "Anrede", "rolen": ["paechter", "versicherung"] }, { "colname": "NACHNAME", "coltype": "string", "alias": "Nachname", "rolen": ["paechter", "versicherung"] }, { "colname": "VORNAME", "coltype": "string", "alias": "Vorname", "rolen": ["paechter", "versicherung"] }, { "colname": "STRASSE", "coltype": "string", "alias": "Strasse", "rolen": ["paechter", "versicherung"] }, { "colname": "PLZ", "coltype": "string", "alias": "PLZ", "rolen": ["paechter", "versicherung"] }, { "colname": "WOHNORT", "coltype": "string", "alias": "Wohnort", "rolen": ["paechter", "versicherung"] }, { "colname": "TELEFON", "coltype": "string", "alias": "Telefon", "rolen": ["paechter", "versicherung"] }, { "colname": "WEG", "coltype": "string", "alias": "Weg", "rolen": ["paechter", "versicherung"] }, { "colname": "FLAECHE", "coltype": "string", "alias": "Fläche", "rolen": ["paechter", "versicherung"] }, { "colname": "GEBURTSDATUM", "coltype": "string", "alias": "Geburtsdatum", "rolen": ["paechter"] }, { "colname": "EMAIL", "coltype": "string", "alias": "E-Mail", "rolen": ["paechter", "versicherung"] }, { "colname": "BEMERKUNGEN", "coltype": "string", "alias": "Bemerkung (P)", "rolen": ["paechter"] }, { "colname": "V_BEMERKUNG", "coltype": "string", "alias": "Bemerkung (V)", "rolen": ["versicherung"] }, { "colname": "GBV", "coltype": "number", "alias": "GBV", "rolen": ["versicherung"] }, { "colname": "FED", "coltype": "number", "alias": "FED", "rolen": ["versicherung"] }, { "colname": "HOEV", "coltype": "number", "alias": "HöV", "rolen": ["versicherung"] }, { "colname": "A7_1", "coltype": "number", "alias": "Solar", "rolen": ["versicherung"] }, { "colname": "A7_3", "coltype": "string", "alias": "SA", "rolen": ["versicherung"] }, { "colname": "A7_4", "coltype": "number", "alias": "GS", "rolen": ["versicherung"] }, { "colname": "UV", "coltype": "number", "alias": "Unfall", "rolen": ["versicherung"] }, { "colname": "BEITRAG", "coltype": "number", "alias": "Beitrag", "rolen": ["versicherung"] }]
+            type: Object,
+            value: {column_groups:[], columns: [{ "colname": "GARTENNUMMER", "coltype": "string", "alias": "GNr", "rolen": ["paechter", "versicherung"] }, { "colname": "ANREDE", "coltype": "string", "alias": "Anrede", "rolen": ["paechter", "versicherung"] }, { "colname": "NACHNAME", "coltype": "string", "alias": "Nachname", "rolen": ["paechter", "versicherung"] }, { "colname": "VORNAME", "coltype": "string", "alias": "Vorname", "rolen": ["paechter", "versicherung"] }, { "colname": "STRASSE", "coltype": "string", "alias": "Strasse", "rolen": ["paechter", "versicherung"] }, { "colname": "PLZ", "coltype": "string", "alias": "PLZ", "rolen": ["paechter", "versicherung"] }, { "colname": "WOHNORT", "coltype": "string", "alias": "Wohnort", "rolen": ["paechter", "versicherung"] }, { "colname": "TELEFON", "coltype": "string", "alias": "Telefon", "rolen": ["paechter", "versicherung"] }, { "colname": "WEG", "coltype": "string", "alias": "Weg", "rolen": ["paechter", "versicherung"] }, { "colname": "FLAECHE", "coltype": "string", "alias": "Fläche", "rolen": ["paechter", "versicherung"] }, { "colname": "GEBURTSDATUM", "coltype": "string", "alias": "Geburtsdatum", "rolen": ["paechter"] }, { "colname": "EMAIL", "coltype": "string", "alias": "E-Mail", "rolen": ["paechter", "versicherung"] }, { "colname": "BEMERKUNGEN", "coltype": "string", "alias": "Bemerkung (P)", "rolen": ["paechter"] }, { "colname": "V_BEMERKUNG", "coltype": "string", "alias": "Bemerkung (V)", "rolen": ["versicherung"] }, { "colname": "GBV", "coltype": "number", "alias": "GBV", "rolen": ["versicherung"] }, { "colname": "FED", "coltype": "number", "alias": "FED", "rolen": ["versicherung"] }, { "colname": "HOEV", "coltype": "number", "alias": "HöV", "rolen": ["versicherung"] }, { "colname": "A7_1", "coltype": "number", "alias": "Solar", "rolen": ["versicherung"] }, { "colname": "A7_3", "coltype": "string", "alias": "SA", "rolen": ["versicherung"] }, { "colname": "A7_4", "coltype": "number", "alias": "GS", "rolen": ["versicherung"] }, { "colname": "UV", "coltype": "number", "alias": "Unfall", "rolen": ["versicherung"] }, { "colname": "BEITRAG", "coltype": "number", "alias": "Beitrag", "rolen": ["versicherung"] }]}
           },
 
           lastNewGroup: {
             type: String,
           }
         }
-      }
-      showSpaltenConf() {
-        return JSON.stringify(this.spaltenConf)
       }
 
       static get observers() {
@@ -415,16 +414,16 @@
             finalArray.push(thirdArray);
           })
           
-          this._importLocalFoerdermitgliederPressed(finalArray);
+          this._importLocalMemberPressed(finalArray);
         }
       }
 
-      _importLocalFoerdermitgliederPressed(localFoerdermitgliederFromCSVAsArray) {
+      _importLocalMemberPressed(localMemberFromCSVAsArray) {
         this.$.bclient.getDomaenenColumnConfig(this.domainname).then((domConf) => {
           if (!domConf) {
             throw 'nicht gefunden';
           } else {
-            this._initData(domConf, localFoerdermitgliederFromCSVAsArray);
+            this._initData(domConf, localMemberFromCSVAsArray);
             showToast(this, 'Die domänenspezifische Spaltenkonfiguration wurde erfolgreich geladen', TOAST_TYPE.SUCCESS);
           }
 
@@ -434,12 +433,12 @@
             if (!generalConf) {
               throw 'nicht gefunden';
             } else {
-              this._initData(generalConf, localFoerdermitgliederFromCSVAsArray);
+              this._initData(generalConf, localMemberFromCSVAsArray);
               showToast(this, 'Die allgemeine Spaltenkonfiguration wurde erfolgreich geladen', TOAST_TYPE.SUCCESS);
             }
           }).catch((err) => {
-            showToast(this, 'Keine Spaltenkonfiguration konnte geladen werden', TOAST_TYPE.ERROR);
-            this._initData(this._defaultColumnConf, localFoerdermitgliederFromCSVAsArray);
+            showToast(this, 'Keine Spaltenkonfigurationnn konnte geladen werden', TOAST_TYPE.ERROR);
+            this._initData(this._defaultColumnConf, localMemberFromCSVAsArray);
           })
         }).finally(() => {
           let anzSpElem = this.shadowRoot.getElementById('domname');
@@ -453,7 +452,7 @@
           let anzC = conf.columns.length;
           this.set('tempAnzahlSpalten', anzC)
           this.set('spaltenConf', conf);
-          this.set('completed', true)
+          this.set('completed', true && !this._isDisabled())
           this.mapToJSON(csvData);
           let dataAndColumns = { data: this.tabledata, columns: this.columnNames }
           this.set('dataAndColumns', dataAndColumns);
@@ -466,28 +465,12 @@
           let anzC = this._defaultColumnConf.columns.length;
           this.set('tempAnzahlSpalten', anzC)
           this.set('spaltenConf', this._defaultColumnConf);
-          this.set('completed', true)
-          showToast(this, 'Bei der Importierung der Vereinsdaten wurden keine Foerdermitgliederdaten gefunden', TOAST_TYPE.ERROR);
+          this.set('completed', true && !this._isDisabled())
+          showToast(this, 'Bei der Importierung wurden keine Daten für die Domäne ' + this.domainname + ' gefunden', TOAST_TYPE.ERROR);
         }
       }
 
       _checkForMustColumns(conf) {
-        if (this.domainname === "foerdermitglieder") {
-          let aufnahmeDatumColumn = conf.find((elem) => elem.colname === "AUFNAHMEDATUM");
-          if (!aufnahmeDatumColumn || !aufnahmeDatumColumn.colname || !aufnahmeDatumColumn.coltype || !aufnahmeDatumColumn.alias || !aufnahmeDatumColumn.rolen || !(Array.isArray(aufnahmeDatumColumn.rolen))) {
-            aufnahmeDatumColumn = {
-              "colname": "AUFNAHMEDATUM",
-              "coltype": "string",
-              "alias": "Aufnahme",
-              "rolen": [
-                "paechter",
-                "versicherung",
-                "foerdermitglieder"
-              ]
-            }
-            conf.unshift(aufnahmeDatumColumn);
-          }
-        }
         return conf;
       }
 
@@ -520,16 +503,16 @@
         
         let data = JSON.parse(JSON.stringify(this.dataAndColumns.data));
         let newData = [];
-        data.forEach((foerdermitgliedData) => {
-          let newFoerdermitglied = new Foerdermitglied(this.entPaars);
-          Object.keys(foerdermitgliedData).forEach((key) => {
+        data.forEach((memberData) => {
+          let newMember = new Member(this.entPaars);
+          Object.keys(memberData).forEach((key) => {
             let correspondingPaar = this.entPaars.find((p) => p.right === key);
             if (correspondingPaar) {
-              newFoerdermitglied[correspondingPaar.left] = foerdermitgliedData[key];
+              newMember[correspondingPaar.left] = memberData[key];
             }
           })
-          newFoerdermitglied = this._checkDataForMustContent(newFoerdermitglied);
-          newData.push(newFoerdermitglied);
+          newMember = this._checkDataForMustContent(newMember);
+          newData.push(newMember);
         })
         newData = this._makeUnicIds(newData);
         this.saveToDB(newData).then(() => {
@@ -547,34 +530,11 @@
         })
       }
 
-      _checkDataForMustContent(newFoerdermitglied) {
-        if (this.domainname === 'foerdermitglieder') {
-          let aufnahmeDatum = newFoerdermitglied.AUFNAHMEDATUM;
-          let mDateTime = moment(aufnahmeDatum, 'DD.MM.YYYY');
-          if (!mDateTime.isValid()) {
-            newFoerdermitglied['AUFNAHMEDATUM'] = moment().toISOString();
-          } else {
-            newFoerdermitglied['AUFNAHMEDATUM'] = mDateTime.toISOString(true);
-          }
-        }
-        return newFoerdermitglied;
+      _checkDataForMustContent(newMember) {
+        return newMember;
       }
 
       _makeUnicIds(newData) {
-        if (this.domainname === 'foerdermitglieder') {
-          newData.sort((a, b) => {
-            return (a.AUFNAHMEDATUM < b.AUFNAHMEDATUM) ? -1 : ((a.AUFNAHMEDATUM > b.AUFNAHMEDATUM) ? 1 : 0);
-          });
-          newData.forEach((fm, idx) => {
-            let k = idx + 1;
-            // Da das Array nach AUFNAHMEDATUM sortiert ist, nehme alle folgenden mit dem gleichen Aufnahmedatum
-            // und erhöhe es um eine Minute - es könnten keine oder 2 oder mehrere aufeinanderfolgende sein
-            while ((k <= (newData.length - 1)) && (fm.AUFNAHMEDATUM === newData[k].AUFNAHMEDATUM) && moment(fm.AUFNAHMEDATUM).isValid()) {
-              newData[k].AUFNAHMEDATUM = moment(fm.AUFNAHMEDATUM).add((k - idx), 'minutes').toISOString(true);
-              k++;
-            }
-          })
-        }
         return newData;
       }
 
@@ -789,10 +749,10 @@
 
       _setRollen(e, realIndex, role) {
         if (e.currentTarget.checked) {
-          let path = "spaltenConf.columns" + realIndex + ".rolen";
+          let path = "spaltenConf.columns." + realIndex + ".rolen";
           this.push(path, role);
         } else {
-          let path = "spaltenConf.columns" + realIndex + ".rolen";
+          let path = "spaltenConf.columns." + realIndex + ".rolen";
           let rolen = this.get(path);
           let idx = rolen.indexOf(role);
           this.splice(path, idx, 1);
@@ -819,8 +779,8 @@
         return item.rolen && Array.isArray(item.rolen) && item.rolen.indexOf(rolename) >= 0;
       }
 
-      _isDisabled(formInvalid, anzeigeOptsInvalid) {
-        return (formInvalid || anzeigeOptsInvalid);
+      _isDisabled() {
+        return (this.formInvalid || this.anzeigeOptsInvalid);
       }
 
       _getMaxLength(position, sClength) {
@@ -876,15 +836,15 @@
 
     }
 
-    class Foerdermitglied {
-      constructor(foerdermitgliedKeys) {
-        if (foerdermitgliedKeys) {
-          this._createEmptyFoerdermitglied(foerdermitgliedKeys)
+    class Member {
+      constructor(memberKeys) {
+        if (memberKeys) {
+          this._createEmptyMember(memberKeys)
         }
       }
 
-      _createEmptyFoerdermitglied(foerdermitgliedKeys) {
-        foerdermitgliedKeys.forEach((paar) => {
+      _createEmptyMember(memberKeys) {
+        memberKeys.forEach((paar) => {
           this[paar.left] = null;
         })
       }
