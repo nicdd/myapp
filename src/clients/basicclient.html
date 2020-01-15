@@ -13,6 +13,16 @@
                         type: Object,
                         value: {
 
+                            PAECHTER_COLUMN_CONFIG: {
+                                path: '/api/paechtercolumnconfig',
+                                port: '8000'
+                            },
+
+                            VERSICHERTE_COLUMN_CONFIG: {
+                                path: '/api/versichertecolumnconfig',
+                                port: '8000'
+                            },
+
                             VERSICHERUNG_CONFIG: {
                                 path: '/api/versicherungconfig',
                                 port: '8000'
@@ -93,17 +103,27 @@
                         urlInfo = self.URLS[key];
                     }
                 })
-
-                let myRequest = new Request(self._getSourceURL(urlInfo), this._getRestGetConfig());
-
+                let myRequest;
+                try{
+                console.warn('wirde versuchtfetch sent for' + domainName)
+                myRequest = new Request(self._getSourceURL(urlInfo), this._getRestGetConfig());
+                } catch(err){
+                    console.warn('und .. wirde versuchtfetch sent for' + domainName)
+                    return Promise.reject(err);
+                }
+                
                 return fetch(myRequest).then((response) => {
+                    console.warn('fetch sent for' + domainName)
                     if (response.status && response.status === 204) {
+                        console.warn('fetch sent1 for' + domainName)
                         console.log("get" + domainName + "ColumnConfig status 204")
                         return undefined;
                     } else {
+                        console.warn('fetch sent2 for' + domainName)
                         return response.json();
                     }
                 }).catch((err) => {
+                    console.warn('fetch sent3 for' + domainName)
                     console.warn('get' + domainName + 'ColumnConfig die Anfrage an api/' + domainName + 'columnconfig war nicht erfolgreich' + JSON.stringify(error))
                     return Promise.reject(err);
                 });
@@ -121,6 +141,13 @@
                     }
                 })
 
+                try{
+                console.warn('wirde versuchtfetch sent for' + domainName)
+                let myRequest = new Request(self._getSourceURL(urlInfo), postConfig);
+                } catch(err){
+                    console.warn('und .. wirde versuchtfetch sent for' + domainName)
+                    return Promise.reject(err);
+                }
                 let myRequest = new Request(self._getSourceURL(urlInfo), postConfig);
 
                 return fetch(myRequest).then((response) => {

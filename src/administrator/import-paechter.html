@@ -11,7 +11,7 @@
         this.set('domainname', 'paechter');
         this.set('disableDomainNameInput', true);
         this.$.firstclient.getAsJSON('paechter').then((paechter) => {
-          if (paechter && paechter.columns && paechter.columns.length && paechter.data && paechter.data.length) {
+          if (paechter && paechter.length) {
             this.set('completed', true)
           }
         }).catch(() => {
@@ -24,8 +24,8 @@
           if (!gartenNummer || !gartenNummer.colname || !gartenNummer.coltype || !gartenNummer.alias || !gartenNummer.rolen || !(Array.isArray(gartenNummer.rolen))) {
             gartenNummer = {
               "colname": "GARTENNUMMER",
-              "coltype": "string",
-              "alias": "Aufnahme",
+              "coltype": "numberstring",
+              "alias": "GNr.",
               "rolen": [
                 "paechter",
                 "versicherung",

@@ -84,7 +84,7 @@
         <grt-sand-clock id="sandhour"></grt-sand-clock>
         <div>
             <div class="toolbar layout horizontal justified" flex>
-                <template is="dom-if" if="[[columnNames.length]]">
+                <template is="dom-if" if="[[spaltenConf.columns.length]]">
                     <grt-grid-pagination id="pagesss" datalength="[[mvdata.length]]" page-size="{{pageSize}}"
                         pstart="{{_pageStart}}" on-pagechanged="changePage" style-domain="first-domain">
                     </grt-grid-pagination>
@@ -108,183 +108,49 @@
                                 <paper-checkbox on-change="_checkAll" checked="[[_areAllSelected(mvdata.*)]]">
                                 </paper-checkbox>
                             </th>
-                            <th>
-                                <column-sorter colname="[[columnNames.0]]" path="GARTENNUMMER"
-                                    on-sorter-changed="_sortChange">
-                                </column-sorter>
-                            </th>
-                            <th>
-                                <column-sorter colname="[[columnNames.1]]" path="ANREDE"
-                                    on-sorter-changed="_sortChange">
-                                </column-sorter>
-                            </th>
-                            <th>
-                                <column-sorter colname="[[columnNames.2]]" path="NACHNAME"
-                                    on-sorter-changed="_sortChange">
-                                </column-sorter>
-                            </th>
-                            <th>
-                                <column-sorter colname="[[columnNames.3]]" path="VORNAME"
-                                    on-sorter-changed="_sortChange">
-                                </column-sorter>
-                            </th>
-                            <th>
-                                <column-sorter colname="[[columnNames.8]]" path="WOHNORT"
-                                    on-sorter-changed="_sortChange">
-                                </column-sorter>
-                            </th>
-                            <th>
-                                <column-sorter colname="[[columnNames.9]]" path="FLAECHE"
-                                    on-sorter-changed="_sortChange">
-                                </column-sorter>
-                            </th>
-                            <th>
-                                <column-sorter colname="Alter" path="GEBURTSDATUM"
-                                    on-sorter-changed="_sortByGeburtsdatum">
-                                </column-sorter>
-                            </th>
-                            <th>
-                                <column-sorter colname="Geb." path="GEBURTSDATUM"
-                                    on-sorter-changed="_sortByGeburtsdatum">
-                                </column-sorter>
-                            </th>
-                            <th>
-                                <column-sorter colname="Jubiläum" path="GEBURTSDATUM"
-                                    on-sorter-changed="_sortByJubilaeum">
-                                </column-sorter>
-                            </th>
-
-
-                            <th>
-                                <column-sorter colname="[[columnNames.12]]" path="BEMERKUNGEN"
-                                    on-sorter-changed="_sortChange">
-                                </column-sorter>
-                            </th>
+                            <template is="dom-repeat" items="[[spaltenConf.columns]]" as="sc1">
+                                <template is="dom-if" if="[[sc1.th_show]]">
+                                    <th>
+                                        <column-sorter id="[[sc1.colname]]" colname="[[sc1.alias]]"
+                                            path="[[sc1.colname]]" on-sorter-changed="_sortChange">
+                                        </column-sorter>
+                                    </th>
+                                </template>
+                            </template>
                             <th class="button"></th>
                             <th class="button"></th>
                         </thead>
                         <tbody>
-                            <template is="dom-repeat" items="[[mvpagedata]]">
-                                <tr class$="[[item.paechter.status]]">
+                            <template is="dom-repeat" items="[[mvpagedata]]" as="paechter">
+                                <tr class$="[[paechter.paechter.status]]">
                                     <td class="centered-cell">
-                                        <paper-checkbox class="[[getClassByBeitrag(item.BEITRAG)]]"
+                                        <paper-checkbox class="[[getClassByBeitrag(paechter.BEITRAG)]]"
                                             id="[[getGridElementID(index, _pageStart, 'scb')]]" on-change="_checkOne"
                                             checked="[[_isItemSelected(_pageStart, index, mvdata.*)]]"></paper-checkbox>
                                     </td>
-                                    <td class="rightalign">[[item.GARTENNUMMER]]</td>
-                                    <td>[[item.ANREDE]]</td>
-                                    <td>[[item.NACHNAME]]</td>
-                                    <td>[[item.VORNAME]]</td>
-                                    <td>[[item.WOHNORT]]</td>
-                                    <td class="rightalign">[[item.FLAECHE]]</td>
-                                    <td class="rightalign">[[getAlterBy(item.GEBURTSDATUM)]]</td>
-                                    <td class="rightalign">[[item.GEBURTSDATUM]]</td>
-                                    <td>[[getJubilaeumBy(item.GEBURTSDATUM)]]</td>
-                                    <td>[[item.BEMERKUNGEN]]</td>
+                                    <template is="dom-repeat" items="[[spaltenConf.columns]]" as="sc2">
+                                        <template is="dom-if" if="[[sc2.th_show]]">
+                                            <td>[[_getPaechterData(paechter, sc2.colname)]]</td>
+                                        </template>
+                                    </template>
                                     <td class="button">
-                                        <button id="bto[[item.GARTENNUMMER]]" on-click="_openDetails"
+                                        <button id="bto[[paechter.GARTENNUMMER]]" on-click="_openDetails"
                                             class="first-domain-endpagebutton action-button">
-                                            <iron-icon id="cro[[item.GARTENNUMMER]]"
-                                                icon="[[getIcon(item._detailsOpened)]]" slot="item-icon"
+                                            <iron-icon id="cro[[paechter.GARTENNUMMER]]"
+                                                icon="[[getIcon(paechter._detailsOpened)]]" slot="item-icon"
                                                 on-click="_openDetails"></iron-icon>
                                         </button>
                                     </td>
                                     <td class="button">
-                                        <button id="btr[[item.GARTENNUMMER]]" on-click="_confirmRemove"
+                                        <button id="btr[[paechter.GARTENNUMMER]]" on-click="_confirmRemove"
                                             class="first-domain-endpagebutton action-button"
-                                            disabled="[[item._detailsOpened]]">
-                                            <iron-icon id="rmi[[item.GARTENNUMMER]]-[[index]]" icon="delete"
+                                            disabled="[[paechter._detailsOpened]]">
+                                            <iron-icon id="rmi[[paechter.GARTENNUMMER]]-[[index]]" icon="delete"
                                                 slot="item-icon" on-click="_confirmRemove"></iron-icon>
                                         </button>
                                     </td>
                                 </tr>
-                                <template is="dom-if" if="[[item._detailsOpened]]">
-                                    <tr class="details">
-                                        <td colspan="13" class="no-padding">
-                                            <iron-collapse-button expand-icon="add-circle-outline"
-                                                collapse-icon="remove-circle-outline"
-                                                class="detailelement light-element flex" opened>
-                                                <div slot="collapse-trigger" class="flex">
-                                                    <span>Pachtvertragsdaten</span>
-                                                </div>
-                                                <div slot="collapse-content" class="corrected-margin">
-                                                    <div class="mcard strong-text-color">
-                                                        <div class="layout horizontal">
-                                                            <table width="25%">
-                                                                <thead>
-                                                                    <th colspan="2">Garten</th>
-                                                                </thead>
-                                                                <tbody>
-                                                                    <tr>
-                                                                        <td>[[columnNames.0]]</td>
-                                                                        <td>[[item.GARTENNUMMER]]</td>
-                                                                    </tr>
-                                                                    <tr>
-                                                                        <td>[[columnNames.22]]</td>
-                                                                        <td>[[item.WEG]]</td>
-                                                                    </tr>
-                                                                    <tr>
-                                                                        <td>[[columnNames.9]]</td>
-                                                                        <td>[[item.FLAECHE]]</td>
-                                                                    </tr>
-                                                                </tbody>
-                                                            </table>
-                                                            <table width="25%">
-                                                                <thead>
-                                                                    <th colspan="2">Anschrift</th>
-                                                                </thead>
-                                                                <tbody>
-                                                                    <tr>
-                                                                        <td>Name</td>
-                                                                        <td>[[item.ANREDE]] [[item.VORNAME]]
-                                                                            [[item.NACHNAME]]</td>
-                                                                    </tr>
-                                                                    <tr>
-                                                                        <td>[[columnNames.5]]</td>
-                                                                        <td>[[item.STRASSE]]</td>
-                                                                    </tr>
-                                                                    <tr>
-                                                                        <td>[[columnNames.8]]</td>
-                                                                        <td>[[item.PLZ]] [[item.WOHNORT]]</td>
-                                                                    </tr>
-                                                                </tbody>
-                                                            </table>
-                                                            <table width="25%">
-                                                                <thead>
-                                                                    <th colspan="2">Kontakt</th>
-                                                                </thead>
-                                                                <tbody>
-                                                                    <tr>
-                                                                        <td>[[columnNames.10]]</td>
-                                                                        <td><a
-                                                                                href="tel:[[item.TELEFON]]">[[item.TELEFON]]</a>
-                                                                        </td>
-                                                                    </tr>
-                                                                    <tr>
-                                                                        <td>[[columnNames.11]]</td>
-                                                                        <td><a
-                                                                                href="mailto:[[item.EMAIL]]">[[item.EMAIL]]</a>
-                                                                        </td>
-                                                                    </tr>
-                                                                </tbody>
-                                                            </table>
-                                                            <table width="25%">
-                                                                <thead>
-                                                                    <th colspan="2">Details</th>
-                                                                </thead>
-                                                                <tbody>
-                                                                    <tr>
-                                                                        <td>[[columnNames.4]]</td>
-                                                                        <td>[[item.GEBURTSDATUM]]</td>
-                                                                    </tr>
-                                                                </tbody>
-                                                            </table>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </iron-collapse-button>
-                                        </td>
-                                    </tr>
+                                <template is="dom-if" if="[[paechter._detailsOpened]]">
                                     <tr class="details">
                                         <td colspan="13" class="no-padding">
                                             <iron-collapse-button expand-icon="add-circle-outline"
@@ -297,10 +163,11 @@
                                                 </div>
                                                 <div slot="collapse-content" class="corrected-margin">
                                                     <div class="mcard strong-text-color">
-                                                        <grt-gartler id="grtl[[_pageStart]]-[[index]]" gartler="[[item]]"
-                                                            on-savegartler="_postOnePaechter">
-                                                            <h4 slot="title">Pächter</h4>>
-                                                        </grt-gartler>
+                                                        <grt-member id="mmbr[[_pageStart]]-[[index]]" id-key="GARTENNUMMER"
+                                                            member="[[paechter]]" col-conf="[[spaltenConf]]"
+                                                            on-savemember="_postOneFM">
+                                                            <h4 slot="title">Fördermitglied</h4>>
+                                                        </grt-member>
 
                                                     </div>
                                                 </div>
@@ -309,8 +176,8 @@
                                     </tr>
                                     <tr class="details">
                                         <td colspan="13" class="no-padding">
-                                            <iron-collapse-button id="history_clps[[_pageStart]]-[[index]]" expand-icon="add-circle-outline"
-                                                collapse-icon="remove-circle-outline"
+                                            <iron-collapse-button id="history_clps[[_pageStart]]-[[index]]"
+                                                expand-icon="add-circle-outline" collapse-icon="remove-circle-outline"
                                                 class="detailelement light-element flex">
                                                 <div slot="collapse-trigger" class="flex">
                                                     <div class="layout horizontal justified">
@@ -319,8 +186,10 @@
                                                 </div>
                                                 <div slot="collapse-content" class="corrected-margin">
                                                     <div class="mcard strong-text-color">
-                                                        <grt-gartler-history id="history[[_pageStart]]-[[index]]" ident="[[item.GARTENNUMMER]]" domain="paechter">
-                                                            <h4 slot="title">Pächter</h4>
+                                                        <grt-gartler-history id="history[[_pageStart]]-[[index]]"
+                                                            ident="[[paechter.GARTENNUMMER]]"
+                                                            domain="foerdermitglieder">
+                                                            <h4 slot="title">Fördermitglied</h4>
                                                         </grt-gartler-history>
 
                                                     </div>
@@ -347,7 +216,7 @@
 
             static get properties() {
                 return {
-                    logg:{
+                    logg: {
                         type: Boolean,
                     },
                     actionButtons: {
@@ -409,11 +278,51 @@
 
                     _isAenderung: {
                         type: Boolean
-                    }
+                    },
+
+                    spaltenConf: {
+                        type: Array,
+                        value: null,
+                        notify: true,
+                        observer: '_spaltenConfReady'
+                    },
                 }
             }
 
-            
+            _getPaechterData(paechter, cname) {
+                switch (cname) {
+                    case "ALTER":
+                        return this.getAlterBy(paechter.GEBURTSDATUM);
+                        break;
+                    case "JUBILAEUM":
+                        return this.getJubilaeumBy(paechter.GEBURTSDATUM);
+                        break;
+                    default:
+                        return paechter[cname];
+                        break;
+                }
+            }
+
+            _spaltenConfReady() {
+                if (this.spaltenConf && this.spaltenConf.columns && this.spaltenConf.columns.length) {
+                    this.$.firstclient.getAsJSON('paechter').then((resp) => {
+                        if (resp) {
+                            this.splitToObjects(resp).finally(() => {
+                                //wenn pageSize nur an einer stelle initialisiert wird (in then von splitToObjects)
+                                // dann der gleiche wert 10 wird nicht noch mal zu der pagination Componente getriggert
+                                // denn er sich noch nicht geändert hatte, die Komp beim ersten mal aber nicht da war
+                                this.set('pageSize', parseInt(0));
+                                this.changePage();
+                            });
+                        } else {
+                            showToast(this, 'Bei der Initialisierung der Seite wurden keine Pächterdaten gefunden', TOAST_TYPE.ERROR);
+                        }
+                    }).catch((err) => {
+                        console.log("Fehler beim get fuer paechter  kam:" + JSON.stringify(err))
+                        showToast(this, 'Die Pächter konnten nicht geladen werden', TOAST_TYPE.ERROR);
+                    })
+                }
+            }
 
             _confirmRemove(e) {
                 e.preventDefault();
@@ -439,37 +348,46 @@
 
             ready() {
                 super.ready();
-                
+
                 if (this.$)
-                this.$ = new Proxy(this.$, {
-                    get: ($, id) => $[id] || this.shadowRoot.getElementById(id),
-                    set: ($, id, element) => {
-                        $[id] = element;
-                        return true;
-                    }
-                });
-            
-                this.$.firstclient.getAsJSON('paechter').then((resp) => {
-                    if (resp) {
-                        this.splitToObjects(resp).finally(() => {
-                            //wenn pageSize nur an einer stelle initialisiert wird (in then von splitToObjects)
-                            // dann der gleiche wert 10 wird nicht noch mal zu der pagination Componente getriggert
-                            // denn er sich noch nicht geändert hatte, die Komp beim ersten mal aber nicht da war
-                            this.set('pageSize', parseInt(0));
-                            this.changePage();
-                        });
+                    this.$ = new Proxy(this.$, {
+                        get: ($, id) => $[id] || this.shadowRoot.getElementById(id),
+                        set: ($, id, element) => {
+                            $[id] = element;
+                            return true;
+                        }
+                    });
+
+                this._loadColumnConfigThenData();
+            }
+
+            _loadColumnConfigThenData() {
+                this.$.bclient.getDomaenenColumnConfig('paechter').then((domConf) => {
+                    if (!domConf || !domConf.columns || !Array.isArray(domConf.columns)) {
+                        throw 'nicht gefunden';
                     } else {
-                        showToast(this, 'Bei der Initialisierung der Seite wurden keine Pächterdaten gefunden', TOAST_TYPE.ERROR);
+                        domConf.columns.sort((a, b) => {
+                            return (a.th_show && a.postion && !isNaN(a.position) && b.th_show && b.position && !isNaN(b.position) && parseInt(a.position) < parseInt(b.position) ? 1 : -1)
+                        })
+                        console.warn('conf ist' + JSON.stringify(domConf))
+                        this.set('spaltenConf', domConf);
+                        showToast(this, 'Die Pächter-Spaltenkonfiguration wurde erfolgreich geladen', TOAST_TYPE.SUCCESS);
                     }
+
                 }).catch((err) => {
-                    console.log("Fehler beim get fuer paechter  kam:" + JSON.stringify(err))
-                    showToast(this, 'Die Paecheterdaten konnten nicht geladen werden', TOAST_TYPE.ERROR);
+                    console.warn('conf column  err' + err)
+                    this._defaultColumnConf.columns.sort((a, b) => {
+                        return (a.th_show && a.postion && !isNaN(a.position) && b.th_show && b.position && !isNaN(b.position) && parseInt(a.position) < parseInt(b.position) ? 1 : -1)
+                    })
+                    console.warn('default conf ist' + JSON.stringify(this._defaultColumnConf))
+                    this.set('spaltenConf', this._defaultColumnConf);
+                    showToast(this, 'Keine Spaltenkonfiguration für die Pächter konnte geladen werden, default wird benutzt', TOAST_TYPE.ERROR);
                 })
             }
 
             _openDetails(e) {
-                e.model.set("item._detailsOpened", !e.model.item._detailsOpened);
-                if (e.model.item._detailsOpened) {
+                e.model.set("paechter._detailsOpened", !e.model.paechter._detailsOpened);
+                if (e.model.paechter._detailsOpened) {
                     this.push('openeddetails', true);
                 } else {
                     this.shift('openeddetails');
@@ -576,11 +494,11 @@
                         if (direction === 'asc') {
                             if (moment((self.getJubilaeumBy(a[key]) || 'Dec'), 'MMM').isBefore(moment((self.getJubilaeumBy(b[key]) || 'Dec'), 'MMM'))) return -1;
                             if (moment((self.getJubilaeumBy(a[key]) || 'Dec'), 'MMM').isAfter(moment((self.getJubilaeumBy(b[key]) || 'Dec'), 'MMM'))) return 1;
-                            
+
                         } else {
                             if (moment((self.getJubilaeumBy(a[key]) || 'Dec'), 'MMM').isBefore(moment((self.getJubilaeumBy(b[key]) || 'Dec'), 'MMM'))) return 1;
                             if (moment((self.getJubilaeumBy(a[key]) || 'Dec'), 'MMM').isAfter(moment((self.getJubilaeumBy(b[key]) || 'Dec'), 'MMM'))) return -1;
-                            
+
                         }
                         return 1;
                     });
@@ -589,10 +507,6 @@
                     self.changePage();
                 }
             }
-
-
-
-
 
             changePage() {
                 if (this._pageStart || this._pageStart === 0) {
@@ -604,12 +518,9 @@
             }
 
             splitToObjects(resp) {
-                let paechterData = resp.data;
-                let columns = resp.columns;
+                let paechterData = resp;
                 let promises = [];
-
                 return Promise.all(promises).then(() => {
-                    this.set('columnNames', columns);
                     this.set('mvdata', paechterData);
                     this.set('pageSize', parseInt(10));
                 })
@@ -677,7 +588,7 @@
             }
 
             exportPaechter(e) {
-                let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
+                let dataAndColumns = { data: this.mvdata, columns: this.spaltenConf.columns }
                 this.$.firstclient.exportPaechterAsCSV(dataAndColumns, e.detail).then((savePath) => {
                     if (savePath && savePath.path) {
                         this.$.grtinfodialog.showDialog(
@@ -722,7 +633,7 @@
                     this.$.firstclient.postAsJSON(toSave, 'paechter', toSave.GARTENNUMMER).then(() => {
                         this.$[mid].pushSuccesfullEvent(e.type);
                         this._insertChangedPaechter(e);
-                        if (this.logg){
+                        if (this.logg) {
                             let historyID = "history" + mid.substring(4);
                             this.$[historyID].postLogData(toSave, e.detail.logdata);
                         }

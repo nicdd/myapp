@@ -143,9 +143,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <apps-dialog id="appsdialog" action-buttons="[[actionButtons]]" tasks="[[getSelected(mvdata.*)]]"></apps-dialog>
     <div>
       <div class="toolbar layout horizontal justified" flex>
-        <template is="dom-if" if="[[columnNames.length]]">
+        <template is="dom-if" if="[[spaltenConf.columns.length]]">
           <grt-grid-pagination id="pagesss" datalength="[[mvdata.length]]" page-size="{{pageSize}}"
-            pstart="{{_pageStart}}" on-pagechanged="changePage" style-domain="second-domain"></grt-grid-pagination>
+            pstart="{{_pageStart}}" on-pagechanged="changePage" style-domain="second-domain">
+          </grt-grid-pagination>
         </template>
         <div class="layout horizontal justified" flex="50">
           <button id="appsbutton" on-click="_showApps" disabled="[[_noOneSelected(mvdata.*)]]" class="action-button">
@@ -162,58 +163,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               <th class="centered-cell">
                 <paper-checkbox on-change="_checkAll" checked="[[_areAllSelected(mvdata.*)]]"></paper-checkbox>
               </th>
-              <th>
-                <column-sorter colname="[[columnNames.0]]" path="GARTENNUMMER" on-sorter-changed="_sortChange">
-                </column-sorter>
-              </th>
-              <th>
-                <column-sorter colname="[[columnNames.2]]" path="NACHNAME" on-sorter-changed="_sortChange">
-                </column-sorter>
-              </th>
-              <th>
-                <column-sorter colname="[[columnNames.3]]" path="VORNAME" on-sorter-changed="_sortChange">
-                </column-sorter>
-              </th>
-              <th>
-                <column-sorter colname="[[columnNames.13]]" path="GBV" on-sorter-changed="_sortChange"></column-sorter>
-              </th>
-              <th>
-                <column-sorter colname="[[columnNames.14]]" path="FED" on-sorter-changed="_sortChange"></column-sorter>
-              </th>
-              <th>
-                <column-sorter colname="[[columnNames.15]]" path="HOEV" on-sorter-changed="_sortChange"></column-sorter>
-              </th>
-              <th>
-                <column-sorter colname="[[columnNames.16]]" path="A7_1" on-sorter-changed="_sortChange"></column-sorter>
-              </th>
-              <th>
-                <column-sorter colname="[[columnNames.17]]" path="A7_3" on-sorter-changed="_sortChange"></column-sorter>
-              </th>
-              <th>
-                <column-sorter colname="[[columnNames.18]]" path="A7_4" on-sorter-changed="_sortChange"></column-sorter>
-              </th>
-              <th>
-                <column-sorter colname="[[columnNames.19]]" path="UV" on-sorter-changed="_sortChange"></column-sorter>
-              </th>
-              <th>
-                <column-sorter colname="[[columnNames.20]]" path="BEITRAG" on-sorter-changed="_sortChange">
-                </column-sorter>
-              </th>
-              <th>
-                <column-sorter colname="[[columnNames.21]]" path="V_BEMERKUNG" on-sorter-changed="_sortChange">
-                </column-sorter>
-              </th>
+              <template is="dom-repeat" items="[[spaltenConf.columns]]" as="sc1">
+                <template is="dom-if" if="[[sc1.th_show]]">
+                  <th>
+                    <column-sorter id="[[sc1.colname]]" colname="[[sc1.alias]]" path="[[sc1.colname]]"
+                      on-sorter-changed="_sortChange">
+                    </column-sorter>
+                  </th>
+                </template>
+              </template>
               <th class="button"></th>
             </thead>
             <tbody>
-              <template is="dom-repeat" items="[[mvpagedata]]">
-                <tr class$="[[item.versicherung.status]]">
+              <template is="dom-repeat" items="[[mvpagedata]]" as="vs">
+                <tr class$="[[vs.versicherung.status]]">
                   <td class="centered-cell">
-                    <paper-checkbox class="[[getClassByBeitrag(item.BEITRAG)]]"
+                    <paper-checkbox class="[[getClassByBeitrag(vs.BEITRAG)]]"
                       id="[[getGridElementID(index, _pageStart, 'scb')]]" on-change="_checkOne"
                       checked="[[_isItemSelected(_pageStart, index, mvdata.*)]]"></paper-checkbox>
                   </td>
-                  <td class="rightalign">[[item.GARTENNUMMER]]</td>
+                  <!-- <td class="rightalign">[[item.GARTENNUMMER]]</td>
                   <td>[[item.NACHNAME]]</td>
                   <td>[[item.VORNAME]]</td>
                   <template is="dom-if" if="[[!_externeVersicherung(item.versicherung.name)]]">
@@ -228,98 +197,42 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                   </template>
                   <template is="dom-if" if="[[_externeVersicherung(item.versicherung.name)]]">
                     <th colspan="8" class="centered-cell">[[item.versicherung.name]]</th>
-                  </template>
+                  </template> -->
 
-                  <td>[[item.V_BEMERKUNG]]</td>
+                  <template is="dom-repeat" items="[[spaltenConf.columns]]" as="sc2">
+                    <template is="dom-if" if="[[sc2.th_show]]">
+                      <td>[[_getVSData(vs, sc2)]]</td>
+                    </template>
+                  </template>
                   <td class="button">
-                    <button id="bto[[item.GARTENNUMMER]]" on-click="_openDetails"
+                    <button id="bto[[vs.GARTENNUMMER]]" on-click="_openDetails"
                       class="second-domain-endpagebutton action-button">
-                      <iron-icon id="cro[[item.GARTENNUMMER]]" icon="[[getIcon(item._detailsOpened)]]" slot="item-icon"
+                      <iron-icon id="cro[[vs.GARTENNUMMER]]" icon="[[getIcon(vs._detailsOpened)]]" slot="item-icon"
                         on-click="_openDetails"></iron-icon>
                     </button>
                   </td>
                 </tr>
-                <template is="dom-if" if="[[item._detailsOpened]]">
+                <template is="dom-if" if="[[vs._detailsOpened]]">
                   <tr class="details">
-                    <td colspan="14" class="no-padding">
-                      <iron-collapse-button expand-icon="add-circle-outline" collapse-icon="remove-circle-outline"
-                        class="detailelement light-element flex" opened>
-                        <div slot="collapse-trigger" class="flex">
-                          <span>Daten des Versicherungsnehmers</span>
-                        </div>
-                        <div slot="collapse-content" class="corrected-margin">
-                          <div class="mcard strong-text-color">
-                            <div class="layout horizontal">
-                              <table width="25%">
-                                <thead>
-                                  <th colspan="2">Garten</th>
-                                </thead>
-                                <tbody>
-                                  <tr>
-                                    <td>[[columnNames.0]]</td>
-                                    <td>[[item.GARTENNUMMER]]</td>
-                                  </tr>
-                                  <tr>
-                                    <td>[[columnNames.22]]</td>
-                                    <td>[[item.WEG]]</td>
-                                  </tr>
-                                  <tr>
-                                    <td>[[columnNames.9]]</td>
-                                    <td>[[item.FLAECHE]]</td>
-                                  </tr>
-                                </tbody>
-                              </table>
-                              <table width="25%">
-                                <thead>
-                                  <th colspan="2">Anschrift</th>
-                                </thead>
-                                <tbody>
-                                  <tr>
-                                    <td>Name</td>
-                                    <td>[[item.ANREDE]] [[item.VORNAME]] [[item.NACHNAME]]</td>
-                                  </tr>
-                                  <tr>
-                                    <td>[[columnNames.5]]</td>
-                                    <td>[[item.STRASSE]]</td>
-                                  </tr>
-                                  <tr>
-                                    <td>[[columnNames.8]]</td>
-                                    <td>[[item.PLZ]] [[item.WOHNORT]]</td>
-                                  </tr>
-                                </tbody>
-                              </table>
-                              <table width="25%">
-                                <thead>
-                                  <th colspan="2">Kontakt</th>
-                                </thead>
-                                <tbody>
-                                  <tr>
-                                    <td>[[columnNames.10]]</td>
-                                    <td><a href="tel:[[item.TELEFON]]">[[item.TELEFON]]</a></td>
-                                  </tr>
-                                  <tr>
-                                    <td>[[columnNames.11]]</td>
-                                    <td><a href="mailto:[[item.EMAIL]]">[[item.EMAIL]]</a></td>
-                                  </tr>
-                                </tbody>
-                              </table>
-                              <table width="25%">
-                                <thead>
-                                  <th colspan="2">Details</th>
-                                </thead>
-                                <tbody>
-                                  <tr>
-                                    <td>[[columnNames.4]]</td>
-                                    <td>[[item.GEBURTSDATUM]]</td>
-                                  </tr>
-                                </tbody>
-                              </table>
+                    <td colspan="13" class="no-padding">
+                        <iron-collapse-button expand-icon="add-circle-outline"
+                            collapse-icon="remove-circle-outline"
+                            class="detailelement light-element flex" opened>
+                            <div slot="collapse-trigger" class="flex">
+                                <div class="layout horizontal justified">
+                                    <span>Daten des Versicherungnehmers</span>
+                                </div>
                             </div>
-                          </div>
-                        </div>
-                      </iron-collapse-button>
+                            <div slot="collapse-content" class="corrected-margin">
+                                <div class="mcard strong-text-color">
+                                    <grt-member id="mmbr[[_pageStart]]-[[index]]" id-key="GARTENNUMMER" member="[[vs]]" col-conf="[[spaltenConf]]">
+                                        <h4 slot="title">Fördermitglied</h4>>
+                                    </grt-member>
+                                </div>
+                            </div>
+                        </iron-collapse-button>
                     </td>
-                  </tr>
+                </tr>
                   <tr class="details">
                     <td colspan="14" class="no-padding">
                       <iron-collapse-button expand-icon="add-circle-outline" collapse-icon="remove-circle-outline"
@@ -328,9 +241,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                           <div class="layout horizontal justified">
                             <span>Versicherungsdaten</span>
                             <button id="sbt[[index]]" on-click="_saveItemData"
-                              disabled="[[_saveButtonDisabled(dc, item.versicherung.name, item.versicherung.von, item.versicherung.bis)]]">
+                              disabled="[[_saveButtonDisabled(dc, vs.versicherung.name, vs.versicherung.von, vs.versicherung.bis)]]">
                               <iron-icon icon="save" id="sic[[index]]" slot="item-icon"
-                                disabled="[[_saveButtonDisabled(dc, item.versicherung.name, item.versicherung.von, item.versicherung.bis)]]"
+                                disabled="[[_saveButtonDisabled(dc, vs.versicherung.name, vs.versicherung.von, vs.versicherung.bis)]]"
                                 on-click="_saveItemData"></iron-icon>
                             </button>
                           </div>
@@ -338,22 +251,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
                         <div slot="collapse-content" class="corrected-margin">
                           <div class="mcard strong-text-color">
-                            Versicherer: <paper-input id="versName[[index]]" value="[[item.versicherung.name]]"
+                            Versicherer: <paper-input id="versName[[index]]" value="[[vs.versicherung.name]]"
                               on-value-changed="_doOnVersicherungNameChanged"></paper-input>
-                            Von: <overlay-date-picker id="versVon[[index]]" date="{{item.versicherung.von}}" required on-value-changed="_doOnVersicherungVonChanged"></overlay-date-picker>
+                            Von: <overlay-date-picker id="versVon[[index]]" date="{{vs.versicherung.von}}" required
+                              on-value-changed="_doOnVersicherungVonChanged"></overlay-date-picker>
                             <!-- <paper-input id="versVon[[index]]" value="[[item.versicherung.von]]"
                               on-value-changed="_doOnVersicherungVonChanged"></paper-input> -->
-                            Bis: <overlay-date-picker id="versBis[[index]]" date="{{item.versicherung.bis}}" required on-value-changed="_doOnVersicherungBisChanged"></overlay-date-picker>
-                            
+                            Bis: <overlay-date-picker id="versBis[[index]]" date="{{vs.versicherung.bis}}" required
+                              on-value-changed="_doOnVersicherungBisChanged"></overlay-date-picker>
+
                             <!--<paper-input id="versBis[[index]]" value="[[item.versicherung.bis]]"
                               on-value-changed="_doOnVersicherungBisChanged"></paper-input>-->
                           </div>
                         </div>
-                        <template is="dom-if" if="[[_isKVDVersichert(item.versicherung.name)]]">
+                        <template is="dom-if" if="[[_isKVDVersichert(vs.versicherung.name)]]">
                           <div slot="collapse-content" class="corrected-margin">
                             <div class="mcard strong-text-color">
                               <my-versicherungrechner id="[[getGridElementID(index, _pageStart, 'vrd')]]"
-                                vcs="[[vconfig]]" saved-data="[[item]]" dosave="{{dosave}}" changed-saved-data="{{dc}}"
+                                vcs="[[vconfig]]" saved-data="[[vs]]" dosave="{{dosave}}" changed-saved-data="{{dc}}"
                                 on-savedversicherter="_postOnePaechter"></my-versicherungrechner>
                             </div>
                           </div>
@@ -448,8 +363,47 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             type: Boolean,
             value: null,
             notify: true
+          },
+
+          spaltenConf: {
+            type: Array,
+            value: null,
+            notify: true,
+            observer: '_spaltenConfReady'
           }
 
+        }
+      }
+
+      _getVSData(fm, spalte) {
+        if (spalte.coltype === "date") {
+          let res = moment(fm[spalte.colname]);
+          if (res.isValid()) {
+            return res.format('DD.MM.YYYY HH:mm');
+          } else return fm[spalte.colname];
+        } else
+          return fm[spalte.colname];
+      }
+
+      _spaltenConfReady() {
+        if (this.spaltenConf && this.spaltenConf.columns && this.spaltenConf.columns.length) {
+          this.$.firstclient.getAsJSON('paechter').then((resp) => {
+            if (resp) {
+              resp = this.setVersicherungstatus(resp);
+              this.splitToObjects(resp).finally(() => {
+                //wenn pageSize nur an einer stelle initialisiert wird (in then von splitToObjects)
+                // dann der gleiche wert 10 wird nicht noch mal zu der pagination Componente getriggert
+                // denn er sich noch nicht geändert hatte, die Komp beim ersten mal aber nicht da war
+                this.set('pageSize', parseInt(0));
+                this.changePage();
+              });
+            } else {
+              showToast(this, 'Bei der Initialisierung der Seite wurden keine Versicherte gefunden', TOAST_TYPE.ERROR);
+            }
+          }).catch((err) => {
+            console.log("Fehler beim get fuer versicherte  kam:" + JSON.stringify(err))
+            showToast(this, 'Die Versicherten konnten nicht geladen werden', TOAST_TYPE.ERROR);
+          })
         }
       }
 
@@ -484,7 +438,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       }
       _doOnVersicherungVonChanged(e) {
-        
+
         if (e && e.target) {
           // let realIdx = e.target.id.substring(7);
           // let path = 'mvpagedata.' + realIdx + '.versicherung.von';
@@ -517,37 +471,51 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         return false;
       }
 
-
       ready() {
         super.ready();
-        this.$.firstclient.getAsJSON('paechter').then((resp) => {
-          if (resp) {
 
-            //console.log('datasind ready' + JSON.stringify(resp))
-            resp.data = this.setVersicherungstatus(resp.data);
-            this.splitToObjects(resp).finally(() => {
-              //wenn pageSize nur an einer stelle initialisiert wird (in then von splitToObjects)
-              // dann der gleiche wert 10 wird nicht noch mal zu der pagination Componente getriggert
-              // denn er sich noch nicht geändert hatte, die Komp beim ersten mal aber nicht da war
-              this.set('pageSize', parseInt(0));
-              this.changePage();
-            });
-          } else {
-            showToast(this, 'Bei der Initialisierung der Seite wurden keine Versichertendaten gefunden', TOAST_TYPE.ERROR);
-          }
-        }).catch((err) => {
-          console.log("Fehler beim get fuer versicherte  kam:" + JSON.stringify(err))
-        })
-
+        if (this.$)
+          this.$ = new Proxy(this.$, {
+            get: ($, id) => $[id] || this.shadowRoot.getElementById(id),
+            set: ($, id, element) => {
+              $[id] = element;
+              return true;
+            }
+          });
+        this._loadColumnConfigThenData();
         window.addEventListener('vconfigchanged', (e) => {
           console.warn('vconfigchanged in versicherte' + JSON.stringify(e.detail))
           this.set('vconfig', e.detail);
         })
       }
 
+      _loadColumnConfigThenData() {
+        this.$.bclient.getDomaenenColumnConfig('versicherte').then((domConf) => {
+          if (!domConf || !domConf.columns || !Array.isArray(domConf.columns)) {
+            throw 'nicht gefunden';
+          } else {
+            domConf.columns.sort((a, b) => {
+              return (a.th_show && a.postion && !isNaN(a.position) && b.th_show && b.position && !isNaN(b.position) && parseInt(a.position) < parseInt(b.position) ? 1 : -1)
+            })
+            console.warn('conf ist' + JSON.stringify(domConf))
+            this.set('spaltenConf', domConf);
+            showToast(this, 'Die Versicherten-Spaltenkonfiguration wurde erfolgreich geladen', TOAST_TYPE.SUCCESS);
+          }
+
+        }).catch((err) => {
+          console.warn('conf column  err' + err)
+          this._defaultColumnConf.columns.sort((a, b) => {
+            return (a.th_show && a.postion && !isNaN(a.position) && b.th_show && b.position && !isNaN(b.position) && parseInt(a.position) < parseInt(b.position) ? 1 : -1)
+          })
+          console.warn('default conf ist' + JSON.stringify(this._defaultColumnConf))
+          this.set('spaltenConf', this._defaultColumnConf);
+          showToast(this, 'Keine Spaltenkonfiguration für die FM konnte geladen werden, default wird benutzt', TOAST_TYPE.ERROR);
+        })
+      }
+
       _openDetails(e) {
-        e.model.set("item._detailsOpened", !e.model.item._detailsOpened);
-        if (e.model.item._detailsOpened) {
+        e.model.set("vs._detailsOpened", !e.model.vs._detailsOpened);
+        if (e.model.vs._detailsOpened) {
           this.push('openeddetails', true);
         } else {
           this.shift('openeddetails');
@@ -620,7 +588,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       splitToObjects(resp) {
-        let versichertenData = resp.data;
+        let versichertenData = resp;
         let columns = resp.columns;
         let promises = [];
 
@@ -662,7 +630,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         if (newV) {
           this.$.firstclient.getAsJSON('paechter').then((resp) => {
             if (resp) {
-              resp.data = this.setVersicherungstatus(resp.data);
+              resp = this.setVersicherungstatus(resp);
               //this.set('pageSize', 10);
               this.splitToObjects(resp).finally(() => {
                 this.changePage();
@@ -712,7 +680,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       exportVersicherte(e) {
-        let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
+        let dataAndColumns = { data: this.mvdata, columns: this.spaltenConf.columns }
         this.$.firstclient.exportVersicherteAsCSV(dataAndColumns, e.detail).then((savePath) => {
           if (savePath && savePath.path) {
             this.$.grtinfodialog.showDialog(

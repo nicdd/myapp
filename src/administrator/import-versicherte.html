@@ -24,49 +24,68 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
     class ImportVersicherte extends customElements.get('import-allgemein') {
       static get is() { return 'import-versicherte'; }
 
-      ready(){
+      ready() {
         super.ready();
         this.set('domainname', 'versicherte');
         this.set('disableDomainNameInput', true);
       }
 
-      saveToDB(versicherte) {
-
-        return this.$.firstclient.getAsJSON('paechter').then((paechter) => {
-          return this.resolveConflicts(paechter, versicherte);
-
-        }).then((conflictCheckedData) => {
-          let unklareFaelle = { columns: versicherte.columns, data: conflictCheckedData.unklare };
-          let klareFaelle = { columns: versicherte.columns, data: conflictCheckedData.klare };
-          let promises = [];
-          let klarePr = this.$.firstclient.updateAsJSON(klareFaelle, 'paechter').catch(()=>{
-            showToast(this, 'Fehler bei der Übertragung der importierten Pächter-Daten in die Datenbank. (klare Fälle) ', TOAST_TYPE.ERROR);
-          });
-          let unklarePr = this.$.firstclient.postAsJSON(unklareFaelle, 'unklareversicherte').catch(()=>{
-            showToast(this, 'Fehler bei der Übertragung der importierten Pächter-Daten in die Datenbank. (unklare Fälle) ', TOAST_TYPE.ERROR);
-          })
-          promises.push(klarePr);
-          promises.push(unklarePr);
-          return Promise.all(promises);
-
-        }).catch(() => {
-          return Promise.reject();
+      _tryThisColumnConfig() {
+        console.warn('DAS GING')
+        return this.$.bclient.getDomaenenColumnConfig(this.domainname).catch(() => {
+          return this.$.bclient.getDomaenenColumnConfig('paechter')
         })
-
       }
 
-      resolveConflicts(paechter, versicherte) {
+      saveToDB(versicherte) {
+        return this.$.bclient.getDomaenenColumnConfig('paechter').then((paechterConf) => {
+          console.warn('geschaftt 0')
+          return this.$.firstclient.getAsJSON('paechter').then((paechter) => {
+            console.warn('geschaftt 1')
+            return this.resolveConflicts(paechter, versicherte, paechterConf).then((conflictCheckedData) => {
+              console.warn('geschaftt 2')
+              let unklareFaelle = conflictCheckedData.unklare;
+              let klareFaelle = conflictCheckedData.klare;
+              let promises = [];
+              console.warn('geschaftt 3')
+              let klarePr = this.$.firstclient.updateAsJSON(klareFaelle, 'paechter').catch(() => {
+                showToast(this, 'Fehler bei der Übertragung der importierten Pächter-Daten in die Datenbank. (klare Fälle) ', TOAST_TYPE.ERROR);
+              });
+              console.warn('geschaftt 4')
+              let unklarePr = this.$.firstclient.postAsJSON(unklareFaelle, 'unklareversicherte').catch(() => {
+                showToast(this, 'Fehler bei der Übertragung der importierten Pächter-Daten in die Datenbank. (unklare Fälle) ', TOAST_TYPE.ERROR);
+              })
+              promises.push(klarePr);
+              promises.push(unklarePr);
+              console.warn('geschaftt 5')
+              return Promise.all(promises);
+            })
+          }).catch(() => {
+            showToast(this, 'Fehler beim Lesen der Pächter zwecks Mergen mit Versichertendaten', TOAST_TYPE.ERROR);
+            return Promise.reject();
+          })
+        }).catch(() => {
+          showToast(this, 'Fehler beim Lesen der Spaltenconfiguration für Pächter zwecks Mergen mit Versichertendaten', TOAST_TYPE.ERROR);
+          return Promise.reject();
+        })
+      }
+
+      resolveConflicts(paechter, versicherte, paechterConf) {
+        console.warn('geschaftt 6')
         let faelle = { 'klare': [], 'unklare': [] }
-        versicherte.data.forEach((v) => {
-          let isInP = paechter.data.find((p) => p.GARTENNUMMER === v.GARTENNUMMER);
+        console.warn('geschaftt 7')
+        versicherte.forEach((v) => {
+          console.warn('geschaftt 8')
+          let isInP = paechter.find((p) => p.GARTENNUMMER === v.GARTENNUMMER);
           let grund = null;
-          (!isInP) ? grund = "Keie Entsprechung" : ((isInP.NACHNAME !== v.NACHNAME) ? grund = "Abweichung - Nachname":(isInP.VORNAME !== v.VORNAME)? grund = "Abweichung - Vorname": (isInP.STRASSE !== v.STRASSE) ? grund = "Abweichung- Strasse" : (isInP.PLZ !== v.PLZ) ? grund = "Abweichung PLZ" : (isInP.WOHNORT !== v.WOHNORT) ? grund = "Abweichung Wohnort" : grund = null)
+          (!isInP) ? grund = "Keie Entsprechung" : ((isInP.NACHNAME !== v.NACHNAME) ? grund = "Abweichung - Nachname" : (isInP.VORNAME !== v.VORNAME) ? grund = "Abweichung - Vorname" : (isInP.STRASSE !== v.STRASSE) ? grund = "Abweichung- Strasse" : (isInP.PLZ !== v.PLZ) ? grund = "Abweichung PLZ" : (isInP.WOHNORT !== v.WOHNORT) ? grund = "Abweichung Wohnort" : grund = null)
 
           if (grund) { //|| isInP.WOHNORT !== v.WOHNORT
+
             v['grund'] = grund;
             faelle['unklare'].push(v);
           } else {
-            this.generalConf.forEach((elem) => {
+            paechterConf.columns.forEach((elem) => {
               // wenn die Spalte paechter-spezifisch dann vorrangig behandeln,
               // sprich die entsprechnde aus v überschreiben (sollte null sein)
               if (elem.rolen.some((rolle) => rolle === 'paechter')) {
@@ -76,25 +95,25 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
             faelle['klare'].push(v);
           }
         })
-
+        console.warn('geschaftt 9')
         return Promise.resolve(faelle);
       }
 
       _checkForMustColumns(conf) {
-          let gartenNummer = conf.find((elem) => elem.colname === "GARTENNUMMER");
-          if (!gartenNummer || !gartenNummer.colname || !gartenNummer.coltype || !gartenNummer.alias || !gartenNummer.rolen || !(Array.isArray(gartenNummer.rolen))) {
-            gartenNummer = {
-              "colname": "GARTENNUMMER",
-              "coltype": "string",
-              "alias": "Aufnahme",
-              "rolen": [
-                "paechter",
-                "versicherung",
-                "foerdermitglieder"
-              ]
-            }
-            conf.unshift(gartenNummer);
+        let gartenNummer = conf.find((elem) => elem.colname === "GARTENNUMMER");
+        if (!gartenNummer || !gartenNummer.colname || !gartenNummer.coltype || !gartenNummer.alias || !gartenNummer.rolen || !(Array.isArray(gartenNummer.rolen))) {
+          gartenNummer = {
+            "colname": "GARTENNUMMER",
+            "coltype": "numberstring",
+            "alias": "GNr.",
+            "rolen": [
+              "paechter",
+              "versicherung",
+              "foerdermitglieder"
+            ]
           }
+          conf.unshift(gartenNummer);
+        }
         return conf;
       }
 

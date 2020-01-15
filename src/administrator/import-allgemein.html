@@ -141,6 +141,7 @@
                 title="In welcher Spaltengruppe wird diese Spalte eingeteilt und an welcher Stelle?">Gruppe und
                 Gruppenposition</th>
               <th class="contentcol" title="Technischer Spaltenname für die Datenbanktabelle">Spaltenname</th>
+              <th class="contentcol" title="Erforderlicher Hinweis für die technische Verarbeitung">Datentyp</th>
               <th class="contentcol" title="So wird diese Spalte in der Maske aussehen">Alias</th>
               <th class="contentcol" title="Die Entsprechung in der zu importierenden Tabelle">Entsprechung
                 Import</th>
@@ -188,8 +189,12 @@
                     </paper-input>
                   </td>
                   <td class="contentcol">
+                    <grt-dropdown-input id="ctp[[index]]" items='["number","numberstring","string","longstring","object","boolean", "date"]' required selected="{{item.coltype}}"
+                       on-iron-select="validate" error-message="Eingabe erfolrderlich"></grt-dropdown-input>
+                  </td>
+                  <td class="contentcol">
                     <paper-input id="als[[index]]" on-input="_validateForSNameAliasEntsprechung" value="{{item.alias}}"
-                      auto-validate allowed-pattern="^[a-zA-Z0-9 äöüß]$" required
+                      auto-validate allowed-pattern="^[a-zA-Z0-9 äöüß-]$" required
                       error-message="Das Feld muss einen Spaltennamen enthalten"></paper-input>
                   </td>
                   <td class="contentcol">
@@ -199,17 +204,17 @@
                   </td>
                   <td class="contentcol">
                     <paper-checkbox id="cbp[[index]]" checked="[[_hasRole('paechter', item)]]"
-                      on-change="_doOnCbChecked">
+                      on-change="_doOnCbChecked" disabled="[[_isCBDisabled('paechter')]]">
                     </paper-checkbox>
                   </td>
                   <td class="contentcol">
                     <paper-checkbox id="cbv[[index]]" checked="[[_hasRole('versicherung', item)]]"
-                      on-change="_doOnCbChecked"></paper-checkbox>
+                      on-change="_doOnCbChecked" disabled="[[_isCBDisabled('versicherte')]]"></paper-checkbox>
 
                   </td>
                   <td class="contentcol">
                     <paper-checkbox id="cbf[[index]]" checked="[[_hasRole('foerdermitglieder', item)]]"
-                      on-change="_doOnCbChecked"></paper-checkbox>
+                      on-change="_doOnCbChecked" disabled="[[_isCBDisabled('foerdermitglieder')]]"></paper-checkbox>
 
                   </td>
                   <td class="metacol">
@@ -224,7 +229,8 @@
             </tbody>
           </table>
         </div>
-        <paper-button disabled="[[_isDisabled(formInvalid, anzeigeOptsInvalid)]]" on-click="_mergeImportedAndSave">
+        isdiasbled: [[_isDisabled(formInvalid, anzeigeOptsInvalid)]] formInvalid [[formInvalid]] anzeigeOptsInvalid [[anzeigeOptsInvalid]]
+        <paper-button  on-click="_mergeImportedAndSave">
           Weiter</paper-button>
       </div>
     </template>
@@ -418,8 +424,13 @@
         }
       }
 
+      _tryThisColumnConfig(){
+        return this.$.bclient.getDomaenenColumnConfig(this.domainname);
+      }
+
       _importLocalMemberPressed(localMemberFromCSVAsArray) {
-        this.$.bclient.getDomaenenColumnConfig(this.domainname).then((domConf) => {
+        console.warn('domainname' + this.domainname)
+        this._tryThisColumnConfig().then((domConf) => {
           if (!domConf) {
             throw 'nicht gefunden';
           } else {
@@ -563,7 +574,7 @@
       }
 
       _addColumn() {
-        this.push('spaltenConf.columns', { colname: null, coltype: "string", alias: null, rolen: [] });
+        this.push('spaltenConf.columns', { colname: null, coltype: null, alias: null, rolen: [] });
       }
 
       _removeColumn(indexParam) {
@@ -777,6 +788,10 @@
 
       _hasRole(rolename, item) {
         return item.rolen && Array.isArray(item.rolen) && item.rolen.indexOf(rolename) >= 0;
+      }
+
+      _isCBDisabled(cbrolle){
+        return cbrolle !== this.domainname;
       }
 
       _isDisabled() {

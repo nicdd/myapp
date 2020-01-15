@@ -79,7 +79,7 @@ Pagination Element for Vaadin-Grid Tables
                         <div class$="[[_getGroupClass('cardcontent', gname)]]">
                             <template is="dom-repeat" items="[[_getDataFor(gname)]]" as="field" index-as="fieldindex">
                                 <paper-input id="[[field.colname]]" class="mlabelgroup" always-float-label label="{{field.alias]]" 
-                                value="[[_getData(memberCopy, field.colname)]]" on-input="_changeThisField"></paper-input>
+                                value="[[_getData(memberCopy, field)]]" on-input="_changeThisField" disabled="[[_isReadOnly(field.colname)]]"></paper-input>
                                 <div class$="[[_getPIClass(gname, fieldindex)]]"></div>
                             </template>
                         </div>
@@ -103,6 +103,11 @@ Pagination Element for Vaadin-Grid Tables
                 return {
 
                     id: String,
+
+                    idKey:{
+                        type: String
+                    },
+
                     member: {
                         type: Object,
                         observer: "_memberChanged"
@@ -151,7 +156,9 @@ Pagination Element for Vaadin-Grid Tables
             _changeThisField(e) {
                 if (e && e.target && e.target.id) {
                     let path = 'memberCopy.' + e.target.id;
-                    this.set(path, e.target.value);
+                    let newValue = moment(e.target.value, 'DD.MM.YYYY HH:mm').toISOString(true);
+                    console.warn('newdatevalue' + newValue)
+                    this.set(path, newValue);
                     console.warn('e.type' + e.target.value);
                 }
             }
@@ -170,14 +177,53 @@ Pagination Element for Vaadin-Grid Tables
                 let fieldsData = [];
 
                 toLoadingFields.forEach((spalte) => {
-                    fieldsData.push({ "alias": spalte.alias, "colname": spalte.colname })
+                    fieldsData.push({ "coltype": spalte.coltype, "alias": spalte.alias, "colname": spalte.colname })
                 })
                 console.warn('fieldsData' + JSON.stringify(fieldsData))
                 return fieldsData;
             }
 
-            _getData(memberCopy, colname) {
-                return memberCopy[colname];
+            _getData(memberCopy, field) {
+                if (field.coltype !== "date") {
+                    switch (field.colname) {
+                        case "ALTER":
+                            return this._getAlterBy(memberCopy.GEBURTSDATUM);
+                            break;
+                        default:
+                            return memberCopy[field.colname];
+                            break;
+                    }
+                } else {
+                    switch (field.colname) {
+                        case "JUBILAEUM":
+                            return this._getJubilaeumBy(memberCopy.GEBURTSDATUM);
+                            break;
+                        case "GEBURTSDATUM":
+                            return moment(memberCopy[field.colname], 'DD/MM/YYYY').format('DD.MM.YYYY')
+                            break;
+                        default:
+                            return moment(memberCopy[field.colname]).format('DD.MM.YYYY HH:mm')
+                            break;
+                    }
+                }
+            }
+
+            _isReadOnly(colname){
+                return this._isCalculated(colname) || colname === this.idKey;
+            }
+
+            _isCalculated(colname) {
+                switch (colname) {
+                    case "ALTER":
+                        return true;
+                        break;
+                    case "JUBILAEUM":
+                        return true;
+                        break;
+                    default:
+                        return false;
+                        break;
+                }
             }
 
             pushSuccesfullEvent(evName) {
@@ -244,6 +290,28 @@ Pagination Element for Vaadin-Grid Tables
                     });
                 }
                 return changes(object, base);
+            }
+
+            _getAlterBy(geburtsdatum) {
+                let years = null;
+                if (geburtsdatum) {
+                    let gdatMoment = moment(geburtsdatum, 'DD/MM/YYYY');
+                    years = moment().diff(gdatMoment, 'years');
+                }
+                return years;
+            }
+
+            _getJubilaeumBy(geburtsdatum) {
+                let years = null;
+                let jmonat = null;
+                if (geburtsdatum) {
+                    let gdatMoment = moment(geburtsdatum, 'DD/MM/YYYY');
+                    years = moment().diff(gdatMoment, 'years');
+                    if (!(years % 10) || (years > 50 && !(years % 5))) {
+                        jmonat = gdatMoment.format('MMM')
+                    }
+                }
+                return jmonat;
             }
 
         }
