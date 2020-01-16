@@ -550,25 +550,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               records = this._stringsSorter(records, direction, key);
               break;
           }
-          // if (key === 'GARTENNUMMER') {
-          //   // For Number-like Strings containing alphanummerical chars
-          //   records = records.sort(function (o1, o2) {
-          //     let result = self.naturalSorter((o1.GARTENNUMMER || "0"), (o2.GARTENNUMMER || "0"));
-          //     if (direction === 'asc') {
-          //       return (result < 0) ? -1 : 1;
-          //     } else {
-          //       return (result < 0) ? 1 : -1;
-          //     }
-          //     return 0;
-          //   });
-          // } else if (!isNaN(this.mvdata[0][key])) {
-          //   // for numbers
-
-          // } else {
-          //   // for strings
-
-
-          // }
           self.set('mvdata', records);
           self.changePage();
         }
@@ -616,8 +597,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
         return records;
       }
-
-
 
       changePage() {
         if (this._pageStart || this._pageStart === 0) {

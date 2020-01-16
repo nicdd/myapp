@@ -112,7 +112,8 @@
                                 <template is="dom-if" if="[[sc1.th_show]]">
                                     <th>
                                         <column-sorter id="[[sc1.colname]]" colname="[[sc1.alias]]"
-                                            path="[[sc1.colname]]" on-sorter-changed="_sortChange">
+                                            path="[[sc1.colname]]" coltype="[[sc1.coltype]]"
+                                            on-sorter-changed="_sortChange">
                                         </column-sorter>
                                     </th>
                                 </template>
@@ -163,9 +164,9 @@
                                                 </div>
                                                 <div slot="collapse-content" class="corrected-margin">
                                                     <div class="mcard strong-text-color">
-                                                        <grt-member id="mmbr[[_pageStart]]-[[index]]" id-key="GARTENNUMMER"
-                                                            member="[[paechter]]" col-conf="[[spaltenConf]]"
-                                                            on-savemember="_postOnePaechter">
+                                                        <grt-member id="mmbr[[_pageStart]]-[[index]]"
+                                                            id-key="GARTENNUMMER" member="[[paechter]]"
+                                                            col-conf="[[spaltenConf]]" on-savemember="_postOnePaechter">
                                                             <h4 slot="title">Pächter</h4>>
                                                         </grt-member>
 
@@ -406,106 +407,112 @@
                     })
                     let key = e.target.path;
                     let direction = e.target.direction;
+                    let coltype = e.target.coltype;
                     let records = JSON.parse(JSON.stringify(self.mvdata));
-                    if (key === 'GARTENNUMMER') {
-                        // For Number-like Strings containing alphanummerical chars
-                        records = records.sort(function (o1, o2) {
-                            let result = self.naturalSorter((o1.GARTENNUMMER || "0"), (o2.GARTENNUMMER || "0"));
-                            if (direction === 'asc') {
-                                return (result < 0) ? -1 : 1;
+                    switch (coltype) {
+                        case 'numberstring':
+                            records = this._alphaNumbersSorter(self, records, direction, key);
+                            break;
+                        case 'number':
+                            if (key === 'ALTER') {
+                                records = this._sortByGeburtsdatum(self, records, direction, 'GEBURTSDATUM');
                             } else {
-                                return (result < 0) ? 1 : -1;
+                                records = this._numbersSorter(records, direction, key);
                             }
-                            return 0;
-                        });
-                    } else if (!isNaN(this.mvdata[0][key])) {
-                        // for numbers
-                        records.sort(function (a, b) {
-                            if (direction === 'asc') {
-                                if (a[key] < b[key]) return -1;
-                                if (a[key] > b[key]) return 1;
+                            break;
+                        case 'string':
+                            records = this._stringsSorter(records, direction, key);
+                            break;
+                        case 'date':
+                            if (key === 'JUBILAEUM') {
+                                records = this._sortByJubilaeum(self, records, direction);
+                            } else if (key === 'GEBURTSDATUM') {
+                                records = this._sortByGeburtsdatum(self, records, direction, key);
                             } else {
-                                if (a[key] < b[key]) return 1;
-                                if (a[key] > b[key]) return -1;
+                                records = this._stringsSorter(records, direction, key);
                             }
-                            return 0;
-                        });
-                    } else {
-                        // for strings
-                        records.sort(function (a, b) {
-                            if (direction === 'asc') {
-                                if ((a[key] || "").toLowerCase() < (b[key] || "").toLowerCase()) return -1;
-                                if ((a[key] || "").toLowerCase() > (b[key] || "").toLowerCase()) return 1;
-                            } else {
-                                if ((a[key] || "").toLowerCase() < (b[key] || "").toLowerCase()) return 1;
-                                if ((a[key] || "").toLowerCase() > (b[key] || "").toLowerCase()) return -1;
-                            }
-                            return 0;
-                        });
-
+                            break;
+                        default:
+                            records = this._stringsSorter(records, direction, key);
+                            break;
                     }
                     self.set('mvdata', records);
                     self.changePage();
                 }
             }
 
-            _sortByGeburtsdatum(e) {
-                let self = this;
-                if (e.target && e.target.path && e.target.path === 'GEBURTSDATUM' && e.target.direction) {
-                    let otherSorter = this.shadowRoot.querySelectorAll('column-sorter');
-                    otherSorter.forEach((os) => {
-                        if (os.direction && (os.colname !== e.target.colname)) {
-                            os.direction = null;
-                        }
-                    })
-                    let key = e.target.path;
-                    let direction = e.target.direction;
-                    let records = JSON.parse(JSON.stringify(self.mvdata));
-                    records.sort(function (a, b) {
-                        if (direction === 'asc') {
-                            if (moment(a[key], 'DD/MM/YYYY').isBefore(moment(b[key], 'DD/MM/YYYY'))) return -1;
-                            if (moment(a[key], 'DD/MM/YYYY').isAfter(moment(b[key], 'DD/MM/YYYY'))) return 1;
-                        } else {
-                            if (moment(a[key], 'DD/MM/YYYY').isBefore(moment(b[key], 'DD/MM/YYYY'))) return 1;
-                            if (moment(a[key], 'DD/MM/YYYY').isAfter(moment(b[key], 'DD/MM/YYYY'))) return -1;
-                        }
-                        return 0;
-                    });
-
-                    self.set('mvdata', records);
-                    self.changePage();
-                }
+            _alphaNumbersSorter(self, records, direction, key) {
+                records = records.sort((o1, o2) => {
+                    let result = self.naturalSorter((o1[key] || "0"), (o2[key] || "0"));
+                    if (direction === 'asc') {
+                        return (result < 0) ? -1 : 1;
+                    } else {
+                        return (result < 0) ? 1 : -1;
+                    }
+                    return 0;
+                });
+                return records;
             }
 
-            _sortByJubilaeum(e) {
-                let self = this;
-                if (e.target && e.target.path && e.target.path === 'GEBURTSDATUM' && e.target.direction) {
-                    let otherSorter = this.shadowRoot.querySelectorAll('column-sorter');
-                    otherSorter.forEach((os) => {
-                        if (os.direction && (os.colname !== e.target.colname)) {
-                            os.direction = null;
-                        }
-                    })
-                    let key = e.target.path;
-                    let direction = e.target.direction;
-                    let records = JSON.parse(JSON.stringify(self.mvdata));
-                    // for strings
-                    records.sort(function (a, b) {
-                        if (direction === 'asc') {
-                            if (moment((self.getJubilaeumBy(a[key]) || 'Dec'), 'MMM').isBefore(moment((self.getJubilaeumBy(b[key]) || 'Dec'), 'MMM'))) return -1;
-                            if (moment((self.getJubilaeumBy(a[key]) || 'Dec'), 'MMM').isAfter(moment((self.getJubilaeumBy(b[key]) || 'Dec'), 'MMM'))) return 1;
+            _numbersSorter(records, direction, key) {
+                console.warn('aufgerufen')
+                records.sort((a, b) => {
+                    if (direction === 'asc') {
+                        if ((a[key] || 0) < (b[key] || 0)) return -1;
+                        if ((a[key] || 0) > (b[key] || 0)) return 1;
+                    } else {
+                        if ((a[key] || 0) < (b[key] || 0)) return 1;
+                        if ((a[key] || 0) > (b[key] || 0)) return -1;
+                    }
+                    return 0;
+                });
+                console.warn('beendet')
+                return records;
+            }
 
-                        } else {
-                            if (moment((self.getJubilaeumBy(a[key]) || 'Dec'), 'MMM').isBefore(moment((self.getJubilaeumBy(b[key]) || 'Dec'), 'MMM'))) return 1;
-                            if (moment((self.getJubilaeumBy(a[key]) || 'Dec'), 'MMM').isAfter(moment((self.getJubilaeumBy(b[key]) || 'Dec'), 'MMM'))) return -1;
+            _stringsSorter(records, direction, key) {
+                records.sort((a, b) => {
+                    if (direction === 'asc') {
+                        if ((a[key] || "").toLowerCase() < (b[key] || "").toLowerCase()) return -1;
+                        if ((a[key] || "").toLowerCase() > (b[key] || "").toLowerCase()) return 1;
+                    } else {
+                        if ((a[key] || "").toLowerCase() < (b[key] || "").toLowerCase()) return 1;
+                        if ((a[key] || "").toLowerCase() > (b[key] || "").toLowerCase()) return -1;
+                    }
+                    return 0;
+                });
+                return records;
+            }
 
-                        }
-                        return 1;
-                    });
+            _sortByGeburtsdatum(self, records, direction, key) {
+                records.sort(function (a, b) {
+                    if (direction === 'asc') {
+                        if (moment(a[key], 'DD/MM/YYYY').isBefore(moment(b[key], 'DD/MM/YYYY'))) return -1;
+                        if (moment(a[key], 'DD/MM/YYYY').isAfter(moment(b[key], 'DD/MM/YYYY'))) return 1;
+                    } else {
+                        if (moment(a[key], 'DD/MM/YYYY').isBefore(moment(b[key], 'DD/MM/YYYY'))) return 1;
+                        if (moment(a[key], 'DD/MM/YYYY').isAfter(moment(b[key], 'DD/MM/YYYY'))) return -1;
+                    }
+                    return -1;
+                });
+                return records;
+            }
 
-                    self.set('mvdata', records);
-                    self.changePage();
-                }
+            _sortByJubilaeum(self, records, direction) {
+                let gDK = "GEBURTSDATUM";
+                records.sort(function (a, b) {
+                    if (direction === 'asc') {
+                        if (moment((self.getJubilaeumBy(a[gDK]) || 'Dec'), 'MMM').isBefore(moment((self.getJubilaeumBy(b[gDK]) || 'Dec'), 'MMM'))) return -1;
+                        if (moment((self.getJubilaeumBy(a[gDK]) || 'Dec'), 'MMM').isAfter(moment((self.getJubilaeumBy(b[gDK]) || 'Dec'), 'MMM'))) return 1;
+
+                    } else {
+                        if (moment((self.getJubilaeumBy(a[gDK]) || 'Dec'), 'MMM').isBefore(moment((self.getJubilaeumBy(b[gDK]) || 'Dec'), 'MMM'))) return 1;
+                        if (moment((self.getJubilaeumBy(a[gDK]) || 'Dec'), 'MMM').isAfter(moment((self.getJubilaeumBy(b[gDK]) || 'Dec'), 'MMM'))) return -1;
+
+                    }
+                    return 1;
+                });
+                return records;
             }
 
             changePage() {
