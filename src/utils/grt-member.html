@@ -33,6 +33,11 @@ Pagination Element for Vaadin-Grid Tables
                 flex-wrap: wrap;
             }
 
+            .mfcontainer.disabled{
+                opacity: 0.8;
+                cursor: not-allowed;
+            }
+
             .dubble_wide {
                 width: 410px;
             }
@@ -67,6 +72,7 @@ Pagination Element for Vaadin-Grid Tables
                 ;
                 border-bottom: 1px solid black;
             }
+
         </style>
 
         <div class="mcard layout horizontal">
@@ -79,7 +85,7 @@ Pagination Element for Vaadin-Grid Tables
                         <div class$="[[_getGroupClass('cardcontent', gname)]]">
                             <template is="dom-repeat" items="[[_getDataFor(gname)]]" as="field" index-as="fieldindex">
                                 <paper-input id="[[field.colname]]" class="mlabelgroup" always-float-label label="{{field.alias]]" 
-                                value="[[_getData(memberCopy, field)]]" on-input="_changeThisField" disabled="[[_isReadOnly(field.colname)]]"></paper-input>
+                                value="[[_getData(memberCopy, field)]]" on-input="_changeThisField" readonly="[[_isReadOnly(field.colname, readOnly)]]"></paper-input>
                                 <div class$="[[_getPIClass(gname, fieldindex)]]"></div>
                             </template>
                         </div>
@@ -104,7 +110,12 @@ Pagination Element for Vaadin-Grid Tables
 
                     id: String,
 
-                    idKey:{
+                    readOnly: {
+                        type: Boolean,
+                        value: false
+                    },
+
+                    idKey: {
                         type: String
                     },
 
@@ -135,15 +146,17 @@ Pagination Element for Vaadin-Grid Tables
 
             static get observers() {
                 return [
-                    'succesfulledEventsChanged(succesfulledEvents.*)'
+                    'succesfulledEventsChanged(succesfulledEvents.*)',
                 ];
             }
 
             _getGroupClass(initialClass, gname) {
+
+                let addDisabled = this.readOnly ? ' disabled': '';
                 let nrOfF = this.colConf.columns.filter((c) => {
                     return c.gruppe === gname;
                 })
-                return ((nrOfF.length > 4) ? 'mfcontainer dubble_wide' : initialClass);
+                return ((nrOfF.length > 4) ? 'mfcontainer dubble_wide' + addDisabled : initialClass + addDisabled);
             }
 
             _getPIClass(gname, fieldindex) {
@@ -155,11 +168,19 @@ Pagination Element for Vaadin-Grid Tables
 
             _changeThisField(e) {
                 if (e && e.target && e.target.id) {
+                    let newValue = e.target.value;
+                    if (e.model.field.coltype === "date") {
+                        switch (e.model.field.colname) {
+                            case "GEBURTSDATUM":
+                                newValue = moment(e.target.value, 'DD/MM/YYYY').format('DD.MM.YYYY')
+                                break;
+                            default:
+                                newValue = moment(e.target.value, 'DD.MM.YYYY HH:mm').toISOString(true);
+                                break;
+                        }
+                    }
                     let path = 'memberCopy.' + e.target.id;
-                    let newValue = moment(e.target.value, 'DD.MM.YYYY HH:mm').toISOString(true);
-                    console.warn('newdatevalue' + newValue)
                     this.set(path, newValue);
-                    console.warn('e.type' + e.target.value);
                 }
             }
 
@@ -208,8 +229,8 @@ Pagination Element for Vaadin-Grid Tables
                 }
             }
 
-            _isReadOnly(colname){
-                return this._isCalculated(colname) || colname === this.idKey;
+            _isReadOnly(colname, allReadOnly) {
+                return allReadOnly || this._isCalculated(colname) || colname === this.idKey;
             }
 
             _isCalculated(colname) {

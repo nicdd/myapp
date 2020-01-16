@@ -165,8 +165,8 @@
                                                     <div class="mcard strong-text-color">
                                                         <grt-member id="mmbr[[_pageStart]]-[[index]]" id-key="GARTENNUMMER"
                                                             member="[[paechter]]" col-conf="[[spaltenConf]]"
-                                                            on-savemember="_postOneFM">
-                                                            <h4 slot="title">Fördermitglied</h4>>
+                                                            on-savemember="_postOnePaechter">
+                                                            <h4 slot="title">Pächter</h4>>
                                                         </grt-member>
 
                                                     </div>
@@ -626,7 +626,7 @@
 
             _postOnePaechter(e) {
                 let toSave = null;
-                if (e.type && e.type === 'savegartler') {
+                if (e.type && e.type === 'savemember') {
                     toSave = e.detail.data;
                     let mid = e.target.id;
                     toSave = this._removeMetadata(toSave);
