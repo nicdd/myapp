@@ -206,11 +206,6 @@
             </div>
         </div>
     </template>
-
-
-
-
-
     <script>
         class MyPaechter extends Polymer.Element {
             static get is() { return 'my-paechter'; }
@@ -287,6 +282,223 @@
                         notify: true,
                         observer: '_spaltenConfReady'
                     },
+
+                    _defaultColumnConf: {
+                        type: Object,
+                        value: {
+                            "column_groups": [
+                                "Garten",
+                                "Pächter",
+                                "Anschrift",
+                                "Kontakt",
+                                "Details"
+                            ],
+                            "columns": [
+                                {
+                                    "colname": "GARTENNUMMER",
+                                    "coltype": "numberstring",
+                                    "alias": "GNr",
+                                    "rolen": [
+                                        "paechter",
+                                        "versicherung"
+                                    ],
+                                    "position": "1",
+                                    "gruppen_position": "1",
+                                    "th_show": true,
+                                    "gruppe": "Garten"
+                                },
+                                {
+                                    "colname": "ANREDE",
+                                    "coltype": "string",
+                                    "alias": "Anrede",
+                                    "rolen": [
+                                        "paechter",
+                                        "versicherung"
+                                    ],
+                                    "position": "3",
+                                    "gruppen_position": "1",
+                                    "gruppe": "Pächter",
+                                    "th_show": true
+                                },
+                                {
+                                    "colname": "NACHNAME",
+                                    "coltype": "string",
+                                    "alias": "Nachname",
+                                    "rolen": [
+                                        "paechter",
+                                        "versicherung"
+                                    ],
+                                    "position": "4",
+                                    "gruppen_position": "2",
+                                    "gruppe": "Pächter",
+                                    "th_show": true
+                                },
+                                {
+                                    "colname": "VORNAME",
+                                    "coltype": "string",
+                                    "alias": "Vorname",
+                                    "rolen": [
+                                        "paechter",
+                                        "versicherung"
+                                    ],
+                                    "position": "5",
+                                    "gruppen_position": "3",
+                                    "gruppe": "Pächter",
+                                    "th_show": true
+                                },
+                                {
+                                    "colname": "STRASSE",
+                                    "coltype": "string",
+                                    "alias": "Strasse",
+                                    "rolen": [
+                                        "paechter",
+                                        "versicherung"
+                                    ],
+                                    "position": "",
+                                    "gruppen_position": "1",
+                                    "gruppe": "Anschrift"
+                                },
+                                {
+                                    "colname": "PLZ",
+                                    "coltype": "string",
+                                    "alias": "PLZ",
+                                    "rolen": [
+                                        "paechter",
+                                        "versicherung"
+                                    ],
+                                    "position": "6",
+                                    "gruppen_position": "3",
+                                    "gruppe": "Anschrift",
+                                    "th_show": true
+                                },
+                                {
+                                    "colname": "WOHNORT",
+                                    "coltype": "string",
+                                    "alias": "Wohnort",
+                                    "rolen": [
+                                        "paechter",
+                                        "versicherung"
+                                    ],
+                                    "position": "",
+                                    "gruppen_position": "4",
+                                    "gruppe": "Anschrift"
+                                },
+                                {
+                                    "colname": "TELEFON",
+                                    "coltype": "string",
+                                    "alias": "Telefon",
+                                    "rolen": [
+                                        "paechter",
+                                        "versicherung"
+                                    ],
+                                    "position": "",
+                                    "gruppen_position": "1",
+                                    "gruppe": "Kontakt"
+                                },
+                                {
+                                    "colname": "WEG",
+                                    "coltype": "string",
+                                    "alias": "Weg",
+                                    "rolen": [
+                                        "paechter",
+                                        "versicherung"
+                                    ],
+                                    "position": "2",
+                                    "gruppen_position": "2",
+                                    "gruppe": "Garten",
+                                    "th_show": true
+                                },
+                                {
+                                    "colname": "FLAECHE",
+                                    "coltype": "number",
+                                    "alias": "Fläche",
+                                    "rolen": [
+                                        "paechter",
+                                        "versicherung"
+                                    ],
+                                    "position": "",
+                                    "gruppen_position": "3",
+                                    "gruppe": "Garten"
+                                },
+                                {
+                                    "colname": "GEBURTSDATUM",
+                                    "coltype": "date",
+                                    "alias": "Geburtsdatum",
+                                    "rolen": [
+                                        "paechter",
+                                        "versicherung"
+                                    ],
+                                    "position": "8",
+                                    "gruppen_position": "4",
+                                    "gruppe": "Pächter",
+                                    "th_show": true
+                                },
+                                {
+                                    "colname": "EMAIL",
+                                    "coltype": "string",
+                                    "alias": "E-Mail",
+                                    "rolen": [
+                                        "paechter",
+                                        "versicherung"
+                                    ],
+                                    "position": "7",
+                                    "gruppen_position": "2",
+                                    "gruppe": "Kontakt",
+                                    "th_show": true
+                                },
+                                {
+                                    "colname": "BEMERKUNGEN",
+                                    "coltype": "longstring",
+                                    "alias": "Bemerkung",
+                                    "rolen": [
+                                        "paechter",
+                                        "versicherung"
+                                    ],
+                                    "position": "",
+                                    "gruppen_position": "1",
+                                    "gruppe": "Details"
+                                },
+                                {
+                                    "colname": "HAUSNUMMER",
+                                    "coltype": "numberstring",
+                                    "alias": "HausNr",
+                                    "rolen": [
+                                        "paechter",
+                                        "versicherung"
+                                    ],
+                                    "position": "",
+                                    "gruppen_position": "2",
+                                    "gruppe": "Anschrift"
+                                },
+                                {
+                                    "colname": "ALTER",
+                                    "coltype": "number",
+                                    "alias": "Alter",
+                                    "rolen": [
+                                        "paechter",
+                                        "versicherung"
+                                    ],
+                                    "position": "9",
+                                    "gruppen_position": "5",
+                                    "gruppe": "Pächter",
+                                    "th_show": true
+                                },
+                                {
+                                    "colname": "JUBILAEUM",
+                                    "coltype": "date",
+                                    "alias": "Jubiläum",
+                                    "rolen": [
+                                        "paechter",
+                                        "versicherung"
+                                    ],
+                                    "position": "10",
+                                    "gruppen_position": "6",
+                                    "gruppe": "Pächter",
+                                    "th_show": true
+                                }
+                            ]
+                        }
+                    }
                 }
             }
 

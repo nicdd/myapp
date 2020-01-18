@@ -6,54 +6,296 @@
     class ImportFoerdermitglieder extends customElements.get('import-allgemein') {
       static get is() { return 'import-foerdermitglieder'; }
 
-      ready(){
+      static get properties() {
+        return {
+          _defaultColumnConf: {
+            type: Object,
+            value: {
+              "column_groups": [
+                "Fördermitglied",
+                "Anschrift",
+                "Kontakt",
+                "Mitgliedschaft",
+                "Zahlung",
+                "Details"
+              ],
+              "columns": [
+                {
+                  "colname": "AUFNAHMEDATUM",
+                  "coltype": "date",
+                  "alias": "Aufnahme",
+                  "rolen": [
+                    "paechter",
+                    "foerdermitglieder"
+                  ],
+                  "position": "1",
+                  "gruppen_position": "1",
+                  "th_show": true,
+                  "gruppe": "Fördermitglied"
+                },
+                {
+                  "colname": "ANREDE",
+                  "coltype": "string",
+                  "alias": "Anrede",
+                  "rolen": [
+                    "paechter",
+                    "foerdermitglieder"
+                  ],
+                  "position": "",
+                  "gruppen_position": "2",
+                  "gruppe": "Fördermitglied"
+                },
+                {
+                  "colname": "NACHNAME",
+                  "coltype": "string",
+                  "alias": "Nachname",
+                  "rolen": [
+                    "paechter",
+                    "foerdermitglieder"
+                  ],
+                  "position": "2",
+                  "gruppen_position": "3",
+                  "th_show": true,
+                  "gruppe": "Fördermitglied"
+                },
+                {
+                  "colname": "VORNAME",
+                  "coltype": "string",
+                  "alias": "Vorname",
+                  "rolen": [
+                    "paechter",
+                    "foerdermitglieder"
+                  ],
+                  "position": "3",
+                  "gruppen_position": "4",
+                  "th_show": true,
+                  "gruppe": "Fördermitglied"
+                },
+                {
+                  "colname": "GEBURTSDATUM",
+                  "coltype": "date",
+                  "alias": "Geburtsdatum",
+                  "rolen": [
+                    "paechter",
+                    "foerdermitglieder"
+                  ],
+                  "position": "",
+                  "gruppen_position": "5",
+                  "gruppe": "Fördermitglied"
+                },
+                {
+                  "colname": "STRASSE",
+                  "coltype": "string",
+                  "alias": "Strasse",
+                  "rolen": [
+                    "paechter",
+                    "foerdermitglieder"
+                  ],
+                  "position": "",
+                  "gruppen_position": "1",
+                  "gruppe": "Anschrift"
+                },
+                {
+                  "colname": "HAUSNUMMER",
+                  "coltype": "numberstring",
+                  "alias": "Hausnummer",
+                  "rolen": [
+                    "paechter",
+                    "foerdermitglieder"
+                  ],
+                  "position": "",
+                  "gruppen_position": "2",
+                  "gruppe": "Anschrift"
+                },
+                {
+                  "colname": "PLZ",
+                  "coltype": "string",
+                  "alias": "Postleitzahl",
+                  "rolen": [
+                    "paechter",
+                    "foerdermitglieder"
+                  ],
+                  "position": "",
+                  "gruppen_position": "3",
+                  "gruppe": "Anschrift"
+                },
+                {
+                  "colname": "WOHNORT",
+                  "coltype": "string",
+                  "alias": "Wohnort",
+                  "rolen": [
+                    "paechter",
+                    "foerdermitglieder"
+                  ],
+                  "position": "",
+                  "gruppen_position": "4",
+                  "gruppe": "Anschrift"
+                },
+                {
+                  "colname": "TELEFON",
+                  "coltype": "string",
+                  "alias": "Telefon",
+                  "rolen": [
+                    "paechter",
+                    "foerdermitglieder"
+                  ],
+                  "position": "",
+                  "gruppen_position": "1",
+                  "gruppe": "Kontakt"
+                },
+                {
+                  "colname": "EMAIL",
+                  "coltype": "string",
+                  "alias": "E-Mail",
+                  "rolen": [
+                    "paechter",
+                    "foerdermitglieder"
+                  ],
+                  "position": "",
+                  "gruppen_position": "2",
+                  "gruppe": "Kontakt"
+                },
+                {
+                  "colname": "BEMERKUNGEN",
+                  "coltype": "longstring",
+                  "alias": "Bemerkungen",
+                  "rolen": [
+                    "paechter",
+                    "foerdermitglieder"
+                  ],
+                  "position": "",
+                  "gruppen_position": "1",
+                  "gruppe": "Details"
+                },
+                {
+                  "colname": "BEITRAG",
+                  "coltype": "number",
+                  "alias": "Beitrag",
+                  "rolen": [
+                    "foerdermitglieder",
+                    "paechter"
+                  ],
+                  "position": "",
+                  "gruppen_position": "1",
+                  "gruppe": "Zahlung"
+                },
+                {
+                  "colname": "BERUF",
+                  "coltype": "string",
+                  "alias": "Beruf",
+                  "rolen": [
+                    "foerdermitglieder",
+                    "paechter"
+                  ],
+                  "position": "",
+                  "gruppen_position": "6",
+                  "gruppe": "Fördermitglied"
+                },
+                {
+                  "colname": "BEZUGSPERSON",
+                  "coltype": "string",
+                  "alias": "Bezugsperson",
+                  "rolen": [
+                    "foerdermitglieder",
+                    "paechter"
+                  ],
+                  "position": "",
+                  "gruppen_position": "3",
+                  "gruppe": "Mitgliedschaft"
+                },
+                {
+                  "colname": "ABLOESE",
+                  "coltype": "number",
+                  "alias": "Ablöse",
+                  "rolen": [
+                    "foerdermitglieder",
+                    "paechter"
+                  ],
+                  "position": "4",
+                  "gruppen_position": "2",
+                  "th_show": true,
+                  "gruppe": "Mitgliedschaft"
+                },
+                {
+                  "colname": "KATEGORIE",
+                  "coltype": "string",
+                  "alias": "Kategorie",
+                  "rolen": [
+                    "foerdermitglieder",
+                    "paechter"
+                  ],
+                  "position": "5",
+                  "gruppen_position": "1",
+                  "th_show": true,
+                  "gruppe": "Mitgliedschaft"
+                },
+                {
+                  "colname": "ZAHLUNGSSTATUS",
+                  "coltype": "string",
+                  "alias": "ZStatus",
+                  "rolen": [
+                    "foerdermitglieder",
+                    "paechter"
+                  ],
+                  "position": "6",
+                  "gruppen_position": "2",
+                  "th_show": true,
+                  "gruppe": "Zahlung"
+                }
+              ]
+            }
+          }
+        }
+      }
+
+      ready() {
         super.ready();
         this.set('domainname', 'foerdermitglieder');
         this.set('disableDomainNameInput', true);
       }
 
       _checkForMustColumns(conf) {
-          let aufnahmeDatumColumn = conf.find((elem) => elem.colname === "AUFNAHMEDATUM");
-          if (!aufnahmeDatumColumn || !aufnahmeDatumColumn.colname || !aufnahmeDatumColumn.coltype || !aufnahmeDatumColumn.alias || !aufnahmeDatumColumn.rolen || !(Array.isArray(aufnahmeDatumColumn.rolen))) {
-            aufnahmeDatumColumn = {
-              "colname": "AUFNAHMEDATUM",
-              "coltype": "date",
-              "alias": "Aufnahme",
-              "rolen": [
-                "paechter",
-                "versicherung",
-                "foerdermitglieder"
-              ]
-            }
-            conf.unshift(aufnahmeDatumColumn);
+        let aufnahmeDatumColumn = conf.find((elem) => elem.colname === "AUFNAHMEDATUM");
+        if (!aufnahmeDatumColumn || !aufnahmeDatumColumn.colname || !aufnahmeDatumColumn.coltype || !aufnahmeDatumColumn.alias || !aufnahmeDatumColumn.rolen || !(Array.isArray(aufnahmeDatumColumn.rolen))) {
+          aufnahmeDatumColumn = {
+            "colname": "AUFNAHMEDATUM",
+            "coltype": "date",
+            "alias": "Aufnahme",
+            "rolen": [
+              "paechter",
+              "versicherung",
+              "foerdermitglieder"
+            ]
           }
+          conf.unshift(aufnahmeDatumColumn);
+        }
         return conf;
       }
 
       _checkDataForMustContent(newFoerdermitglied) {
-          let aufnahmeDatum = newFoerdermitglied.AUFNAHMEDATUM;
-          let mDateTime = moment(aufnahmeDatum, 'DD.MM.YYYY');
-          if (!mDateTime.isValid()) {
-            newFoerdermitglied['AUFNAHMEDATUM'] = moment().toISOString();
-          } else {
-            newFoerdermitglied['AUFNAHMEDATUM'] = mDateTime.toISOString(true);
-          }
+        let aufnahmeDatum = newFoerdermitglied.AUFNAHMEDATUM;
+        let mDateTime = moment(aufnahmeDatum, 'DD.MM.YYYY');
+        if (!mDateTime.isValid()) {
+          newFoerdermitglied['AUFNAHMEDATUM'] = moment().toISOString();
+        } else {
+          newFoerdermitglied['AUFNAHMEDATUM'] = mDateTime.toISOString(true);
+        }
         return newFoerdermitglied;
       }
 
       _makeUnicIds(newData) {
-          newData.sort((a, b) => {
-            return (a.AUFNAHMEDATUM < b.AUFNAHMEDATUM) ? -1 : ((a.AUFNAHMEDATUM > b.AUFNAHMEDATUM) ? 1 : 0);
-          });
-          newData.forEach((fm, idx) => {
-            let k = idx + 1;
-            // Da das Array nach AUFNAHMEDATUM sortiert ist, nehme alle folgenden mit dem gleichen Aufnahmedatum
-            // und erhöhe es um eine Minute - es könnten keine oder 2 oder mehrere aufeinanderfolgende sein
-            while ((k <= (newData.length - 1)) && (fm.AUFNAHMEDATUM === newData[k].AUFNAHMEDATUM) && moment(fm.AUFNAHMEDATUM).isValid()) {
-              newData[k].AUFNAHMEDATUM = moment(fm.AUFNAHMEDATUM).add((k - idx), 'minutes').toISOString(true);
-              k++;
-            }
-          })
+        newData.sort((a, b) => {
+          return (a.AUFNAHMEDATUM < b.AUFNAHMEDATUM) ? -1 : ((a.AUFNAHMEDATUM > b.AUFNAHMEDATUM) ? 1 : 0);
+        });
+        newData.forEach((fm, idx) => {
+          let k = idx + 1;
+          // Da das Array nach AUFNAHMEDATUM sortiert ist, nehme alle folgenden mit dem gleichen Aufnahmedatum
+          // und erhöhe es um eine Minute - es könnten keine oder 2 oder mehrere aufeinanderfolgende sein
+          while ((k <= (newData.length - 1)) && (fm.AUFNAHMEDATUM === newData[k].AUFNAHMEDATUM) && moment(fm.AUFNAHMEDATUM).isValid()) {
+            newData[k].AUFNAHMEDATUM = moment(fm.AUFNAHMEDATUM).add((k - idx), 'minutes').toISOString(true);
+            k++;
+          }
+        })
         return newData;
       }
 

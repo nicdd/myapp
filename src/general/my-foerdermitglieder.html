@@ -33,7 +33,7 @@
                 background-color: var(--my-yellow-background);
                 padding: var(--content-padding);
             }
-            
+
 
             .toolbar {
                 /* height: 40px; */
@@ -112,10 +112,10 @@
                             <template is="dom-repeat" items="[[spaltenConf.columns]]" as="sc1">
                                 <template is="dom-if" if="[[sc1.th_show]]">
                                     <th>
-                                    <column-sorter id="[[sc1.colname]]" colname="[[sc1.alias]]"
-                                        path="[[sc1.colname]]" on-sorter-changed="_sortChange">
-                                    </column-sorter>
-                                </th>
+                                        <column-sorter id="[[sc1.colname]]" colname="[[sc1.alias]]"
+                                            path="[[sc1.colname]]" on-sorter-changed="_sortChange">
+                                        </column-sorter>
+                                    </th>
                                 </template>
                             </template>
                             <th class="button"></th>
@@ -123,7 +123,7 @@
                         </thead>
                         <tbody>
                             <template is="dom-repeat" items="[[mvpagedata]]" as="fm">
-                                <tr >
+                                <tr>
                                     <td class="centered-cell">
                                         <paper-checkbox class="[[getClassByBeitrag(fm.BEITRAG)]]"
                                             id="[[getGridElementID(index, _pageStart, 'scb')]]" on-change="_checkOne"
@@ -134,7 +134,7 @@
                                             <td>[[_getFmData(fm, sc2)]]</td>
                                         </template>
                                     </template>
-                                    
+
                                     <td class="button">
                                         <button id="bto[[fm]]" on-click="_openDetails"
                                             class="first-domain-endpagebutton action-button">
@@ -165,8 +165,9 @@
                                                 </div>
                                                 <div slot="collapse-content" class="corrected-margin">
                                                     <div class="mcard strong-text-color">
-                                                        <grt-member id="mmbr[[_pageStart]]-[[index]]" id-key="AUFNAHMEDATUM" member="[[fm]]" col-conf="[[spaltenConf]]"
-                                                            on-savemember="_postOneFM">
+                                                        <grt-member id="mmbr[[_pageStart]]-[[index]]"
+                                                            id-key="AUFNAHMEDATUM" member="[[fm]]"
+                                                            col-conf="[[spaltenConf]]" on-savemember="_postOneFM">
                                                             <h4 slot="title">Fördermitglied</h4>>
                                                         </grt-member>
 
@@ -198,9 +199,9 @@
                                         </td>
                                     </tr>
                                 </template>
-                                    
-                                    
-                                
+
+
+
                             </template>
                         </tbody>
                     </table>
@@ -290,20 +291,253 @@
                     },
 
                     _defaultColumnConf: {
-                        type: Array,
-                        value: [{ "colname": "AUFNAHMEDATUM", "coltype": "string", "alias": "Aufnahme", "rolen": ["paechter", "foerdermitglieder"], "position": "1", "th_show": true }, { "colname": "ANREDE", "coltype": "string", "alias": "Anrede", "rolen": ["paechter", "foerdermitglieder"], "position": null, "th_show": false }, { "colname": "NACHNAME", "coltype": "string", "alias": "Nachname", "rolen": ["paechter", "foerdermitglieder"], "position": "2", "th_show": true }, { "colname": "VORNAME", "coltype": "string", "alias": "Vorname", "rolen": ["paechter", "foerdermitglieder"], "position": "3", "th_show": true }, { "colname": "GEBURTSDATUM", "coltype": "string", "alias": "Geburtsdatum", "rolen": ["paechter", "foerdermitglieder"], "position": "" }, { "colname": "STRASSE", "coltype": "string", "alias": "Strasse", "rolen": ["paechter", "foerdermitglieder"], "position": "" }, { "colname": "HAUSNUMMER", "coltype": "string", "alias": "Hausnummer", "rolen": ["paechter", "foerdermitglieder"], "position": "" }, { "colname": "PLZ", "coltype": "string", "alias": "Postleitzahl", "rolen": ["paechter", "foerdermitglieder"], "position": "" }, { "colname": "WOHNORT", "coltype": "string", "alias": "Wohnort", "rolen": ["paechter", "foerdermitglieder"], "position": "" }, { "colname": "TELEFON", "coltype": "string", "alias": "Telefon", "rolen": ["paechter", "foerdermitglieder"], "position": "" }, { "colname": "EMAIL", "coltype": "string", "alias": "E-Mail", "rolen": ["paechter", "foerdermitglieder"], "position": "" }, { "colname": "BEMERKUNGEN", "coltype": "string", "alias": "Bemerkungen", "rolen": ["paechter", "foerdermitglieder"], "position": "5", "th_show": true }, { "colname": "BERUF", "coltype": "string", "alias": "Beruf", "rolen": ["paechter", "foerdermitglieder"], "position": "" }, { "colname": "BEZUGSPERSON", "coltype": "string", "alias": "Bezugsperson", "rolen": ["paechter", "foerdermitglieder"], "position": null, "th_show": false }, { "colname": "ABLOESE", "coltype": "string", "alias": "Abloese", "rolen": ["paechter", "foerdermitglieder"], "position": "4", "th_show": true }, { "colname": "MITGLIEDART", "coltype": "string", "alias": "Art", "rolen": ["paechter", "foerdermitglieder"], "position": "6", "th_show": true }, { "colname": "ZAHLUNGSSTATUS", "coltype": "string", "alias": "ZStatus", "rolen": ["paechter", "foerdermitglieder"], "position": "7", "th_show": true }, { "colname": "WARTETGARTEN", "coltype": "string", "alias": "Garten", "rolen": ["paechter", "foerdermitglieder"], "position": "" }]
+                        type: Object,
+                        value: {
+                            "column_groups": [
+                                "Fördermitglied",
+                                "Anschrift",
+                                "Kontakt",
+                                "Mitgliedschaft",
+                                "Zahlung",
+                                "Details"
+                            ],
+                            "columns": [
+                                {
+                                    "colname": "AUFNAHMEDATUM",
+                                    "coltype": "date",
+                                    "alias": "Aufnahme",
+                                    "rolen": [
+                                        "paechter",
+                                        "foerdermitglieder"
+                                    ],
+                                    "position": "1",
+                                    "gruppen_position": "1",
+                                    "th_show": true,
+                                    "gruppe": "Fördermitglied"
+                                },
+                                {
+                                    "colname": "ANREDE",
+                                    "coltype": "string",
+                                    "alias": "Anrede",
+                                    "rolen": [
+                                        "paechter",
+                                        "foerdermitglieder"
+                                    ],
+                                    "position": "",
+                                    "gruppen_position": "2",
+                                    "gruppe": "Fördermitglied"
+                                },
+                                {
+                                    "colname": "NACHNAME",
+                                    "coltype": "string",
+                                    "alias": "Nachname",
+                                    "rolen": [
+                                        "paechter",
+                                        "foerdermitglieder"
+                                    ],
+                                    "position": "2",
+                                    "gruppen_position": "3",
+                                    "th_show": true,
+                                    "gruppe": "Fördermitglied"
+                                },
+                                {
+                                    "colname": "VORNAME",
+                                    "coltype": "string",
+                                    "alias": "Vorname",
+                                    "rolen": [
+                                        "paechter",
+                                        "foerdermitglieder"
+                                    ],
+                                    "position": "3",
+                                    "gruppen_position": "4",
+                                    "th_show": true,
+                                    "gruppe": "Fördermitglied"
+                                },
+                                {
+                                    "colname": "GEBURTSDATUM",
+                                    "coltype": "date",
+                                    "alias": "Geburtsdatum",
+                                    "rolen": [
+                                        "paechter",
+                                        "foerdermitglieder"
+                                    ],
+                                    "position": "",
+                                    "gruppen_position": "5",
+                                    "gruppe": "Fördermitglied"
+                                },
+                                {
+                                    "colname": "STRASSE",
+                                    "coltype": "string",
+                                    "alias": "Strasse",
+                                    "rolen": [
+                                        "paechter",
+                                        "foerdermitglieder"
+                                    ],
+                                    "position": "",
+                                    "gruppen_position": "1",
+                                    "gruppe": "Anschrift"
+                                },
+                                {
+                                    "colname": "HAUSNUMMER",
+                                    "coltype": "numberstring",
+                                    "alias": "Hausnummer",
+                                    "rolen": [
+                                        "paechter",
+                                        "foerdermitglieder"
+                                    ],
+                                    "position": "",
+                                    "gruppen_position": "2",
+                                    "gruppe": "Anschrift"
+                                },
+                                {
+                                    "colname": "PLZ",
+                                    "coltype": "string",
+                                    "alias": "Postleitzahl",
+                                    "rolen": [
+                                        "paechter",
+                                        "foerdermitglieder"
+                                    ],
+                                    "position": "",
+                                    "gruppen_position": "3",
+                                    "gruppe": "Anschrift"
+                                },
+                                {
+                                    "colname": "WOHNORT",
+                                    "coltype": "string",
+                                    "alias": "Wohnort",
+                                    "rolen": [
+                                        "paechter",
+                                        "foerdermitglieder"
+                                    ],
+                                    "position": "",
+                                    "gruppen_position": "4",
+                                    "gruppe": "Anschrift"
+                                },
+                                {
+                                    "colname": "TELEFON",
+                                    "coltype": "string",
+                                    "alias": "Telefon",
+                                    "rolen": [
+                                        "paechter",
+                                        "foerdermitglieder"
+                                    ],
+                                    "position": "",
+                                    "gruppen_position": "1",
+                                    "gruppe": "Kontakt"
+                                },
+                                {
+                                    "colname": "EMAIL",
+                                    "coltype": "string",
+                                    "alias": "E-Mail",
+                                    "rolen": [
+                                        "paechter",
+                                        "foerdermitglieder"
+                                    ],
+                                    "position": "",
+                                    "gruppen_position": "2",
+                                    "gruppe": "Kontakt"
+                                },
+                                {
+                                    "colname": "BEMERKUNGEN",
+                                    "coltype": "longstring",
+                                    "alias": "Bemerkungen",
+                                    "rolen": [
+                                        "paechter",
+                                        "foerdermitglieder"
+                                    ],
+                                    "position": "",
+                                    "gruppen_position": "1",
+                                    "gruppe": "Details"
+                                },
+                                {
+                                    "colname": "BEITRAG",
+                                    "coltype": "number",
+                                    "alias": "Beitrag",
+                                    "rolen": [
+                                        "foerdermitglieder",
+                                        "paechter"
+                                    ],
+                                    "position": "",
+                                    "gruppen_position": "1",
+                                    "gruppe": "Zahlung"
+                                },
+                                {
+                                    "colname": "BERUF",
+                                    "coltype": "string",
+                                    "alias": "Beruf",
+                                    "rolen": [
+                                        "foerdermitglieder",
+                                        "paechter"
+                                    ],
+                                    "position": "",
+                                    "gruppen_position": "6",
+                                    "gruppe": "Fördermitglied"
+                                },
+                                {
+                                    "colname": "BEZUGSPERSON",
+                                    "coltype": "string",
+                                    "alias": "Bezugsperson",
+                                    "rolen": [
+                                        "foerdermitglieder",
+                                        "paechter"
+                                    ],
+                                    "position": "",
+                                    "gruppen_position": "3",
+                                    "gruppe": "Mitgliedschaft"
+                                },
+                                {
+                                    "colname": "ABLOESE",
+                                    "coltype": "number",
+                                    "alias": "Ablöse",
+                                    "rolen": [
+                                        "foerdermitglieder",
+                                        "paechter"
+                                    ],
+                                    "position": "4",
+                                    "gruppen_position": "2",
+                                    "th_show": true,
+                                    "gruppe": "Mitgliedschaft"
+                                },
+                                {
+                                    "colname": "KATEGORIE",
+                                    "coltype": "string",
+                                    "alias": "Kategorie",
+                                    "rolen": [
+                                        "foerdermitglieder",
+                                        "paechter"
+                                    ],
+                                    "position": "5",
+                                    "gruppen_position": "1",
+                                    "th_show": true,
+                                    "gruppe": "Mitgliedschaft"
+                                },
+                                {
+                                    "colname": "ZAHLUNGSSTATUS",
+                                    "coltype": "string",
+                                    "alias": "ZStatus",
+                                    "rolen": [
+                                        "foerdermitglieder",
+                                        "paechter"
+                                    ],
+                                    "position": "6",
+                                    "gruppen_position": "2",
+                                    "th_show": true,
+                                    "gruppe": "Zahlung"
+                                }
+                            ]
+                        }
                     }
                 }
             }
 
-            _getFmData(fm, spalte){
-                if(spalte.coltype === "date"){
+            _getFmData(fm, spalte) {
+                if (spalte.coltype === "date") {
                     let res = moment(fm[spalte.colname]);
-                    if (res.isValid()){
+                    if (res.isValid()) {
                         return res.format('DD.MM.YYYY HH:mm');
                     } else return fm[spalte.colname];
-                } else 
-                return fm[spalte.colname];
+                } else
+                    return fm[spalte.colname];
             }
 
             _spaltenConfReady() {
@@ -750,7 +984,7 @@
             addPaecheter() {
                 // this.$.adddialog.showDialog();
             }
-            
+
         }
 
         window.customElements.define(MyFoerdermitglieder.is, MyFoerdermitglieder);

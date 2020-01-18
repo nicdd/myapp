@@ -168,12 +168,10 @@
                 let myRequest = new Request(self._getSourceURL(urlInfo, args), deleteConfig);
 
                 return fetch(myRequest).then((response) => {
-                    if (response.status && response.status === 204) {
+                    if (response.ok) {
                         console.log("deleteOne" + domainName + " as JSON status 204")
                         return undefined;
-                    } else {
-                        return response.json();
-                    }
+                    } 
                 }).then((data) => {
                     console.log('firstclient delete ' + domainName + ' as json wird gesetzt auf' + JSON.stringify(data))
                     return Promise.resolve(data);

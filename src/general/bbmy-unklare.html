@@ -1,3 +1,50 @@
+<!--
+Die Versicherten-Seite
+Auf dieser Seite werden nur die Pächter dargestellt die eine Versicherung abgeschlossen haben.
+Diese kann beim KVD oder bei einer externen Versicherungsgesellschaft abgeschlossen sein.
+Ein bisher Versicherter der nicht mehr bezahlt hat, wird zuerst telefonisch, per E-Mail oder per Brief erinnert.
+
+Wenn für diesen Pächter keine Zahlung und keinen Versicherungsnachweis erfasst wurden, OBWOHL für ihn die Erinnerungsversuche
+unternommen wurden, wird dieser:
+
+  - authomatisch vom System nach 14 Tagen nach dem Erinnerungskontakt; 
+  - manuell durch den Versicherungsbeauftragten;
+
+in die Liste der "nicht versicherten" verschoben. Die Verschiebung in die Liste der anzumahnenden Pächter setzt
+zwingend voraus, dass der Versicherungsbeauftragter die Erinnerungsversuche unternommen und protokolliert hat.
+
+Für die nicht - versicherten Pächter wird eine Benachrichtigungs-EMail an den Verein samt einem 
+an der E-Mail angehängten Mahnungs-Anschreiben verschickt. Die E-Mail an den Verein enthält zwingend
+die Informationen über die nicht erfolgreichen Versuche, ihn zur Zahlung zu bewegen.
+Der 14-Tage Frist kann vom Versicherungsbeauftragten auf maximal 1 Monat verlängert werden.
+
+***********************************************
+Entstehung und Änderungen der Versichertenliste
+***********************************************
+Die Versichertenliste entsteht initial durch das Importieren der Versichertenbestand aus der CSV-Datei vom KVD.
+Weiterhin, kann der Benutzer, manuell durch die Bearbeitung der "nicht verischerten" Liste, einzelne "nicht Verischerte"
+in die Versichertenliste verschieben. Dabei musste er die Informationen über den letzten gültigen Zahlungseing erfasst haben
+(eingezahlten Zahlungsbetrag, Datum, Vericherungsoptionen(FED usw)).
+
+Man kann Einträge aus dieser Liste in die Nicht-Versicherten-Liste verschieben oder ganz Löschen.
+Eine Löschung aus der Versichertenliste führt nicht zu einer tatsächlichen Löschung, sondern in die Verschiebung der 
+Daten in einer Versicherten-Passivliste, denn es könnte durchaus sein, dass man uach nach einer Kündigung die 
+Daten über die Versicherung noch braucht. Die Einträge in der Passivliste werden vom System nach 2 Jahren aus der Liste entfernt.
+Ab diesem Zeitpunkt kennt das System keine Informationen mehr über die versicherte Person.
+
+
+-->
+
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/paper-progress-button/paper-progress-button.html">
 <link rel="import" href="../../bower_components/iron-collapse-button/iron-collapse-button.html">
@@ -65,6 +112,7 @@
         text-align: center !important;
         vertical-align: middle !important;
       }
+      
     </style>
 
     <first-client id="firstclient"></first-client>
@@ -77,10 +125,9 @@
     <apps-dialog id="appsdialog" action-buttons="[[actionButtons]]" tasks="[[getSelected(mvdata.*)]]"></apps-dialog>
     <div>
       <div class="toolbar layout horizontal justified" flex>
-        <template is="dom-if" if="[[spaltenConf.columns.length]]">
+        <template is="dom-if" if="[[columnNames.length]]">
           <grt-grid-pagination id="pagesss" datalength="[[mvdata.length]]" page-size="{{pageSize}}"
-            pstart="{{_pageStart}}" on-pagechanged="changePage" style-domain="critical-domain">
-          </grt-grid-pagination>
+            pstart="{{_pageStart}}" on-pagechanged="changePage" style-domain="critical-domain"></grt-grid-pagination>
         </template>
         <div class="layout horizontal justified" flex="50">
           <button id="appsbutton" on-click="_showApps" disabled="[[_noOneSelected(mvdata.*)]]" class="action-button">
@@ -98,48 +145,86 @@
               <th class="cb-cell">
                 <paper-checkbox on-change="_checkAll" checked="[[_areAllSelected(mvdata.*)]]"></paper-checkbox>
               </th>
-              <template is="dom-repeat" items="[[spaltenConf.columns]]" as="sc1">
-                <template is="dom-if" if="[[sc1.th_show]]">
-                  <th>
-                    <column-sorter id="[[sc1.colname]]" colname="[[sc1.alias]]" path="[[sc1.colname]]"
-                      on-sorter-changed="_sortChange">
-                    </column-sorter>
-                  </th>
-                </template>
-              </template>
+              <th>
+                <column-sorter colname="[[columnNames.0]]" path="GARTENNUMMER" on-sorter-changed="_sortChange">
+                </column-sorter>
+              </th>
+              <th>
+                <column-sorter colname="[[columnNames.2]]" path="NACHNAME" on-sorter-changed="_sortChange">
+                </column-sorter>
+              </th>
+              <th>
+                <column-sorter colname="[[columnNames.3]]" path="VORNAME" on-sorter-changed="_sortChange">
+                </column-sorter>
+              </th>
+              <th>
+                <column-sorter colname="[[columnNames.13]]" path="GBV" on-sorter-changed="_sortChange"></column-sorter>
+              </th>
+              <th>
+                <column-sorter colname="[[columnNames.14]]" path="FED" on-sorter-changed="_sortChange"></column-sorter>
+              </th>
+              <th>
+                <column-sorter colname="[[columnNames.15]]" path="HOEV" on-sorter-changed="_sortChange"></column-sorter>
+              </th>
+              <th>
+                <column-sorter colname="[[columnNames.16]]" path="A7_1" on-sorter-changed="_sortChange"></column-sorter>
+              </th>
+              <th>
+                <column-sorter colname="[[columnNames.17]]" path="A7_3" on-sorter-changed="_sortChange"></column-sorter>
+              </th>
+              <th>
+                <column-sorter colname="[[columnNames.18]]" path="A7_4" on-sorter-changed="_sortChange"></column-sorter>
+              </th>
+              <th>
+                <column-sorter colname="[[columnNames.19]]" path="UV" on-sorter-changed="_sortChange"></column-sorter>
+              </th>
+              <th>
+                <column-sorter colname="[[columnNames.20]]" path="BEITRAG" on-sorter-changed="_sortChange">
+                </column-sorter>
+              </th>
+              <th>
+                <column-sorter colname="[[columnNames.21]]" path="V_BEMERKUNG" on-sorter-changed="_sortChange">
+                </column-sorter>
+              </th>
               <th class="button"></th>
               <th class="button"></th>
             </thead>
             <tbody>
-              <template is="dom-repeat" items="[[mvpagedata]]" as="uk">
+              <template is="dom-repeat" items="[[mvpagedata]]">
                 <tr>
                   <td class="cb-cell">
-                    <paper-checkbox class="[[getClassByBeitrag(uk.BEITRAG)]]"
+                    <paper-checkbox class="[[getClassByBeitrag(item.BEITRAG)]]"
                       id="[[getGridElementID(index, _pageStart, 'scb')]]" on-change="_checkOne"
                       checked="[[_isItemSelected(_pageStart, index, mvdata.*)]]"></paper-checkbox>
                   </td>
-                  <template is="dom-repeat" items="[[spaltenConf.columns]]" as="sc2">
-                    <template is="dom-if" if="[[sc2.th_show]]">
-                      <td>[[_getUkData(uk, sc2)]]</td>
-                    </template>
-                  </template>
+                  <td class="rightalign">[[item.GARTENNUMMER]]</td>
+                  <td>[[item.NACHNAME]]</td>
+                  <td>[[item.VORNAME]]</td>
+                  <td class="rightalign">[[item.GBV]]</td>
+                  <td class="rightalign">[[item.FED]]</td>
+                  <td class="rightalign">[[item.HOEV]]</td>
+                  <td class="rightalign">[[item.A7_1]]</td>
+                  <td class="rightalign">[[item.A7_3]]</td>
+                  <td class="rightalign">[[item.A7_4]]</td>
+                  <td class="rightalign">[[item.UV]]</td>
+                  <td class="rightalign">[[item.BEITRAG]]</td>
+                  <td>[[item.V_BEMERKUNG]]</td>
                   <td class="button">
-                    <button id="bto[[uk.GARTENNUMMER]]" on-click="_openDetails"
-                      class="critical-domain-endpagebutton action-button">
-                      <iron-icon id="cro[[uk.GARTENNUMMER]]" icon="[[getIcon(uk._detailsOpened)]]" slot="item-icon"
+                    <button id="bto[[item.GARTENNUMMER]]" on-click="_openDetails" class="critical-domain-endpagebutton action-button">
+                      <iron-icon id="cro[[item.GARTENNUMMER]]" icon="[[getIcon(item._detailsOpened)]]" slot="item-icon"
                         on-click="_openDetails"></iron-icon>
                     </button>
                   </td>
                   <td class="button">
-                    <button id="btr[[uk.GARTENNUMMER]]-[[index]]" on-click="_confirmRemove"
-                      class="critical-domain-endpagebutton action-button" disabled="[[uk._detailsOpened]]">
-                      <iron-icon id="irm[[uk.GARTENNUMMER]]-[[index]]" icon="delete" slot="item-icon"
+                    <button id="btr[[item.GARTENNUMMER]]-[[index]]" on-click="_confirmRemove"
+                      class="critical-domain-endpagebutton action-button" disabled="[[item._detailsOpened]]">
+                      <iron-icon id="irm[[item.GARTENNUMMER]]-[[index]]" icon="delete" slot="item-icon"
                         on-click="_confirmRemove">
                       </iron-icon>
                     </button>
                   </td>
                 </tr>
-                <template is="dom-if" if="[[uk._detailsOpened]]">
+                <template is="dom-if" if="[[item._detailsOpened]]">
                   <tr class="details">
                     <td colspan="15" class="no-padding">
                       <iron-collapse-button expand-icon="add-circle-outline" collapse-icon="remove-circle-outline"
@@ -149,7 +234,7 @@
                         </div>
                         <div slot="collapse-content" class="corrected-margin">
                           <div class="mcard strong-text-color">
-                            <small>Grund:[[uk.grund]]</small>
+                            <small>Grund:[[item.grund]]</small>
                             <div class="layout horizontal">
                               <table width="50%">
                                 <thead>
@@ -159,37 +244,37 @@
                                 </thead>
                                 <tbody>
                                   <tr>
-                                    <td>[[_getAliasFor('NACHNAME')]]</td>
-                                    <td>[[uk.NACHNAME]]</td>
-                                    <td>[[uk.entsprechung.NACHNAME]]</td>
+                                    <td>[[columnNames.2]]</td>
+                                    <td>[[item.NACHNAME]]</td>
+                                    <td>[[item.entsprechung.NACHNAME]]</td>
                                   </tr>
 
                                   <tr>
-                                    <td>[[_getAliasFor('VORNAME')]]</td>
-                                    <td>[[uk.VORNAME]]</td>
-                                    <td>[[uk.entsprechung.VORNAME]]</td>
+                                    <td>[[columnNames.3]]</td>
+                                    <td>[[item.VORNAME]]</td>
+                                    <td>[[item.entsprechung.VORNAME]]</td>
                                   </tr>
                                   <tr>
-                                    <td>[[_getAliasFor('STRASSE')]]</td>
-                                    <td>[[uk.STRASSE]]</td>
-                                    <td>[[uk.entsprechung.STRASSE]]</td>
+                                    <td>[[columnNames.5]]</td>
+                                    <td>[[item.STRASSE]]</td>
+                                    <td>[[item.entsprechung.STRASSE]]</td>
                                   </tr>
                                   <tr>
-                                    <td>[[_getAliasFor('PLZ')]]</td>
-                                    <td>[[uk.PLZ]]</td>
-                                    <td>[[uk.entsprechung.PLZ]]</td>
+                                    <td>[[columnNames.7]]</td>
+                                    <td>[[item.PLZ]]</td>
+                                    <td>[[item.entsprechung.PLZ]]</td>
                                   </tr>
                                   <tr>
-                                    <td>[[_getAliasFor('WOHNORT')]]</td>
-                                    <td>[[uk.WOHNORT]]</td>
-                                    <td>[[uk.entsprechung.WOHNORT]]</td>
+                                    <td>[[columnNames.8]]</td>
+                                    <td>[[item.WOHNORT]]</td>
+                                    <td>[[item.entsprechung.WOHNORT]]</td>
                                   </tr>
 
                                 </tbody>
                               </table>
 
                               <div class="layout vertical">
-                                <template is="dom-if" if="[[!uk.entsprechung.found]]">
+                                <template is="dom-if" if="[[!item.entsprechung.found]]">
                                   <paper-icon-item style="color: #d84646">
                                     <iron-icon icon="warning" slot="item-icon"></iron-icon>
                                     <paper-item-body two-line>
@@ -204,10 +289,10 @@
                                   </paper-icon-item>
                                 </template>
                                 <paper-button id="adb[[index]]" class="under_button" bottom raised
-                                  on-click="_postOnePaechter" disabled="[[!uk.entsprechung.found]]">Pächterdaten
+                                  on-click="_postOnePaechter" disabled="[[!item.entsprechung.found]]">Pächterdaten
                                   übernehmen und nach Pächter verschieben</paper-button>
 
-                                <paper-button id="rmb[[uk.GARTENNUMMER]]-[[index]]" class="under_button" bottom raised
+                                <paper-button id="rmb[[item.GARTENNUMMER]]-[[index]]" class="under_button" bottom raised
                                   on-click="_confirmRemove">Löschen</paper-button>
                               </div>
                             </div>
@@ -283,6 +368,11 @@
             observer: '_activeChanged',
           },
 
+          columnNames: {
+            type: Array,
+            value: []
+          },
+
           paechter: {
             type: Array,
             value: []
@@ -291,415 +381,8 @@
           openeddetails: {
             type: Array,
             value: []
-          },
-
-          spaltenConf: {
-            type: Array,
-            value: null,
-            notify: true,
-            observer: '_spaltenConfReady'
-          },
-
-          _defaultColumnConf: {
-            type: Object,
-            value: {
-              "column_groups": [
-                "Garten",
-                "Pächter",
-                "Anschrift",
-                "Kontakt",
-                "Details",
-                "GBV",
-                "FED",
-                "Zusatzversicherung",
-                "Unfall",
-                "Beitrag",
-                "Bemerkung"
-              ],
-              "columns": [
-                {
-                  "colname": "GARTENNUMMER",
-                  "coltype": "numberstring",
-                  "alias": "GNr",
-                  "rolen": [
-                    "paechter",
-                    "versicherung"
-                  ],
-                  "position": "1",
-                  "gruppen_position": "1",
-                  "th_show": true,
-                  "gruppe": "Garten"
-                },
-                {
-                  "colname": "ANREDE",
-                  "coltype": "string",
-                  "alias": "Anrede",
-                  "rolen": [
-                    "paechter",
-                    "versicherung"
-                  ],
-                  "position": null,
-                  "gruppen_position": "1",
-                  "gruppe": "Pächter",
-                  "th_show": false
-                },
-                {
-                  "colname": "NACHNAME",
-                  "coltype": "string",
-                  "alias": "Nachname",
-                  "rolen": [
-                    "paechter",
-                    "versicherung"
-                  ],
-                  "position": "2",
-                  "gruppen_position": "2",
-                  "gruppe": "Pächter",
-                  "th_show": true
-                },
-                {
-                  "colname": "VORNAME",
-                  "coltype": "string",
-                  "alias": "Vorname",
-                  "rolen": [
-                    "paechter",
-                    "versicherung"
-                  ],
-                  "position": "3",
-                  "gruppen_position": "3",
-                  "gruppe": "Pächter",
-                  "th_show": true
-                },
-                {
-                  "colname": "STRASSE",
-                  "coltype": "string",
-                  "alias": "Strasse",
-                  "rolen": [
-                    "paechter",
-                    "versicherung"
-                  ],
-                  "position": "",
-                  "gruppen_position": "1",
-                  "gruppe": "Anschrift"
-                },
-                {
-                  "colname": "PLZ",
-                  "coltype": "string",
-                  "alias": "PLZ",
-                  "rolen": [
-                    "paechter",
-                    "versicherung"
-                  ],
-                  "position": null,
-                  "gruppen_position": "3",
-                  "gruppe": "Anschrift",
-                  "th_show": false
-                },
-                {
-                  "colname": "WOHNORT",
-                  "coltype": "string",
-                  "alias": "Wohnort",
-                  "rolen": [
-                    "paechter",
-                    "versicherung"
-                  ],
-                  "position": "",
-                  "gruppen_position": "4",
-                  "gruppe": "Anschrift"
-                },
-                {
-                  "colname": "TELEFON",
-                  "coltype": "string",
-                  "alias": "Telefon",
-                  "rolen": [
-                    "paechter",
-                    "versicherung"
-                  ],
-                  "position": "",
-                  "gruppen_position": "1",
-                  "gruppe": "Kontakt"
-                },
-                {
-                  "colname": "WEG",
-                  "coltype": "string",
-                  "alias": "Weg",
-                  "rolen": [
-                    "paechter",
-                    "versicherung"
-                  ],
-                  "position": null,
-                  "gruppen_position": "2",
-                  "gruppe": "Garten",
-                  "th_show": false
-                },
-                {
-                  "colname": "FLAECHE",
-                  "coltype": "number",
-                  "alias": "Fläche",
-                  "rolen": [
-                    "paechter",
-                    "versicherung"
-                  ],
-                  "position": "",
-                  "gruppen_position": "3",
-                  "gruppe": "Garten"
-                },
-                {
-                  "colname": "GEBURTSDATUM",
-                  "coltype": "date",
-                  "alias": "Geburtsdatum",
-                  "rolen": [
-                    "paechter",
-                    "versicherung"
-                  ],
-                  "position": null,
-                  "gruppen_position": "4",
-                  "gruppe": "Pächter",
-                  "th_show": false
-                },
-                {
-                  "colname": "EMAIL",
-                  "coltype": "string",
-                  "alias": "E-Mail",
-                  "rolen": [
-                    "paechter",
-                    "versicherung"
-                  ],
-                  "position": null,
-                  "gruppen_position": "2",
-                  "gruppe": "Kontakt",
-                  "th_show": false
-                },
-                {
-                  "colname": "BEMERKUNGEN",
-                  "coltype": "longstring",
-                  "alias": "Bemerkung",
-                  "rolen": [
-                    "paechter",
-                    "versicherung"
-                  ],
-                  "position": "",
-                  "gruppen_position": "1",
-                  "gruppe": "Details"
-                },
-                {
-                  "colname": "HAUSNUMMER",
-                  "coltype": "numberstring",
-                  "alias": "HausNr",
-                  "rolen": [
-                    "paechter",
-                    "versicherung"
-                  ],
-                  "position": "",
-                  "gruppen_position": "2",
-                  "gruppe": "Anschrift"
-                },
-                {
-                  "colname": "ALTER",
-                  "coltype": "number",
-                  "alias": "Alter",
-                  "rolen": [
-                    "paechter",
-                    "versicherung"
-                  ],
-                  "position": null,
-                  "gruppen_position": "5",
-                  "gruppe": "Pächter",
-                  "th_show": false
-                },
-                {
-                  "colname": "JUBILAEUM",
-                  "coltype": "date",
-                  "alias": "Jubiläum",
-                  "rolen": [
-                    "paechter",
-                    "versicherung"
-                  ],
-                  "position": null,
-                  "gruppen_position": "6",
-                  "gruppe": "Pächter",
-                  "th_show": false
-                },
-                {
-                  "colname": "GBV",
-                  "coltype": "number",
-                  "alias": "GBV",
-                  "rolen": [],
-                  "position": "4",
-                  "gruppen_position": "1",
-                  "th_show": true,
-                  "gruppe": "GBV"
-                },
-                {
-                  "colname": "FED",
-                  "coltype": "number",
-                  "alias": "FED",
-                  "rolen": [],
-                  "position": "5",
-                  "gruppen_position": "1",
-                  "th_show": true,
-                  "gruppe": "FED"
-                },
-                {
-                  "colname": "HOEV",
-                  "coltype": "number",
-                  "alias": "HöV",
-                  "rolen": [],
-                  "position": "6",
-                  "gruppen_position": "2",
-                  "th_show": true,
-                  "gruppe": "FED"
-                },
-                {
-                  "colname": "A7_1",
-                  "coltype": "number",
-                  "alias": "SA",
-                  "rolen": [],
-                  "position": "7",
-                  "gruppen_position": "1",
-                  "th_show": true,
-                  "gruppe": "Zusatzversicherung"
-                },
-                {
-                  "colname": "A7_3",
-                  "coltype": "number",
-                  "alias": "A 73",
-                  "rolen": [],
-                  "position": "8",
-                  "gruppen_position": "2",
-                  "th_show": true,
-                  "gruppe": "Zusatzversicherung"
-                },
-                {
-                  "colname": "A7_4",
-                  "coltype": "number",
-                  "alias": "Solar",
-                  "rolen": [],
-                  "position": "9",
-                  "gruppen_position": "3",
-                  "th_show": true,
-                  "gruppe": "Zusatzversicherung"
-                },
-                {
-                  "colname": "UV",
-                  "coltype": "number",
-                  "alias": "UV",
-                  "rolen": [],
-                  "position": "10",
-                  "gruppen_position": "1",
-                  "th_show": true,
-                  "gruppe": "Unfall"
-                },
-                {
-                  "colname": "BEITRAG",
-                  "coltype": "number",
-                  "alias": "Beitrag",
-                  "rolen": [],
-                  "position": "11",
-                  "gruppen_position": "1",
-                  "th_show": true,
-                  "gruppe": "Beitrag"
-                },
-                {
-                  "colname": "V_BEMERKUNG",
-                  "coltype": "longstring",
-                  "alias": "Bemerkung",
-                  "rolen": [],
-                  "position": "",
-                  "gruppen_position": "1",
-                  "gruppe": "Bemerkung"
-                }
-              ]
-            }
           }
         }
-      }
-
-      _getUkData(uk, spalte) {
-        if (spalte.coltype === "date") {
-          let res = moment(uk[spalte.colname]);
-          if (res.isValid()) {
-            return res.format('DD.MM.YYYY HH:mm');
-          } else return uk[spalte.colname];
-        } else
-          return uk[spalte.colname];
-      }
-
-      _spaltenConfReady() {
-        if (this.spaltenConf && this.spaltenConf.columns && this.spaltenConf.columns.length) {
-          this.$.firstclient.getAsJSON('unklareversicherte').then((resp) => {
-            if (resp) {
-              this.splitToObjects(resp).finally(() => {
-                //wenn pageSize nur an einer stelle initialisiert wird (in then von splitToObjects)
-                // dann der gleiche wert 10 wird nicht noch mal zu der pagination Componente getriggert
-                // denn er sich noch nicht geändert hatte, die Komp beim ersten mal aber nicht da war
-                this.set('pageSize', parseInt(0));
-                this.changePage();
-              });
-            } else {
-              showToast(this, 'Bei der Initialisierung der Seite wurden keine unklare Versichertenfälle gefunden', TOAST_TYPE.ERROR);
-            }
-          }).catch((err) => {
-            console.log("Fehler beim get fuer unklare Versichertenfälle  kam:" + JSON.stringify(err))
-            showToast(this, 'Die unklaren Versichertenfälle konnten nicht geladen werden', TOAST_TYPE.ERROR);
-          })
-        }
-      }
-
-      _confirmRemove(e) {
-        e.preventDefault();
-        this.$.deletedialog.showDialog(
-          {
-            "title": "Ungeklärter Fall Löschen",
-            "message": "Bitte bestätigen Sie, dass Sie den Fall wirklich entfernen möchten.",
-            "origData": e.target.id.substring(3)
-          })
-        e.stopPropagation();
-      }
-
-      ready() {
-        super.ready();
-        if (this.$)
-          this.$ = new Proxy(this.$, {
-            get: ($, id) => $[id] || this.shadowRoot.getElementById(id),
-            set: ($, id, element) => {
-              $[id] = element;
-              return true;
-            }
-          });
-        this._loadColumnConfigThenData();
-      }
-
-      _loadColumnConfigThenData() {
-        this.$.bclient.getDomaenenColumnConfig('versicherte').then((domConf) => {
-          if (!domConf || !domConf.columns || !Array.isArray(domConf.columns)) {
-            throw 'nicht gefunden';
-          } else {
-            domConf.columns.sort((a, b) => {
-              return (a.th_show && a.postion && !isNaN(a.position) && b.th_show && b.position && !isNaN(b.position) && parseInt(a.position) < parseInt(b.position) ? 1 : -1)
-            })
-            console.warn('conf ist' + JSON.stringify(domConf))
-            this.set('spaltenConf', domConf);
-            showToast(this, 'Die Spaltenkonfiguration für unklkaren Fälle wurde erfolgreich geladen', TOAST_TYPE.SUCCESS);
-          }
-        }).catch((err) => {
-          console.warn('conf column  err' + err)
-          this._defaultColumnConf.columns.sort((a, b) => {
-            return (a.th_show && a.postion && !isNaN(a.position) && b.th_show && b.position && !isNaN(b.position) && parseInt(a.position) < parseInt(b.position) ? 1 : -1)
-          })
-          console.warn('default conf ist' + JSON.stringify(this._defaultColumnConf))
-          this.set('spaltenConf', this._defaultColumnConf);
-          showToast(this, 'Keine Spaltenkonfiguration für die unklaren Fälle konnte geladen werden, default wird benutzt', TOAST_TYPE.ERROR);
-        })
-      }
-
-      _openDetails(e) {
-        e.model.set("uk._detailsOpened", !e.model.uk._detailsOpened);
-        if (e.model.uk._detailsOpened) {
-          this.push('openeddetails', true);
-        } else {
-          this.shift('openeddetails');
-        }
-        e.stopPropagation();
       }
 
       getClassByBeitrag(beitrag) {
@@ -750,7 +433,15 @@
         } else return false;
       }
 
-
+      _openDetails(e) {
+        e.model.set("item._detailsOpened", !e.model.item._detailsOpened);
+        if (e.model.item._detailsOpened) {
+          this.push('openeddetails', true);
+        } else {
+          this.shift('openeddetails');
+        }
+        e.stopPropagation();
+      }
 
       getIcon(_detailsOpened) {
         if (_detailsOpened) {
@@ -758,7 +449,16 @@
         } else return 'create';
       }
 
-
+      _confirmRemove(e) {
+        e.preventDefault();
+        this.$.deletedialog.showDialog(
+          {
+            "title": "Ungeklärter Fall Löschen",
+            "message": "Bitte bestätigen Sie, dass Sie den Fall wirklich entfernen möchten.",
+            "origData": e.target.id.substring(3)
+          })
+        e.stopPropagation();
+      }
 
       _removeItem(confirmEvent) {
         let id = confirmEvent.detail.substring(0, confirmEvent.detail.indexOf('-'));
@@ -840,6 +540,39 @@
 
       }
 
+      changePage() {
+        if (this._pageStart || this._pageStart === 0) {
+          let end = parseInt(this._pageStart) + (parseInt(this.pageSize));
+          let newItems = this.mvdata.slice(this._pageStart, end);
+          this.set('mvpagedata', newItems)
+          this.set('openeddetails', [])
+        }
+
+      }
+
+      _isItemSelected(_pageStart, index) {
+        let path = 'mvdata.' + (_pageStart + index) + '.selected';
+        return this.get(path);
+      }
+
+      splitToObjects(resp) {
+        let unklareData = resp.data;
+        let columns = resp.columns;
+        console.warn('colnames unklare:' + JSON.stringify(resp.columns))
+        let promises = [];
+        unklareData.forEach((unklarer) => {
+          let getpaechterforunklarer = this.getPaechterBy(unklarer.GARTENNUMMER).then((ent) => {
+            unklarer['entsprechung'] = ent;
+          })
+          promises.push(getpaechterforunklarer);
+        })
+        return Promise.all(promises).then(() => {
+          this.set('columnNames', columns);
+          this.set('mvdata', unklareData);
+          this.set('pageSize', parseInt(10));
+        })
+      }
+
       naturalSorter(as, bs) {
         let a, b, a1, b1, i = 0, n, L,
           rx = /(\.\d+)|(\d+(\.\d+)?)|([^\d.]+)|(\.\D+)|(\.$)/g;
@@ -862,38 +595,6 @@
         return b[i] ? -1 : 0;
       }
 
-      changePage() {
-        if (this._pageStart || this._pageStart === 0) {
-          let end = parseInt(this._pageStart) + (parseInt(this.pageSize));
-          let newItems = this.mvdata.slice(this._pageStart, end);
-          this.set('mvpagedata', newItems)
-          this.set('openeddetails', [])
-        }
-
-      }
-
-      _isItemSelected(_pageStart, index) {
-        let path = 'mvdata.' + (_pageStart + index) + '.selected';
-        return this.get(path);
-      }
-
-      splitToObjects(resp) {
-        let unklareData = resp;
-        let promises = [];
-        unklareData.forEach((unklarer) => {
-          let getpaechterforunklarer = this.getPaechterBy(unklarer.GARTENNUMMER).then((ent) => {
-            unklarer['entsprechung'] = ent;
-          })
-          promises.push(getpaechterforunklarer);
-        })
-        return Promise.all(promises).then(() => {
-          this.set('mvdata', unklareData);
-          this.set('pageSize', parseInt(10));
-        })
-      }
-
-
-
       _setLoading(val) {
         this.set('_loading', val);
       }
@@ -911,8 +612,8 @@
               showToast(this, 'Bei der erneuten Initialisierung der Seite wurden keine Versichertendaten gefunden', TOAST_TYPE.ERROR);
             }
           }).catch((err) => {
-            console.log("Fehler beim get fuer versicherte  kam:" + JSON.stringify(err))
-          })
+          console.log("Fehler beim get fuer versicherte  kam:" + JSON.stringify(err))
+        })
         }
       }
 
@@ -935,7 +636,7 @@
       }
 
       exportUnklareFaelle(e) {
-        let dataAndColumns = { data: this.mvdata, columns: this.spaltenConf.columns }
+        let dataAndColumns = { data: this.mvdata, columns: this.columnNames }
         this.$.firstclient.exportUnklareAsCSV(dataAndColumns, e.detail).then((savePath) => {
           if (savePath && savePath.path) {
             this.$.grtinfodialog.showDialog(
