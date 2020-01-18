@@ -1,0 +1,689 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/paper-progress-button/paper-progress-button.html">
+<link rel="import" href="../../bower_components/iron-collapse-button/iron-collapse-button.html">
+<link rel="import" href="../../bower_components/iron-icons/editor-icons.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../shared-styles.html">
+
+<link rel="import" href="../table-styles.html">
+<link rel="import" href="../clients/firstclient.html">
+<link rel="import" href="../clients/basicclient.html">
+
+<link rel="import" href="../utils/grt-grid-pagination.html">
+<link rel="import" href="../utils/export-chooser.html">
+<link rel="import" href="../utils/grt-dialog.html">
+<link rel="import" href="../utils/apps-dialog.html">
+<link rel="import" href="../utils/column-sorter.html">
+<link rel="import" href="../utils/grt-sand-clock.html">
+<link rel="import" href="../utils/grt-member.html">
+<link rel="import" href="../utils/grt-gartler-history.html">
+
+<dom-module id="my-tablemask">
+    <template>
+        <style include="table-styles">
+            :host {
+                /* Stretch this element to fill viewport */
+                height: calc(100vh - 88px);
+                flex: 1;
+                /* Make a flex column layout of children */
+                display: flex;
+                flex-direction: column;
+                overflow: auto;
+                -webkit-overflow-scrolling: touch;
+                padding: var(--content-padding);
+            }
+
+
+            .toolbar {
+                /* height: 40px; */
+                padding: 5px;
+                /*line-height: 32px;*/
+                background: #eee;
+            }
+
+            iron-collapse-button {
+                cursor: cursor;
+                padding-right: 12px;
+            }
+
+            iron-collapse-button div[slot="collapse-trigger"] {
+                height: 48px;
+                line-height: 48px;
+            }
+
+            iron-collapse-button div[slot="collapse-content"] {
+                margin-right: -12px;
+            }
+
+            paper-button {
+                padding: 0.2em 0.5em 0.2em 0.5em !important;
+            }
+
+            .button {
+                padding: 0px 2px 0px 2px !important;
+            }
+
+            .rightalign {
+                text-align: right !important;
+            }
+
+            .centered-cell {
+                text-align: center !important;
+                vertical-align: middle !important;
+            }
+        </style>
+
+        <first-client id="firstclient"></first-client>
+        <basic-client id="bclient"></basic-client>
+        <grt-dialog id="deletedialog" dialog-type="confirmation" confirmation-name="Löschen" cancel-name="Abbrechen"
+            on-grtconfirm="_removeItem"></grt-dialog>
+        <grt-dialog id="grtinfodialog" dialog-type="info"></grt-dialog>
+        <export-chooser id="exportdialog" dialog-type="info" confirmation-name="Schließen" on-export-data="exportData">
+        </export-chooser>
+        <apps-dialog id="appsdialog" action-buttons="[[actionButtons]]" tasks="[[getSelected(mvdata.*)]]"></apps-dialog>
+        <grt-sand-clock id="sandhour"></grt-sand-clock>
+
+    </template>
+    <script>
+        class MyTablemask extends Polymer.Element {
+            static get is() { return 'my-tablemask'; }
+
+            static get properties() {
+                return {
+
+                    selected: {
+                        type: Boolean,
+                        value: false,
+                        observer: '_loadColumnConfigThenData',
+                    },
+
+                    mbgclr: {
+                        type: String,
+                        value: "red"
+                    },
+                    logg: {
+                        type: Boolean,
+                    },
+                    actionButtons: {
+                        type: Array,
+                        value: ['email', 'rechnung', 'meldung', 'brief']
+                    },
+
+                    pageSize: {
+                        type: Number,
+                        value: null,
+                        notify: true,
+                        observer: 'changePage'
+                    },
+
+                    _pageStart: {
+                        type: Number,
+                        value: 0
+                    },
+
+                    _loading: {
+                        type: Boolean,
+                        value: false
+                    },
+
+                    mvdata: {
+                        type: Array,
+                        value: [],
+                        notify: true,
+                        reflectToAttribute: true
+                    },
+
+                    mvpagedata: {
+                        type: Array,
+                        value: [],
+                        notify: true,
+                        reflectToAttribute: true
+                    },
+
+                    _pages: {
+                        type: Object,
+                        value: null
+                    },
+
+                    openeddetails: {
+                        type: Array,
+                        value: []
+                    },
+
+                    _isAenderung: {
+                        type: Boolean
+                    },
+
+                    spaltenConf: {
+                        type: Array,
+                        value: null,
+                        notify: true,
+                        observer: '_spaltenConfReady'
+                    },
+
+                    _defaultColumnConf: {
+                        type: Object,
+                        value: {
+                            "column_groups": [],
+                            "columns": []
+                        }
+                    }
+                }
+            }
+
+            _getRowIdValue(rowdata, key) {
+                return rowdata[key];
+            }
+
+            _getCellData(rowdata, spalte) {
+                if (spalte.coltype === "date") {
+                    switch (spalte.colname) {
+                        case "JUBILAEUM":
+                            return this.getJubilaeumBy(rowdata.GEBURTSDATUM);
+                            break;
+                        default:
+                            let res = moment(rowdata[spalte.colname]);
+                            if (res.isValid()) {
+                                return res.format('DD.MM.YYYY HH:mm');
+                            } else return rowdata[spalte.colname];
+                            break;
+                    }
+                } if (spalte.coltype === "number") {
+                    switch (spalte.colname) {
+                        case "ALTER":
+                            return this.getAlterBy(rowdata.GEBURTSDATUM);
+                            break;
+                        default:
+                            return rowdata[spalte.colname];
+                            break;
+                    }
+
+                } else return rowdata[spalte.colname];
+            }
+
+            _spaltenConfReady() {
+                if (this.spaltenConf && this.spaltenConf.columns && this.spaltenConf.columns.length) {
+                    this.$.firstclient.getAsJSON(this.domainname).then((resp) => {
+                        if (resp) {
+                            this.splitToObjects(resp).finally(() => {
+                                this.changePage();
+                            });
+                        } else {
+                            showToast(this, 'Bei der Initialisierung der Seite wurden keine Daten gefunden', TOAST_TYPE.ERROR);
+                        }
+                    }).catch((err) => {
+                        console.log("Fehler beim get fuer " + this.domainname + " kam:" + JSON.stringify(err))
+                        showToast(this, 'Die Daten konnten nicht geladen werden', TOAST_TYPE.ERROR);
+                    })
+                }
+            }
+
+            _confirmRemove(e) {
+                e.preventDefault();
+                this.$.deletedialog.showDialog(
+                    {
+                        "title": "Daten Löschen",
+                        "message": "Bitte bestätigen Sie, dass Sie den Datensatz wirklich entfernen möchten.",
+                        "origData": e.target.id.substring(3)
+                    })
+                e.stopPropagation();
+            }
+
+            _removeMetadata(member) {
+                let vToSave = JSON.parse(JSON.stringify(member))
+                const keysToReset = ["selected", "_detailsOpened"];
+                Object.keys(vToSave).forEach((vkey) => {
+                    if (keysToReset.some((elem) => elem === vkey)) {
+                        delete vToSave[vkey];
+                    }
+                })
+                return vToSave;
+            }
+
+            ready() {
+                super.ready();
+                if (this.$)
+                    this.$ = new Proxy(this.$, {
+                        get: ($, id) => $[id] || this.shadowRoot.getElementById(id),
+                        set: ($, id, element) => {
+                            $[id] = element;
+                            return true;
+                        }
+                    });
+            }
+
+            _loadColumnConfigThenData() {
+                this.$.bclient.getDomaenenColumnConfig(this.domainname).then((domConf) => {
+                    if (!domConf || !domConf.columns || !Array.isArray(domConf.columns)) {
+                        throw 'nicht gefunden';
+                    } else {
+                        domConf.columns.sort((a, b) => {
+                            return (a.th_show && a.postion && !isNaN(a.position) && b.th_show && b.position && !isNaN(b.position) && parseInt(a.position) < parseInt(b.position) ? 1 : -1)
+                        })
+                        this.set('spaltenConf', domConf);
+                        showToast(this, 'Die Spaltenkonfiguration wurde erfolgreich geladen', TOAST_TYPE.SUCCESS);
+                    }
+
+                }).catch((err) => {
+                    this._defaultColumnConf.columns.sort((a, b) => {
+                        return (a.th_show && a.postion && !isNaN(a.position) && b.th_show && b.position && !isNaN(b.position) && parseInt(a.position) < parseInt(b.position) ? 1 : -1)
+                    })
+                    this.set('spaltenConf', this._defaultColumnConf);
+                    showToast(this, 'Keine Spaltenkonfiguration konnte geladen werden, default wird benutzt', TOAST_TYPE.ERROR);
+                })
+            }
+
+            _openDetails(e) {
+                e.model.set("rowdata._detailsOpened", !e.model.rowdata._detailsOpened);
+                if (e.model.rowdata._detailsOpened) {
+                    this.push('openeddetails', true);
+                } else {
+                    this.shift('openeddetails');
+                }
+                e.stopPropagation();
+            }
+
+            onTap(e) {
+                if (!e.currentTarget.opened) {
+                    let icolapse = this.shadowRoot.querySelectorAll("iron-collapse-button");
+                    let idprefix = e.target.id.substring(0, e.target.id.lastIndexOf('_'))
+                    icolapse = Array.from(icolapse).filter((ic) => (ic.opened && ic.id.startsWith(idprefix)))
+                    console.warn('anzahl:' + icolapse.length)
+                    if (!icolapse.length) {
+                        this._openDetails(e);
+                    }
+                }
+            }
+
+            _sortChange(e) {
+                let self = this;
+                if (e.target && e.target.path && e.target.direction) {
+                    let otherSorter = this.shadowRoot.querySelectorAll('column-sorter');
+                    otherSorter.forEach((os) => {
+                        if (os.direction && (os.colname !== e.target.colname)) {
+                            os.direction = null;
+                        }
+                    })
+                    let key = e.target.path;
+                    let direction = e.target.direction;
+                    let coltype = e.target.coltype;
+                    let records = JSON.parse(JSON.stringify(self.mvdata));
+                    switch (coltype) {
+                        case 'numberstring':
+                            records = this._alphaNumbersSorter(self, records, direction, key);
+                            break;
+                        case 'number':
+                            if (key === 'ALTER') {
+                                records = this._sortByGeburtsdatum(self, records, direction, 'GEBURTSDATUM');
+                            } else {
+                                records = this._numbersSorter(records, direction, key);
+                            }
+                            break;
+                        case 'string':
+                            records = this._stringsSorter(records, direction, key);
+                            break;
+                        case 'date':
+                            if (key === 'JUBILAEUM') {
+                                records = this._sortByJubilaeum(self, records, direction);
+                            } else if (key === 'GEBURTSDATUM') {
+                                records = this._sortByGeburtsdatum(self, records, direction, key);
+                            } else {
+                                records = this._stringsSorter(records, direction, key);
+                            }
+                            break;
+                        default:
+                            records = this._stringsSorter(records, direction, key);
+                            break;
+                    }
+                    self.set('mvdata', records);
+                    self.changePage();
+                }
+            }
+
+            _alphaNumbersSorter(self, records, direction, key) {
+                records = records.sort((o1, o2) => {
+                    let result = self.naturalSorter((o1[key] || "0"), (o2[key] || "0"));
+                    if (direction === 'asc') {
+                        return (result < 0) ? -1 : 1;
+                    } else {
+                        return (result < 0) ? 1 : -1;
+                    }
+                    return 0;
+                });
+                return records;
+            }
+
+            _numbersSorter(records, direction, key) {
+                records.sort((a, b) => {
+                    if (direction === 'asc') {
+                        if ((a[key] || 0) < (b[key] || 0)) return -1;
+                        if ((a[key] || 0) > (b[key] || 0)) return 1;
+                    } else {
+                        if ((a[key] || 0) < (b[key] || 0)) return 1;
+                        if ((a[key] || 0) > (b[key] || 0)) return -1;
+                    }
+                    return 0;
+                });
+                return records;
+            }
+
+            _stringsSorter(records, direction, key) {
+                records.sort((a, b) => {
+                    if (direction === 'asc') {
+                        if ((a[key] || "").toLowerCase() < (b[key] || "").toLowerCase()) return -1;
+                        if ((a[key] || "").toLowerCase() > (b[key] || "").toLowerCase()) return 1;
+                    } else {
+                        if ((a[key] || "").toLowerCase() < (b[key] || "").toLowerCase()) return 1;
+                        if ((a[key] || "").toLowerCase() > (b[key] || "").toLowerCase()) return -1;
+                    }
+                    return 0;
+                });
+                return records;
+            }
+
+            _sortByGeburtsdatum(self, records, direction, key) {
+                records.sort(function (a, b) {
+                    if (direction === 'asc') {
+                        if (moment(a[key], 'DD/MM/YYYY').isBefore(moment(b[key], 'DD/MM/YYYY'))) return -1;
+                        if (moment(a[key], 'DD/MM/YYYY').isAfter(moment(b[key], 'DD/MM/YYYY'))) return 1;
+                    } else {
+                        if (moment(a[key], 'DD/MM/YYYY').isBefore(moment(b[key], 'DD/MM/YYYY'))) return 1;
+                        if (moment(a[key], 'DD/MM/YYYY').isAfter(moment(b[key], 'DD/MM/YYYY'))) return -1;
+                    }
+                    return -1;
+                });
+                return records;
+            }
+
+            _sortByJubilaeum(self, records, direction) {
+                let gDK = "GEBURTSDATUM";
+                records.sort(function (a, b) {
+                    if (direction === 'asc') {
+                        if (moment((self.getJubilaeumBy(a[gDK]) || 'Dec'), 'MMM').isBefore(moment((self.getJubilaeumBy(b[gDK]) || 'Dec'), 'MMM'))) return -1;
+                        if (moment((self.getJubilaeumBy(a[gDK]) || 'Dec'), 'MMM').isAfter(moment((self.getJubilaeumBy(b[gDK]) || 'Dec'), 'MMM'))) return 1;
+
+                    } else {
+                        if (moment((self.getJubilaeumBy(a[gDK]) || 'Dec'), 'MMM').isBefore(moment((self.getJubilaeumBy(b[gDK]) || 'Dec'), 'MMM'))) return 1;
+                        if (moment((self.getJubilaeumBy(a[gDK]) || 'Dec'), 'MMM').isAfter(moment((self.getJubilaeumBy(b[gDK]) || 'Dec'), 'MMM'))) return -1;
+
+                    }
+                    return 1;
+                });
+                return records;
+            }
+
+            getAlterBy(geburtsdatum) {
+                let years = null;
+                if (geburtsdatum) {
+                    let gdatMoment = moment(geburtsdatum, 'DD/MM/YYYY');
+                    years = moment().diff(gdatMoment, 'years');
+                }
+                return years;
+            }
+
+            getJubilaeumBy(geburtsdatum) {
+                let years = null;
+                let jmonat = null;
+                if (geburtsdatum) {
+                    let gdatMoment = moment(geburtsdatum, 'DD/MM/YYYY');
+                    years = moment().diff(gdatMoment, 'years');
+                    if (!(years % 10) || (years > 50 && !(years % 5))) {
+                        console.log('years % 10' + (years % 10) + ' years' + years)
+                        console.log('(years % 5)' + (years % 5) + ' years' + years)
+                        jmonat = gdatMoment.format('MMM')
+                    }
+                }
+                return jmonat;
+            }
+
+            changePage() {
+                if (this._pageStart || this._pageStart === 0) {
+                    let end = parseInt(this._pageStart) + (parseInt(this.pageSize));
+                    let newItems = this.mvdata.slice(this._pageStart, end);
+                    this.set('mvpagedata', newItems);
+                    this.set('openeddetails', [])
+                }
+            }
+
+            splitToObjects(resp) {
+                let promises = [];
+                return Promise.all(promises).then(() => {
+                    this.set('mvdata', resp);
+                    this.set('pageSize', parseInt(10));
+                })
+            }
+
+            naturalSorter(as, bs) {
+                let a, b, a1, b1, i = 0, n, L,
+                    rx = /(\.\d+)|(\d+(\.\d+)?)|([^\d.]+)|(\.\D+)|(\.$)/g;
+                if (as === bs) return 0;
+                a = as.toLowerCase().match(rx);
+                b = bs.toLowerCase().match(rx);
+                L = a.length;
+                while (i < L) {
+                    if (!b[i]) return 1;
+                    a1 = a[i],
+                        b1 = b[i++];
+                    if (a1 !== b1) {
+                        n = a1 - b1;
+                        if (!isNaN(n)) {
+                            return n;
+                        }
+                        return a1 > b1 ? 1 : -1;
+                    }
+                }
+                return b[i] ? -1 : 0;
+            }
+
+            _setLoading(val) {
+                this.set('_loading', val);
+            }
+
+            _showExportDialog() {
+                if (!this.mvdata || !this.mvdata.length) {
+                    this.$.grtinfodialog.showDialog(
+                        {
+                            "title": "Keine Daten",
+                            "message": "Es gibt keine Daten, die man exportieren könnte."
+                        })
+
+                } else {
+                    this.$.exportdialog.showDialog(
+                        {
+                            "title": "Speicherort Auswahl",
+                            "message": "Bitte wählen Sie ob eine lokale Speicherung erwünscht ist oder eine Speicherung auf dem Server."
+                        })
+                }
+            }
+
+            exportData(e) {
+                let dataAndColumns = { data: this.mvdata, columns: this.spaltenConf.columns }
+                this.$.firstclient.exportAsCSV(dataAndColumns, e.detail, this.domainname).then((savePath) => {
+                    if (savePath && savePath.path) {
+                        this.$.grtinfodialog.showDialog(
+                            {
+                                "title": "Daten als CSV - exportieren",
+                                "message": "Die Daten wurden erfolgreich unter " + savePath.path + " gespeichert."
+                            })
+                    } else if (savePath) {
+                        showToast(this, "Die Daten werden unter " + savePath + " gespeichert.", TOAST_TYPE.WARN, 'topRight');
+                    }
+                }).catch((err) => {
+                    showToast(this, 'Der Datenexport ist fehlgeschlagen', TOAST_TYPE.ERROR);
+                });
+            }
+
+            _saveItemData(e) {
+                if (e && e.target && e.target.id && !e.target.disabled) {
+                    let idxOrigTable = idxActiveTable + (parseInt(this._pageStart) || 0);
+                    // das ist och nicht funktionall, siehe versicherte
+                    this.set('dosave', idxOrigTable);
+                }
+                e.stopPropagation();
+            }
+
+            _insertChangedMember(e) {
+                this.splice('mvdata', e.detail.index, 1, e.detail.data)
+                this.changePage();
+            }
+
+            _insertNewMember(e) {
+                let self = this;
+                self.splice('mvdata', self._pageStart, 0, e.detail);
+            }
+
+            _postOne(e) {
+                let toSave = null;
+                if (e.type && e.type === 'savemember') {
+                    toSave = e.detail.data;
+                    let mid = e.target.id;
+                    toSave = this._removeMetadata(toSave);
+                    this.$.firstclient.postAsJSON(toSave, this.domainname, toSave[this.idKey]).then(() => {
+                        this.$[mid].pushSuccesfullEvent(e.type);
+                        this._insertChangedMember(e);
+                        if (this.logg) {
+                            let historyID = "history" + mid.substring(4);
+                            this.$[historyID].postLogData(toSave, e.detail.logdata);
+                        }
+                        showToast(this, 'Die Änderungen wurden erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
+                    }).catch((error) => {
+                        showToast(this, 'Fehler bei der Speicherung der Änderungen', TOAST_TYPE.ERROR);
+                    })
+                }
+            }
+
+            postData() {
+                if (!this.mvdata || !this.mvdata.length) {
+                    this.$.grtinfodialog.showDialog(
+                        {
+                            "title": "Keine Daten",
+                            "message": "Es gibt keine Daten, die man speichern könnte."
+                        })
+
+                } else {
+                    this.$.sandhour.showDialog();
+                    this.$.firstclient.postAsJSON(this.mvdata, this.domainname).then(() => {
+                        showToast(this, 'Die Daten wurden erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
+                    }).catch(() => {
+                        showToast(this, 'Fehler beim Speichern der Daten', TOAST_TYPE.ERROR);
+                    }).finally(() => {
+                        this.$.sandhour._closeDialog();
+                    })
+
+                }
+            }
+
+            // check-box and apps
+            _isItemSelected(_pageStart, index) {
+                let path = 'mvdata.' + (_pageStart + index) + '.selected';
+                return this.get(path);
+            }
+
+            _noOneSelected() {
+                return !this.mvdata.some((data) => data.selected);
+            }
+
+            _areAllSelected() {
+                return !this.mvdata.some((data) => !data.selected);
+            }
+
+            _checkAll(e) {
+                if (e.currentTarget.checked) {
+                    this.mvdata.forEach((mv, idx) => {
+                        let path = 'mvdata.' + idx + '.selected'
+                        this.set(path, true)
+                    })
+                } else {
+                    this.mvdata.forEach((mv, idx) => {
+                        let path = 'mvdata.' + idx + '.selected'
+                        this.set(path, false)
+                    })
+                }
+            }
+
+            getSelected() {
+                let thetasks = this.mvdata.filter((el) => el.selected === true);
+                return thetasks;
+            }
+
+            _checkOne(e) {
+                let realIndex = e.target.id.substring(3);
+                if (e.currentTarget.checked) {
+                    let path = 'mvdata.' + realIndex + '.selected'
+                    this.set(path, true)
+                } else {
+                    let path = 'mvdata.' + realIndex + '.selected'
+                    this.set(path, false)
+                }
+            }
+
+            _showApps(e) {
+                this.$.appsdialog.showDialog()
+                // iziToast.show({
+                //   position: "center",
+                //   title: 'Hey',
+                //   message: 'What would you like to add?',
+                // })
+            }
+
+            getGridElementID(index, _pageStart, prefix) {
+                let realIndex = (parseInt(index) + parseInt(_pageStart));
+                return prefix + realIndex;
+            }
+
+            //css and dynamic elements
+            isSaveAllDisabled() {
+                if (!this._isAenderung || (this.openeddetails && this.openeddetails.length) || !this.mvdata || !this.mvdata.length) {
+                    return true;
+                } else
+                    return false;
+            }
+
+            isExportDisabled() {
+                if ((this.openeddetails && this.openeddetails.length) || !this.mvdata || !this.mvdata.length) {
+                    return true;
+                } else return false;
+            }
+
+            getClassByBeitrag(beitrag) {
+                if (!beitrag || beitrag.length === 0) {
+                    return ".redc";
+                } else return ".redc";
+            }
+
+            getIcon(detailsOpened) {
+                if (detailsOpened) {
+                    return 'close';
+                } else return 'create';
+            }
+
+            _removeItem(confirmEvent) {
+                let id = confirmEvent.detail.substring(0, confirmEvent.detail.indexOf('-'));
+                let elem = this.mvdata.find((v) => {
+                    return v[this.idKey] === id;
+                });
+                let idx = this.mvdata.indexOf(elem);
+                if (idx >= 0) {
+                    this.$.firstclient.deleteOne(this.domainname, elem[this.idKey]).then(() => {
+                        this.splice('mvdata', idx, 1);
+                        showToast(this, 'Der Datensatz wurde erfolgreich gelöscht', TOAST_TYPE.SUCCESS);
+                    }).catch(() => {
+                        showToast(this, 'Fehler beim Löschen. Versuchen Sie später noch einmal.', TOAST_TYPE.ERROR);
+                    })
+                } else if (!elem && idx === -1) {
+                    // ist ein fehlerhafter Datensatz ohne Gartennummer (Id), womöglich aus einer leeren Zeile der Importdatei
+                    const rowIdx = id.substring(1); // ab dem minus-Zeichen, befindet sich die Zeilenindex
+                    this.$.firstclient.deleteOne(this.domainname, null).then(() => {
+                        this.splice('mvdata', rowIdx, 1);
+                        showToast(this, 'Der Datensatz wurde erfolgreich gelöscht', TOAST_TYPE.SUCCESS);
+                    }).catch(() => {
+                        showToast(this, 'Fehler beim Löschen. Versuchen Sie später noch einmal.', TOAST_TYPE.ERROR);
+                    })
+                }
+            }
+
+        }
+
+        window.customElements.define(MyTablemask.is, MyTablemask);
+    </script>
+</dom-module>

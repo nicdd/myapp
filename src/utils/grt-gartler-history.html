@@ -254,7 +254,6 @@ Pagination Element for Vaadin-Grid Tables
             }
 
             _getArrayFrom(idx) {
-                console.warn('this.id' + this.id + ' idx' + idx + ' this.history' + JSON.stringify(this.history))
                 let result = [];
                 if (!!this.history.history[idx]) {
                     Object.keys(this.history.history[idx].diff).forEach((key) => {

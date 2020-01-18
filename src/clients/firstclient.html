@@ -49,7 +49,7 @@
                             },
 
                             CSV_UNKLARE: {
-                                path: '/loadCSV/unklare',
+                                path: '/loadCSV/unklareversicherte',
                                 port: '8000'
                             },
 
@@ -184,51 +184,15 @@
             /**
              * CSV - Exports 
              */
-            exportVersicherteAsCSV(versicherte, destination) {
+            exportAsCSV(versicherte, destination, domainName) {
                 let self = this;
                 let asCSV = self.mapToCSV(versicherte);
                 if (destination === "server") {
-                    return self.postAsCSV(asCSV, 'versicherte');
+                    return self.postAsCSV(asCSV, domainName);
                 } else if (destination === "lokal") {
-                    return self._saveLokalAsCSV(asCSV, "versicherte_");
+                    return self._saveLokalAsCSV(asCSV, (domainName + "_"));
                 } else {
-                    return self.postAsCSV(asCSV, 'versicherte');;
-                }
-            }
-
-            exportUnklareAsCSV(unklare, destination) {
-                let self = this;
-                let asCSV = self.mapToCSV(unklare);
-                if (destination === "server") {
-                    return self.postAsCSV(asCSV, 'unklare');
-                } else if (destination === "lokal") {
-                    return self._saveLokalAsCSV(asCSV, "unklare_");
-                } else {
-                    return self.postAsCSV(asCSV, 'unklare');
-                }
-            }
-
-            exportPaechterAsCSV(paechter, destination) {
-                let self = this;
-                let asCSV = self.mapToCSV(paechter);
-                if (destination === "server") {
-                    return self.postAsCSV(asCSV, 'paechter');
-                } else if (destination === "lokal") {
-                    return self._saveLokalAsCSV(asCSV, "paechter_");
-                } else {
-                    return self.postAsCSV(asCSV, 'paechter');
-                }
-            }
-
-            exportFoerdermitgliederAsCSV(fms, destination) {
-                let self = this;
-                let asCSV = self.mapFMsToCSV(fms);
-                if (destination === "server") {
-                    return self.postAsCSV(asCSV, 'foerdermitglieder');
-                } else if (destination === "lokal") {
-                    return self._saveLokalAsCSV(asCSV, "foerdermitglieder_");
-                } else {
-                    return self.postAsCSV(asCSV, 'foerdermitglieder');
+                    return self.postAsCSV(asCSV, domainName);;
                 }
             }
 

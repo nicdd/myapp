@@ -372,6 +372,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             observer: '_spaltenConfReady'
           },
 
+          domainname:{
+            type: String,
+            value: "versicherte"
+          },
+
           _defaultColumnConf: {
             type: Object,
             value: {
@@ -809,7 +814,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             domConf.columns.sort((a, b) => {
               return (a.th_show && a.postion && !isNaN(a.position) && b.th_show && b.position && !isNaN(b.position) && parseInt(a.position) < parseInt(b.position) ? 1 : -1)
             })
-            console.warn('conf ist' + JSON.stringify(domConf))
             this.set('spaltenConf', domConf);
             showToast(this, 'Die Versicherten-Spaltenkonfiguration wurde erfolgreich geladen', TOAST_TYPE.SUCCESS);
           }
@@ -819,7 +823,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this._defaultColumnConf.columns.sort((a, b) => {
             return (a.th_show && a.postion && !isNaN(a.position) && b.th_show && b.position && !isNaN(b.position) && parseInt(a.position) < parseInt(b.position) ? 1 : -1)
           })
-          console.warn('default conf ist' + JSON.stringify(this._defaultColumnConf))
           this.set('spaltenConf', this._defaultColumnConf);
           showToast(this, 'Keine Spaltenkonfiguration für die FM konnte geladen werden, default wird benutzt', TOAST_TYPE.ERROR);
         })
@@ -1013,7 +1016,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       exportVersicherte(e) {
         let dataAndColumns = { data: this.mvdata, columns: this.spaltenConf.columns }
-        this.$.firstclient.exportVersicherteAsCSV(dataAndColumns, e.detail).then((savePath) => {
+        this.$.firstclient.exportAsCSV(dataAndColumns, e.detail, this.domainname).then((savePath) => {
           if (savePath && savePath.path) {
             this.$.grtinfodialog.showDialog(
               {

@@ -1,93 +1,19 @@
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
-<link rel="import" href="../../bower_components/paper-progress-button/paper-progress-button.html">
-<link rel="import" href="../../bower_components/iron-collapse-button/iron-collapse-button.html">
-<link rel="import" href="../../bower_components/iron-icons/editor-icons.html">
-<link rel="import" href="../../bower_components/paper-input/paper-input.html">
-<link rel="import" href="../shared-styles.html">
 <link rel="import" href="../first-domain-styles.html">
-<link rel="import" href="../table-styles.html">
-<link rel="import" href="../clients/firstclient.html">
-<link rel="import" href="../clients/basicclient.html">
-
-<link rel="import" href="../utils/grt-grid-pagination.html">
-<link rel="import" href="../utils/export-chooser.html">
-<link rel="import" href="../utils/grt-dialog.html">
-<link rel="import" href="../utils/apps-dialog.html">
-<link rel="import" href="../utils/column-sorter.html">
-<link rel="import" href="../utils/grt-sand-clock.html">
-<link rel="import" href="../utils/grt-member.html">
-<link rel="import" href="../utils/grt-gartler-history.html">
+<link rel="import" href="my-tablemask.html">
 
 <dom-module id="my-foerdermitglieder">
-    <template>
-        <style include="first-domain-styles table-styles">
+    <template id="styles">
+        <style include="first-domain-styles">
             :host {
-                /* Stretch this element to fill viewport */
-                height: calc(100vh - 88px);
-                flex: 1;
-                /* Make a flex column layout of children */
-                display: flex;
-                flex-direction: column;
-                overflow: auto;
-                -webkit-overflow-scrolling: touch;
                 background-color: var(--my-yellow-background);
-                padding: var(--content-padding);
-            }
-
-
-            .toolbar {
-                /* height: 40px; */
-                padding: 5px;
-                /*line-height: 32px;*/
-                background: #eee;
-            }
-
-            iron-collapse-button {
-                cursor: cursor;
-                padding-right: 12px;
-            }
-
-            iron-collapse-button div[slot="collapse-trigger"] {
-                height: 48px;
-                line-height: 48px;
-            }
-
-            iron-collapse-button div[slot="collapse-content"] {
-                margin-right: -12px;
-            }
-
-            paper-button {
-                padding: 0.2em 0.5em 0.2em 0.5em !important;
-            }
-
-            .button {
-                padding: 0px 2px 0px 2px !important;
-            }
-
-            .rightalign {
-                text-align: right !important;
-            }
-
-            .centered-cell {
-                text-align: center !important;
-                vertical-align: middle !important;
             }
         </style>
-
-        <first-client id="firstclient"></first-client>
-        <basic-client id="bclient"></basic-client>
-        <grt-dialog id="deletedialog" dialog-type="confirmation" confirmation-name="Löschen" cancel-name="Abbrechen"
-            on-grtconfirm="_removeItem"></grt-dialog>
-        <grt-dialog id="grtinfodialog" dialog-type="info"></grt-dialog>
-        <export-chooser id="exportdialog" dialog-type="info" confirmation-name="Schließen"
-            on-export-data="exportFoerdermitglieder"></export-chooser>
-        <apps-dialog id="appsdialog" action-buttons="[[actionButtons]]" tasks="[[getSelected(mvdata.*)]]"></apps-dialog>
-        <grt-sand-clock id="sandhour"></grt-sand-clock>
         <div>
             <div class="toolbar layout horizontal justified" flex>
                 <template is="dom-if" if="[[spaltenConf.columns.length]]">
                     <grt-grid-pagination id="pagesss" datalength="[[mvdata.length]]" page-size="{{pageSize}}"
-                        pstart="{{_pageStart}}" on-pagechanged="changePage" style-domain="first-domain">
+                        pstart="{{_pageStart}}" on-pagechanged="changePage" style-domain="[[styleDomain]]">
                     </grt-grid-pagination>
                 </template>
                 <div class="layout horizontal justified" flex="50">
@@ -96,7 +22,7 @@
                         <iron-icon icon="apps" id="appsicon" slot="item-icon" on-click="_showApps"></iron-icon>
                     </button>
                     <paper-button disabled="[[isSaveAllDisabled(mvdata.*, openeddetails.*, _isAenderung)]]" bottom
-                        raised on-click="postFoerdermitglieder">Speichern</paper-button>
+                        raised on-click="postData">Speichern</paper-button>
                     <paper-button disabled="[[isExportDisabled(mvdata.*, openeddetails.*)]]" bottom raised
                         on-click="_showExportDialog">Exportieren</paper-button>
                 </div>
@@ -122,42 +48,42 @@
                             <th class="button"></th>
                         </thead>
                         <tbody>
-                            <template is="dom-repeat" items="[[mvpagedata]]" as="fm">
+                            <template is="dom-repeat" items="[[mvpagedata]]" as="rowdata">
                                 <tr>
                                     <td class="centered-cell">
-                                        <paper-checkbox class="[[getClassByBeitrag(fm.BEITRAG)]]"
+                                        <paper-checkbox class="[[getClassByBeitrag(rowdata.BEITRAG)]]"
                                             id="[[getGridElementID(index, _pageStart, 'scb')]]" on-change="_checkOne"
                                             checked="[[_isItemSelected(_pageStart, index, mvdata.*)]]"></paper-checkbox>
                                     </td>
                                     <template is="dom-repeat" items="[[spaltenConf.columns]]" as="sc2">
                                         <template is="dom-if" if="[[sc2.th_show]]">
-                                            <td>[[_getFmData(fm, sc2)]]</td>
+                                            <td>[[_getCellData(rowdata, sc2)]]</td>
                                         </template>
                                     </template>
 
                                     <td class="button">
-                                        <button id="bto[[fm]]" on-click="_openDetails"
+                                        <button id="bto[[_getRowIdValue(rowdata, idKey)]]" on-click="_openDetails"
                                             class="first-domain-endpagebutton action-button">
-                                            <iron-icon id="cro[[fm.AUFNAHMEDATUM]]"
-                                                icon="[[getIcon(fm._detailsOpened)]]" slot="item-icon"
+                                            <iron-icon id="cro[[_getRowIdValue(rowdata, idKey)]]"
+                                                icon="[[getIcon(rowdata._detailsOpened)]]" slot="item-icon"
                                                 on-click="_openDetails"></iron-icon>
                                         </button>
                                     </td>
                                     <td class="button">
-                                        <button id="btr[[fm.AUFNAHMEDATUM]]" on-click="_confirmRemove"
+                                        <button id="btr[[_getRowIdValue(rowdata, idKey)]]" on-click="_confirmRemove"
                                             class="first-domain-endpagebutton action-button"
-                                            disabled="[[fm._detailsOpened]]">
-                                            <iron-icon id="rmi[[fm.AUFNAHMEDATUM]]-[[index]]" icon="delete"
-                                                slot="item-icon" on-click="_confirmRemove"></iron-icon>
+                                            disabled="[[rowdata._detailsOpened]]">
+                                            <iron-icon id="rmi[[_getRowIdValue(rowdata, idKey)]]-[[index]]"
+                                                icon="delete" slot="item-icon" on-click="_confirmRemove"></iron-icon>
                                         </button>
                                     </td>
                                 </tr>
-                                <template is="dom-if" if="[[fm._detailsOpened]]">
+                                <template is="dom-if" if="[[rowdata._detailsOpened]]">
                                     <tr class="details">
                                         <td colspan="13" class="no-padding">
-                                            <iron-collapse-button expand-icon="add-circle-outline"
+                                            <iron-collapse-button id="clps[[_getRowIdValue(rowdata, idKey)]]_1" expand-icon="add-circle-outline"
                                                 collapse-icon="remove-circle-outline"
-                                                class="detailelement light-element flex" opened>
+                                                class="detailelement light-element flex" opened on-tap="onTap">
                                                 <div slot="collapse-trigger" class="flex">
                                                     <div class="layout horizontal justified">
                                                         <span>Datenbearbeitung</span>
@@ -165,9 +91,9 @@
                                                 </div>
                                                 <div slot="collapse-content" class="corrected-margin">
                                                     <div class="mcard strong-text-color">
-                                                        <grt-member id="mmbr[[_pageStart]]-[[index]]"
-                                                            id-key="AUFNAHMEDATUM" member="[[fm]]"
-                                                            col-conf="[[spaltenConf]]" on-savemember="_postOneFM">
+                                                        <grt-member id="mmbr[[_pageStart]]-[[index]]" id-key="[[idKey]]"
+                                                            member="[[rowdata]]" col-conf="[[spaltenConf]]"
+                                                            on-savemember="_postOne">
                                                             <h4 slot="title">Fördermitglied</h4>>
                                                         </grt-member>
 
@@ -178,9 +104,9 @@
                                     </tr>
                                     <tr class="details">
                                         <td colspan="13" class="no-padding">
-                                            <iron-collapse-button id="history_clps[[_pageStart]]-[[index]]"
+                                            <iron-collapse-button id="clps[[_getRowIdValue(rowdata, idKey)]]_2"
                                                 expand-icon="add-circle-outline" collapse-icon="remove-circle-outline"
-                                                class="detailelement light-element flex">
+                                                class="detailelement light-element flex" on-tap="onTap">
                                                 <div slot="collapse-trigger" class="flex">
                                                     <div class="layout horizontal justified">
                                                         <span>Änderungshistorie</span>
@@ -189,7 +115,8 @@
                                                 <div slot="collapse-content" class="corrected-margin">
                                                     <div class="mcard strong-text-color">
                                                         <grt-gartler-history id="history[[_pageStart]]-[[index]]"
-                                                            ident="[[fm.AUFNAHMEDATUM]]" domain="foerdermitglieder">
+                                                            ident="[[_getRowIdValue(rowdata, idKey)]]"
+                                                            domain="[[domainname]]">
                                                             <h4 slot="title">Fördermitglied</h4>
                                                         </grt-gartler-history>
 
@@ -199,9 +126,6 @@
                                         </td>
                                     </tr>
                                 </template>
-
-
-
                             </template>
                         </tbody>
                     </table>
@@ -209,87 +133,37 @@
             </div>
         </div>
     </template>
-
-
-
-
-
     <script>
-        class MyFoerdermitglieder extends Polymer.Element {
+        class MyFoerdermitglieder extends customElements.get('my-tablemask') {
             static get is() { return 'my-foerdermitglieder'; }
+
+            static get template() {
+                let subTmplt;
+                if (!subTmplt) {
+                    let superClass = customElements.get('my-tablemask');
+                    subTmplt = superClass.template.cloneNode(true);
+                    const subStyle = Polymer.DomModule.import('my-foerdermitglieder', 'template#styles').content;
+                    const superStyle = subTmplt.content.querySelector('style');
+                    superStyle.parentNode.appendChild(subStyle);
+                }
+                return subTmplt;
+            }
 
             static get properties() {
                 return {
-                    mbgclr: {
+
+                    idKey: {
                         type: String,
-                        value: "red"
+                        value: "AUFNAHMEDATUM"
                     },
-                    logg: {
-                        type: Boolean,
+                    styleDomain: {
+                        type: String,
+                        value: "first-domain"
                     },
-                    actionButtons: {
-                        type: Array,
-                        value: ['email', 'rechnung', 'meldung', 'brief']
+                    domainname: {
+                        type: String,
+                        value: "foerdermitglieder"
                     },
-
-                    pageSize: {
-                        type: Number,
-                        value: null,
-                        notify: true,
-                        observer: 'changePage'
-                    },
-
-                    _pageStart: {
-                        type: Number,
-                        value: 0
-                    },
-
-                    _loading: {
-                        type: Boolean,
-                        value: false
-                    },
-
-                    mvdata: {
-                        type: Array,
-                        value: [],
-                        notify: true,
-                        reflectToAttribute: true
-                    },
-
-                    mvpagedata: {
-                        type: Array,
-                        value: [],
-                        notify: true,
-                        reflectToAttribute: true
-                    },
-
-                    _pages: {
-                        type: Object,
-                        value: null
-                    },
-
-                    selected: {
-                        type: Boolean,
-                        value: false,
-                        observer: '_activeChanged',
-                    },
-
-                    openeddetails: {
-                        type: Array,
-                        value: []
-                    },
-
-                    _isAenderung: {
-                        type: Boolean
-                    },
-
-                    spaltenConf: {
-                        type: Array,
-                        value: null,
-                        notify: true,
-                        observer: '_spaltenConfReady'
-                    },
-
                     _defaultColumnConf: {
                         type: Object,
                         value: {
@@ -530,459 +404,8 @@
                 }
             }
 
-            _getFmData(fm, spalte) {
-                if (spalte.coltype === "date") {
-                    let res = moment(fm[spalte.colname]);
-                    if (res.isValid()) {
-                        return res.format('DD.MM.YYYY HH:mm');
-                    } else return fm[spalte.colname];
-                } else
-                    return fm[spalte.colname];
-            }
-
-            _spaltenConfReady() {
-                if (this.spaltenConf && this.spaltenConf.columns && this.spaltenConf.columns.length) {
-                    this.$.firstclient.getAsJSON('foerdermitglieder').then((resp) => {
-                        if (resp) {
-                            this.splitToObjects(resp).finally(() => {
-                                //wenn pageSize nur an einer stelle initialisiert wird (in then von splitToObjects)
-                                // dann der gleiche wert 10 wird nicht noch mal zu der pagination Componente getriggert
-                                // denn er sich noch nicht geändert hatte, die Komp beim ersten mal aber nicht da war
-                                this.set('pageSize', parseInt(0));
-                                this.changePage();
-                            });
-                        } else {
-                            showToast(this, 'Bei der Initialisierung der Seite wurden keine Fördermitgliederdaten gefunden', TOAST_TYPE.ERROR);
-                        }
-                    }).catch((err) => {
-                        console.log("Fehler beim get fuer foerdermitglieder  kam:" + JSON.stringify(err))
-                        showToast(this, 'Die Fördermitglieder konnten nicht geladen werden', TOAST_TYPE.ERROR);
-                    })
-                }
-            }
-
-            _confirmRemove(e) {
-                e.preventDefault();
-                this.$.deletedialog.showDialog(
-                    {
-                        "title": "Fördermitgliedsdaten Löschen",
-                        "message": "Bitte bestätigen Sie, dass Sie den Datensatz wirklich entfernen möchten.",
-                        "origData": e.target.id.substring(3)
-                    })
-                e.stopPropagation();
-            }
-
-            _removeMetadata(foerdermitglied) {
-                let vToSave = JSON.parse(JSON.stringify(foerdermitglied))
-                const keysToReset = ["selected", "_detailsOpened"];
-                Object.keys(vToSave).forEach((vkey) => {
-                    if (keysToReset.some((elem) => elem === vkey)) {
-                        delete vToSave[vkey];
-                    }
-                })
-                return vToSave;
-            }
-
             ready() {
                 super.ready();
-
-                if (this.$)
-                    this.$ = new Proxy(this.$, {
-                        get: ($, id) => $[id] || this.shadowRoot.getElementById(id),
-                        set: ($, id, element) => {
-                            $[id] = element;
-                            return true;
-                        }
-                    });
-                this._loadColumnConfigThenData();
-            }
-
-            _loadColumnConfigThenData() {
-                this.$.bclient.getDomaenenColumnConfig('foerdermitglieder').then((domConf) => {
-                    if (!domConf || !domConf.columns || !Array.isArray(domConf.columns)) {
-                        throw 'nicht gefunden';
-                    } else {
-                        domConf.columns.sort((a, b) => {
-                            return (a.th_show && a.postion && !isNaN(a.position) && b.th_show && b.position && !isNaN(b.position) && parseInt(a.position) < parseInt(b.position) ? 1 : -1)
-                        })
-                        console.warn('conf ist' + JSON.stringify(domConf))
-                        this.set('spaltenConf', domConf);
-                        showToast(this, 'Die FM-Spaltenkonfiguration wurde erfolgreich geladen', TOAST_TYPE.SUCCESS);
-                    }
-
-                }).catch((err) => {
-                    console.warn('conf column  err' + err)
-                    this._defaultColumnConf.columns.sort((a, b) => {
-                        return (a.th_show && a.postion && !isNaN(a.position) && b.th_show && b.position && !isNaN(b.position) && parseInt(a.position) < parseInt(b.position) ? 1 : -1)
-                    })
-                    console.warn('default conf ist' + JSON.stringify(this._defaultColumnConf))
-                    this.set('spaltenConf', this._defaultColumnConf);
-                    showToast(this, 'Keine Spaltenkonfiguration für die FM konnte geladen werden, default wird benutzt', TOAST_TYPE.ERROR);
-                })
-            }
-
-            _openDetails(e) {
-                e.model.set("fm._detailsOpened", !e.model.fm._detailsOpened);
-                if (e.model.fm._detailsOpened) {
-                    this.push('openeddetails', true);
-                } else {
-                    this.shift('openeddetails');
-                }
-                e.stopPropagation();
-            }
-
-            _sortChange(e) {
-                let self = this;
-                if (e.target && e.target.path && e.target.direction) {
-                    let otherSorter = this.shadowRoot.querySelectorAll('column-sorter');
-                    otherSorter.forEach((os) => {
-                        if (os.direction && (os.colname !== e.target.colname)) {
-                            os.direction = null;
-                        }
-                    })
-                    let key = e.target.path;
-                    let direction = e.target.direction;
-                    let records = JSON.parse(JSON.stringify(self.mvdata));
-                    if (key === 'GARTENNUMMER') {
-                        // For Number-like Strings containing alphanummerical chars
-                        records = records.sort(function (o1, o2) {
-                            let result = self.naturalSorter((o1.GARTENNUMMER || "0"), (o2.GARTENNUMMER || "0"));
-                            if (direction === 'asc') {
-                                return (result < 0) ? -1 : 1;
-                            } else {
-                                return (result < 0) ? 1 : -1;
-                            }
-                            return 0;
-                        });
-                    } else if (!isNaN(this.mvdata[0][key])) {
-                        // for numbers
-                        records.sort(function (a, b) {
-                            if (direction === 'asc') {
-                                if (a[key] < b[key]) return -1;
-                                if (a[key] > b[key]) return 1;
-                            } else {
-                                if (a[key] < b[key]) return 1;
-                                if (a[key] > b[key]) return -1;
-                            }
-                            return 0;
-                        });
-                    } else {
-                        // for strings
-                        records.sort(function (a, b) {
-                            if (direction === 'asc') {
-                                if ((a[key] || "").toLowerCase() < (b[key] || "").toLowerCase()) return -1;
-                                if ((a[key] || "").toLowerCase() > (b[key] || "").toLowerCase()) return 1;
-                            } else {
-                                if ((a[key] || "").toLowerCase() < (b[key] || "").toLowerCase()) return 1;
-                                if ((a[key] || "").toLowerCase() > (b[key] || "").toLowerCase()) return -1;
-                            }
-                            return 0;
-                        });
-
-                    }
-                    self.set('mvdata', records);
-                    self.changePage();
-                }
-            }
-
-            _sortByGeburtsdatum(e) {
-                let self = this;
-                if (e.target && e.target.path && e.target.path === 'GEBURTSDATUM' && e.target.direction) {
-                    let otherSorter = this.shadowRoot.querySelectorAll('column-sorter');
-                    otherSorter.forEach((os) => {
-                        if (os.direction && (os.colname !== e.target.colname)) {
-                            os.direction = null;
-                        }
-                    })
-                    let key = e.target.path;
-                    let direction = e.target.direction;
-                    let records = JSON.parse(JSON.stringify(self.mvdata));
-                    records.sort(function (a, b) {
-                        if (direction === 'asc') {
-                            if (moment(a[key], 'DD/MM/YYYY').isBefore(moment(b[key], 'DD/MM/YYYY'))) return -1;
-                            if (moment(a[key], 'DD/MM/YYYY').isAfter(moment(b[key], 'DD/MM/YYYY'))) return 1;
-                        } else {
-                            if (moment(a[key], 'DD/MM/YYYY').isBefore(moment(b[key], 'DD/MM/YYYY'))) return 1;
-                            if (moment(a[key], 'DD/MM/YYYY').isAfter(moment(b[key], 'DD/MM/YYYY'))) return -1;
-                        }
-                        return 0;
-                    });
-
-                    self.set('mvdata', records);
-                    self.changePage();
-                }
-            }
-
-            changePage() {
-                if (this._pageStart || this._pageStart === 0) {
-                    let end = parseInt(this._pageStart) + (parseInt(this.pageSize));
-                    let newItems = this.mvdata.slice(this._pageStart, end);
-                    this.set('mvpagedata', newItems);
-                    this.set('openeddetails', [])
-                }
-            }
-
-            splitToObjects(resp) {
-                let foerdermitgliederData = resp;
-                let promises = [];
-
-                return Promise.all(promises).then(() => {
-                    this.set('mvdata', foerdermitgliederData);
-                    this.set('pageSize', parseInt(10));
-                })
-            }
-
-            naturalSorter(as, bs) {
-                let a, b, a1, b1, i = 0, n, L,
-                    rx = /(\.\d+)|(\d+(\.\d+)?)|([^\d.]+)|(\.\D+)|(\.$)/g;
-                if (as === bs) return 0;
-                a = as.toLowerCase().match(rx);
-                b = bs.toLowerCase().match(rx);
-                L = a.length;
-                while (i < L) {
-                    if (!b[i]) return 1;
-                    a1 = a[i],
-                        b1 = b[i++];
-                    if (a1 !== b1) {
-                        n = a1 - b1;
-                        if (!isNaN(n)) {
-                            return n;
-                        }
-                        return a1 > b1 ? 1 : -1;
-                    }
-                }
-                return b[i] ? -1 : 0;
-            }
-
-            _setLoading(val) {
-                this.set('_loading', val);
-            }
-
-            _activeChanged(newV, oldV) {
-                console.log('selected changed newV:' + newV + " oldV:" + oldV)
-                if (newV) {
-                    this.$.firstclient.getAsJSON('foerdermitglieder').then((resp) => {
-                        if (resp) {
-                            this.splitToObjects(resp).finally(() => {
-                                this.changePage();
-                            });
-                        } else {
-                            showToast(this, 'Bei der erneuten Initialisierung der Seite wurden keine Fördermitgliederdaten gefunden', TOAST_TYPE.ERROR);
-                        }
-                    }).catch((err) => {
-                        console.log("Fehler beim get fuer Paecheter  kam:" + JSON.stringify(err))
-                        showToast(this, 'Die Pächeterdaten konnten nicht geladen werden', TOAST_TYPE.ERROR);
-                    })
-                }
-            }
-
-            _showExportDialog() {
-                if (!this.mvdata || !this.mvdata.length) {
-                    this.$.grtinfodialog.showDialog(
-                        {
-                            "title": "Keine Daten",
-                            "message": "Es gibt keine Fördermitgliederdaten, die man exportieren könnte."
-                        })
-
-                } else {
-                    this.$.exportdialog.showDialog(
-                        {
-                            "title": "Speicherort Auswahl",
-                            "message": "Bitte wählen Sie ob eine lokale Speicherung erwünscht ist oder eine Speicherung auf dem Server."
-                        })
-                }
-            }
-
-            exportFoerdermitglieder(e) {
-                let dataAndColumns = { data: this.mvdata, columns: this.spaltenConf.columns }
-                this.$.firstclient.exportFoerdermitgliederAsCSV(dataAndColumns, e.detail).then((savePath) => {
-                    if (savePath && savePath.path) {
-                        this.$.grtinfodialog.showDialog(
-                            {
-                                "title": "Daten als CSV - exportieren",
-                                "message": "Die Daten der Fördermitglieder wurden erfolgreich unter " + savePath.path + " gespeichert."
-                            })
-                    } else if (savePath) {
-                        showToast(this, "Die Daten der Fördermitglieder werden unter " + savePath + " gespeichert.", TOAST_TYPE.WARN, 'topRight');
-                    }
-                }).catch((err) => {
-                    showToast(this, 'Der Datenexport der Fördermitglieder ist fehlgeschlagen', TOAST_TYPE.ERROR);
-                });
-            }
-
-            //foerdermitgliederdata save
-            _saveItemData(e) {
-                if (e && e.target && e.target.id && !e.target.disabled) {
-                    let idxOrigTable = idxActiveTable + (parseInt(this._pageStart) || 0);
-                    // das ist och nicht funktionall, siehe versicherte
-                    this.set('dosave', idxOrigTable);
-                }
-                e.stopPropagation();
-            }
-
-            _insertChangedFoerdermitglied(e) {
-                this.splice('mvdata', e.detail.index, 1, e.detail.data)
-                this.changePage();
-            }
-
-            _insertNewFoerdermitglied(e) {
-                let self = this;
-                self.splice('mvdata', self._pageStart, 0, e.detail);
-            }
-
-            _postOneFM(e) {
-                let toSave = null;
-                if (e.type && e.type === 'savemember') {
-                    toSave = e.detail.data;
-                    let mid = e.target.id;
-                    toSave = this._removeMetadata(toSave);
-                    this.$.firstclient.postAsJSON(toSave, 'foerdermitglieder', toSave.AUFNAHMEDATUM).then(() => {
-                        this.$[mid].pushSuccesfullEvent(e.type);
-                        this._insertChangedFoerdermitglied(e);
-                        if (this.logg) {
-                            let historyID = "history" + mid.substring(4);
-                            this.$[historyID].postLogData(toSave, e.detail.logdata);
-                        }
-                        showToast(this, 'Die Änderungen des Fördermitglieders wurden erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
-                    }).catch((error) => {
-                        showToast(this, 'Fehler bei der Speicherung der Änderungen', TOAST_TYPE.ERROR);
-                    })
-                }
-            }
-
-            postFoerdermitglieder() {
-                if (!this.mvdata || !this.mvdata.length) {
-                    this.$.grtinfodialog.showDialog(
-                        {
-                            "title": "Keine Daten",
-                            "message": "Es gibt keine Fördermitgliederdaten, die man speichern könnte."
-                        })
-
-                } else {
-                    this.$.sandhour.showDialog();
-                    this.$.firstclient.postAsJSON(this.mvdata, 'foerdermitglieder').then(() => {
-                        console.log('foerdermitglieder gespeichert')
-                        showToast(this, 'Die Foerdermitglieder wurden erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
-                    }).catch(() => {
-                        showToast(this, 'Fehler beim Speichern der Paecheterndaten', TOAST_TYPE.ERROR);
-                    }).finally(() => {
-                        this.$.sandhour._closeDialog();
-                    })
-
-                }
-            }
-
-            // check-box and apps
-            _isItemSelected(_pageStart, index) {
-                let path = 'mvdata.' + (_pageStart + index) + '.selected';
-                return this.get(path);
-            }
-
-            _noOneSelected() {
-                return !this.mvdata.some((data) => data.selected);
-            }
-
-            _areAllSelected() {
-                return !this.mvdata.some((data) => !data.selected);
-            }
-
-            _checkAll(e) {
-                if (e.currentTarget.checked) {
-                    this.mvdata.forEach((mv, idx) => {
-                        let path = 'mvdata.' + idx + '.selected'
-                        this.set(path, true)
-                    })
-                } else {
-                    this.mvdata.forEach((mv, idx) => {
-                        let path = 'mvdata.' + idx + '.selected'
-                        this.set(path, false)
-                    })
-                }
-            }
-
-            getSelected() {
-                let thetasks = this.mvdata.filter((el) => el.selected === true);
-                return thetasks;
-            }
-
-            _checkOne(e) {
-                let realIndex = e.target.id.substring(3);
-                if (e.currentTarget.checked) {
-                    let path = 'mvdata.' + realIndex + '.selected'
-                    this.set(path, true)
-                } else {
-                    let path = 'mvdata.' + realIndex + '.selected'
-                    this.set(path, false)
-                }
-            }
-
-            _showApps(e) {
-                this.$.appsdialog.showDialog()
-                // iziToast.show({
-                //   position: "center",
-                //   title: 'Hey',
-                //   message: 'What would you like to add?',
-                // })
-            }
-
-            getGridElementID(index, _pageStart, prefix) {
-                let realIndex = (parseInt(index) + parseInt(_pageStart));
-                return prefix + realIndex;
-            }
-
-            //css and dynamic elements
-            isSaveAllDisabled() {
-                if (!this._isAenderung || (this.openeddetails && this.openeddetails.length) || !this.mvdata || !this.mvdata.length) {
-                    return true;
-                } else
-                    return false;
-            }
-
-            isExportDisabled() {
-                if ((this.openeddetails && this.openeddetails.length) || !this.mvdata || !this.mvdata.length) {
-                    return true;
-                } else return false;
-            }
-
-            getClassByBeitrag(beitrag) {
-                if (!beitrag || beitrag.length === 0) {
-                    return ".redc";
-                } else return ".redc";
-            }
-
-            getIcon(detailsOpened) {
-                if (detailsOpened) {
-                    return 'close';
-                } else return 'create';
-            }
-
-            _removeItem(confirmEvent) {
-                let id = confirmEvent.detail.substring(0, confirmEvent.detail.indexOf('-'));
-                let elem = this.mvdata.find((v) => {
-                    return v.AUFNAHMEDATUM === id;
-                });
-                let idx = this.mvdata.indexOf(elem);
-                if (idx >= 0) {
-                    this.$.firstclient.deleteOne('foerdermitglieder', elem.AUFNAHMEDATUM).then(() => {
-                        this.splice('mvdata', idx, 1);
-                        showToast(this, 'Der Fördermitglied wurde erfolgreich gelöscht', TOAST_TYPE.SUCCESS);
-                    }).catch(() => {
-                        showToast(this, 'Fehler bei der Löschung des Fördermitglieders. Versuchen Sie später noch einmal.', TOAST_TYPE.ERROR);
-                    })
-                } else if (!elem && idx === -1) {
-                    // ist ein fehlerhafter Datensatz ohne Gartennummer, womöglich aus einer leeren Zeile der Importdatei
-                    const rowIdx = id.substring(1); // ab dem minus-Zeichen, befindet sich die Zeilenindex
-                    this.$.firstclient.deleteOne('foerdermitglieder', null).then(() => {
-                        this.splice('mvdata', rowIdx, 1);
-                        showToast(this, 'Der Fördermitglied wurde erfolgreich gelöscht', TOAST_TYPE.SUCCESS);
-                    }).catch(() => {
-                        showToast(this, 'Fehler bei der Löschung des Fördermitglieders. Versuchen Sie später noch einmal.', TOAST_TYPE.ERROR);
-                    })
-                }
-            }
-
-            addPaecheter() {
-                // this.$.adddialog.showDialog();
             }
 
         }

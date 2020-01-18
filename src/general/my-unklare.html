@@ -300,6 +300,11 @@
             observer: '_spaltenConfReady'
           },
 
+          domainname:{
+            type: String,
+            value: "unklareversicherte"
+          },
+
           _defaultColumnConf: {
             type: Object,
             value: {
@@ -677,7 +682,6 @@
             domConf.columns.sort((a, b) => {
               return (a.th_show && a.postion && !isNaN(a.position) && b.th_show && b.position && !isNaN(b.position) && parseInt(a.position) < parseInt(b.position) ? 1 : -1)
             })
-            console.warn('conf ist' + JSON.stringify(domConf))
             this.set('spaltenConf', domConf);
             showToast(this, 'Die Spaltenkonfiguration für unklkaren Fälle wurde erfolgreich geladen', TOAST_TYPE.SUCCESS);
           }
@@ -686,7 +690,6 @@
           this._defaultColumnConf.columns.sort((a, b) => {
             return (a.th_show && a.postion && !isNaN(a.position) && b.th_show && b.position && !isNaN(b.position) && parseInt(a.position) < parseInt(b.position) ? 1 : -1)
           })
-          console.warn('default conf ist' + JSON.stringify(this._defaultColumnConf))
           this.set('spaltenConf', this._defaultColumnConf);
           showToast(this, 'Keine Spaltenkonfiguration für die unklaren Fälle konnte geladen werden, default wird benutzt', TOAST_TYPE.ERROR);
         })
@@ -936,7 +939,7 @@
 
       exportUnklareFaelle(e) {
         let dataAndColumns = { data: this.mvdata, columns: this.spaltenConf.columns }
-        this.$.firstclient.exportUnklareAsCSV(dataAndColumns, e.detail).then((savePath) => {
+        this.$.firstclient.exportAsCSV(dataAndColumns, e.detail, this.domainname).then((savePath) => {
           if (savePath && savePath.path) {
             this.$.grtinfodialog.showDialog(
               {
