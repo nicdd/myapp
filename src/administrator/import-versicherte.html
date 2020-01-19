@@ -347,7 +347,6 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
       }
 
       _tryThisColumnConfig() {
-        console.warn('DAS GING')
         return this.$.bclient.getDomaenenColumnConfig(this.domainname).catch(() => {
           return this.$.bclient.getDomaenenColumnConfig('paechter')
         })
@@ -355,25 +354,19 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
 
       saveToDB(versicherte) {
         return this.$.bclient.getDomaenenColumnConfig('paechter').then((paechterConf) => {
-          console.warn('geschaftt 0')
           return this.$.firstclient.getAsJSON('paechter').then((paechter) => {
-            console.warn('geschaftt 1')
             return this.resolveConflicts(paechter, versicherte, paechterConf).then((conflictCheckedData) => {
-              console.warn('geschaftt 2')
               let unklareFaelle = conflictCheckedData.unklare;
               let klareFaelle = conflictCheckedData.klare;
               let promises = [];
-              console.warn('geschaftt 3')
               let klarePr = this.$.firstclient.updateAsJSON(klareFaelle, 'paechter').catch(() => {
                 showToast(this, 'Fehler bei der Übertragung der importierten Pächter-Daten in die Datenbank. (klare Fälle) ', TOAST_TYPE.ERROR);
               });
-              console.warn('geschaftt 4')
               let unklarePr = this.$.firstclient.postAsJSON(unklareFaelle, 'unklareversicherte').catch(() => {
                 showToast(this, 'Fehler bei der Übertragung der importierten Pächter-Daten in die Datenbank. (unklare Fälle) ', TOAST_TYPE.ERROR);
               })
               promises.push(klarePr);
               promises.push(unklarePr);
-              console.warn('geschaftt 5')
               return Promise.all(promises);
             })
           }).catch(() => {
@@ -387,11 +380,8 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
       }
 
       resolveConflicts(paechter, versicherte, paechterConf) {
-        console.warn('geschaftt 6')
         let faelle = { 'klare': [], 'unklare': [] }
-        console.warn('geschaftt 7')
         versicherte.forEach((v) => {
-          console.warn('geschaftt 8')
           let isInP = paechter.find((p) => p.GARTENNUMMER === v.GARTENNUMMER);
           let grund = null;
           (!isInP) ? grund = "Keie Entsprechung" : ((isInP.NACHNAME !== v.NACHNAME) ? grund = "Abweichung - Nachname" : (isInP.VORNAME !== v.VORNAME) ? grund = "Abweichung - Vorname" : (isInP.STRASSE !== v.STRASSE) ? grund = "Abweichung- Strasse" : (isInP.PLZ !== v.PLZ) ? grund = "Abweichung PLZ" : (isInP.WOHNORT !== v.WOHNORT) ? grund = "Abweichung Wohnort" : grund = null)
@@ -411,7 +401,6 @@ mögliche Werte dabei: KVD-Liste, Masterliste, Bestehender DATENSATZ.
             faelle['klare'].push(v);
           }
         })
-        console.warn('geschaftt 9')
         return Promise.resolve(faelle);
       }
 

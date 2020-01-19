@@ -1,0 +1,211 @@
+<!--
+Pagination Element for Vaadin-Grid Tables
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../clients/firstclient.html">
+<link rel="import" href="../shared-styles.html">
+<link rel="import" href="../first-domain-styles.html">
+<link rel="import" href="../table-styles.html">
+
+<dom-module id="grt-member-history">
+    <template>
+        <style include="shared-styles table-styles">
+            :host {
+                display: block;
+                padding: 3px;
+            }
+
+            .flex-container {
+                /* We first create a flex layout context */
+                display: flex;
+
+                /* Then we define the flow direction 
+     and if we allow the items to wrap 
+   * Remember this is the same as:
+   * flex-direction: row;
+   * flex-wrap: wrap;
+   */
+                flex-flow: row wrap;
+
+                /* Then we define how is distributed the remaining space */
+                justify-content: space-between;
+            }
+        </style>
+        <first-client id="firstclient"></first-client>
+        <div class="demo">
+            <div class="table-responsive-vertical shadow-z-1" id="haupttable">
+                <table id="table" class="table table-condensed table-striped table-bordered">
+                    <thead>
+                        <th></th>
+                        <th>Benutzer</th>
+                        <th>Änderungsart</th>
+                        <th>Datum</th>
+                    </thead>
+                    <tbody>
+                        <template is="dom-repeat" items="[[history.history]]" as="eintrag">
+                            <tr id="change-[[index]]" style="cursor: pointer;" on-tap="_toggle">
+                                <td>
+                                    <iron-icon id="icon-[[index]]" icon="icons:expand-more">
+
+                                    </iron-icon>
+                                </td>
+                                <td>[[eintrag.user]]</td>
+                                <td>[[eintrag.type]]</td>
+                                <td>[[_getDatum(eintrag.datetime)]]</td>
+                            </tr>
+                            <tr>
+                                <td class="no-padding" style="padding: 0;" colspan="100">
+                                    <iron-collapse id="collapse-[[index]]" no-animation="true">
+                                        <div class="layout vertical">
+                                            <div class="mcard marginedcard layout horizontal">
+                                                <template is="dom-repeat"
+                                                    items="[[_getArrayFrom(index, history.history.*)]]"
+                                                    as="property">
+                                                    <div class="vertical" style="margin: 3px 6px !important;">
+                                                        <p>
+                                                            <b>[[property.label]]</b>
+                                                        </p>
+                                                        <div class="layout vertical">
+                                                            <div class="layout horizontal"><b>Vorher:</b>
+                                                                <div>[[property.before]]</div>
+                                                            </div>
+                                                            <div class="layout horizontal"><b>Nachher:</b>
+                                                                <div>[[property.after]]</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                            <div class="mcard">
+                                                <grt-member member="[[eintrag.data]]" col-conf="[[memberSpaltenConf]]" read-only="true">
+                                                </grt-member>
+                                            </div>
+                                        </div>
+                                    </iron-collapse>
+
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+    </template>
+
+    <script>
+        class GrtMemberHistory extends Polymer.Element {
+            static get is() { return 'grt-member-history'; }
+
+            static get properties() {
+                return {
+                    id: String,
+                    ident: {
+                        type: String,
+                        observer: '_loadHistory'
+                    },
+                    history: {
+                        type: Object
+                    },
+                    _selHistory: {
+                        type: Number,
+                        value: null,
+                        observer: '_selHistoryChanged'
+                    },
+
+                    domain: {
+                        type: String
+                    },
+
+                    memberSpaltenConf:{
+                        type: Object,
+                    }    
+                    
+                }
+            }
+
+            _toggle(ev) {
+                const hIndex = Number.parseInt(ev.target.closest('tr').getAttribute('id').replace('change-', ''));
+                this._selHistory = hIndex === this._selHistory ? null : hIndex;
+            }
+
+            _selHistoryChanged(newV, oldV) {
+                const newSel = Number.parseInt(newV);
+                const oldSel = Number.parseInt(oldV);
+                if (Number.isInteger(oldSel)) {
+                    this.shadowRoot.querySelector('#collapse-' + oldSel).hide();
+                }
+                if (Number.isInteger(newSel) && newSel < this.history.history.length) {
+                    const target = this.shadowRoot.querySelector('#collapse-' + newSel);
+                    target.show();
+                    if (!this._isInViewport(target)) {
+                        const offset = newSel - 5;
+                        const contId = offset < 0 ? "#haupttable" : "#change-" + offset;
+                        this.shadowRoot.querySelector(contId).scrollIntoView();
+                    }
+                }
+
+            }
+
+            _isInViewport(el) {
+                const rect = el.getBoundingClientRect();
+                let resp = rect.top > 200 && rect.bottom < 750;
+                return resp;
+            }
+
+            _getArrayFrom(idx) {
+                let result = [];
+                if (!!this.history.history[idx]) {
+                    Object.keys(this.history.history[idx].diff).forEach((key) => {
+                        let newChange = {
+                            label: key,
+                            before: this.history.history[idx].diff[key].before,
+                            after: this.history.history[idx].diff[key].after
+                        }
+                        result.push(newChange);
+                    })
+                }
+
+                return result;
+            }
+
+            _isLastDataChange(index) {
+                return index === 0;
+            }
+
+            _getDatum(datetime) {
+                let mDateTime = moment(datetime, 'YYYYMMDD_HHmm');
+
+                if (mDateTime.isValid()) {
+                    return moment(mDateTime).format('DD.MM.YYYY HH:mm')
+                }
+            }
+
+            postLogData(newGartler, logdata) {
+                this.$.firstclient.logdata(newGartler, logdata, this.domain, this.ident).then((resp) => {
+                    this._loadHistory();
+                }).catch((error) => {
+                    showToast(this, 'Fehler bei der Speicherung der History-Daten ', TOAST_TYPE.ERROR);
+                })
+            }
+
+            _loadHistory() {
+                if (this.ident) {
+                    this.$.firstclient.getHistoryFor(this.domain, this.ident).then((response) => {
+                        this.set("history", response || { id: this.ident, history: [] });
+                    }).catch(() => {
+                        console.warn('catch in getHIstory this.id' + this.id)
+                    })
+                }
+
+            }
+
+        }
+
+        window.customElements.define(GrtMemberHistory.is, GrtMemberHistory);
+    </script>
+</dom-module>

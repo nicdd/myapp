@@ -429,7 +429,6 @@
       }
 
       _importLocalMemberPressed(localMemberFromCSVAsArray) {
-        console.warn('domainname' + this.domainname)
         this._tryThisColumnConfig().then((domConf) => {
           if (!domConf) {
             throw 'nicht gefunden';

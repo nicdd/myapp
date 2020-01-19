@@ -379,7 +379,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             _resetVersicherungKonfig(e) {
-                console.warn('versicherungconfig changed in my versicherungrechner')
                 this._setVersicherungKonfig(e.detail);
             }
 
@@ -662,7 +661,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     //let origSaved = this.savedData;
                 
                     let toSave = self.transferVCToSavedData(self.vc, JSON.parse(JSON.stringify(self.savedData)));
-                    self.dispatchEvent(new CustomEvent('savedversicherter', { detail: {data: toSave, index: self.dosave} }));
+                    self.dispatchEvent(new CustomEvent('savemember', { detail: {data: toSave, index: self.dosave} }));
                     
                     
                 }

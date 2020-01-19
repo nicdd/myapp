@@ -33,7 +33,7 @@ Pagination Element for Vaadin-Grid Tables
                 flex-wrap: wrap;
             }
 
-            .mfcontainer.disabled{
+            .mfcontainer.disabled {
                 opacity: 0.8;
                 cursor: not-allowed;
             }
@@ -63,7 +63,8 @@ Pagination Element for Vaadin-Grid Tables
             }
 
             .innercard {
-                margin: 10px;
+                margin-top: 10px;
+                margin-right: 10px;
                 padding: 0px !important;
             }
 
@@ -72,7 +73,6 @@ Pagination Element for Vaadin-Grid Tables
                 ;
                 border-bottom: 1px solid black;
             }
-
         </style>
 
         <div class="mcard layout horizontal">
@@ -92,12 +92,14 @@ Pagination Element for Vaadin-Grid Tables
                     </div>
                 </template>
             </div>
-            <div class="mcard layout vertical justified">
-                <paper-button disabled="[[_originalEqualThisMember(member.*, memberCopy.*)]]" bottom
-                    raised on-click="_resetMember">Zurücksetzen</paper-button>
-                <paper-button disabled="[[_originalEqualThisMember(member.*, memberCopy.*)]]" bottom
-                    raised on-click="_saveMember">Speichern</paper-button>
-            </div>
+            <template is="dom-if" if="[[!readOnly]]">
+                <div class="mcard layout vertical justified">
+                    <paper-button disabled="[[_originalEqualThisMember(member.*, memberCopy.*)]]" bottom
+                        raised on-click="_resetMember">Zurücksetzen</paper-button>
+                    <paper-button disabled="[[_originalEqualThisMember(member.*, memberCopy.*)]]" bottom
+                        raised on-click="_saveMember">Speichern</paper-button>
+                </div>
+            </template>
         </div>
     </template>
 
@@ -152,7 +154,7 @@ Pagination Element for Vaadin-Grid Tables
 
             _getGroupClass(initialClass, gname) {
 
-                let addDisabled = this.readOnly ? ' disabled': '';
+                let addDisabled = this.readOnly ? ' disabled' : '';
                 let nrOfF = this.colConf.columns.filter((c) => {
                     return c.gruppe === gname;
                 })
@@ -185,7 +187,6 @@ Pagination Element for Vaadin-Grid Tables
             }
 
             _getDataFor(gname) {
-                console.warn('gname' + gname)
                 let toLoadingFields = [];
                 toLoadingFields = this.colConf.columns.filter((c) => {
                     return c.gruppe === gname;
@@ -200,7 +201,6 @@ Pagination Element for Vaadin-Grid Tables
                 toLoadingFields.forEach((spalte) => {
                     fieldsData.push({ "coltype": spalte.coltype, "alias": spalte.alias, "colname": spalte.colname })
                 })
-                console.warn('fieldsData' + JSON.stringify(fieldsData))
                 return fieldsData;
             }
 

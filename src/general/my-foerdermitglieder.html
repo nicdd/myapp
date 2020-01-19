@@ -39,7 +39,7 @@
                                 <template is="dom-if" if="[[sc1.th_show]]">
                                     <th>
                                         <column-sorter id="[[sc1.colname]]" colname="[[sc1.alias]]"
-                                            path="[[sc1.colname]]" on-sorter-changed="_sortChange">
+                                            path="[[sc1.colname]]" coltype="[[sc1.coltype]]" on-sorter-changed="_sortChange">
                                         </column-sorter>
                                     </th>
                                 </template>
@@ -114,11 +114,11 @@
                                                 </div>
                                                 <div slot="collapse-content" class="corrected-margin">
                                                     <div class="mcard strong-text-color">
-                                                        <grt-gartler-history id="history[[_pageStart]]-[[index]]"
+                                                        <grt-member-history id="history[[_pageStart]]-[[index]]"
                                                             ident="[[_getRowIdValue(rowdata, idKey)]]"
                                                             domain="[[domainname]]">
                                                             <h4 slot="title">Fördermitglied</h4>
-                                                        </grt-gartler-history>
+                                                        </grt-member-history>
 
                                                     </div>
                                                 </div>

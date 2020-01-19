@@ -107,7 +107,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       }
 
-
       ready() {
         super.ready();
         window.addEventListener('vconfigchanged', (e) => {
@@ -116,7 +115,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       _setVersicherungKonfig(vconfig) {
-        console.warn('versicherungconfig changed in my versicherungkonfig')
         if (vconfig)
           this.set('vc', JSON.parse(JSON.stringify(vconfig)));
       }

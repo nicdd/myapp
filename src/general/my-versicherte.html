@@ -46,80 +46,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
-<link rel="import" href="../../bower_components/paper-progress-button/paper-progress-button.html">
-<link rel="import" href="../../bower_components/iron-collapse-button/iron-collapse-button.html">
-<link rel="import" href="../../bower_components/iron-icons/editor-icons.html">
-<link rel="import" href="../../bower_components/paper-input/paper-input.html">
-<link rel="import" href="../../bower_components/datetime-picker/overlay-date-picker.html">
-<link rel="import" href="../shared-styles.html">
-<link rel="import" href="../second-domain-styles.html">
-<link rel="import" href="../table-styles.html">
-<link rel="import" href="../clients/firstclient.html">
-<link rel="import" href="../clients/basicclient.html">
-
 <link rel="import" href="../general/my-versicherungrechner.html">
-<link rel="import" href="../utils/grt-grid-pagination.html">
-<link rel="import" href="../utils/export-chooser.html">
-<link rel="import" href="../utils/grt-dialog.html">
-<link rel="import" href="../utils/apps-dialog.html">
-<link rel="import" href="../utils/column-sorter.html">
-
-
+<link rel="import" href="../../bower_components/datetime-picker/overlay-date-picker.html">
+<link rel="import" href="../second-domain-styles.html">
 
 <dom-module id="my-versicherte">
-  <template>
-    <style include="second-domain-styles table-styles">
-      :host {
-        /* Stretch this element to fill viewport */
-        height: calc(100vh - 88px);
-        flex: 1;
-
-        /* Make a flex column layout of children */
-        display: flex;
-        flex-direction: column;
-        overflow: auto;
-        -webkit-overflow-scrolling: touch;
-        padding: var(--content-padding);
-      }
-
-      .toolbar {
-        /* height: 40px; */
-        padding: 5px;
-        /*line-height: 32px;*/
-        background: #eee;
-      }
-
-      iron-collapse-button {
-        cursor: cursor;
-        padding-right: 12px;
-      }
-
-      iron-collapse-button div[slot="collapse-trigger"] {
-        height: 48px;
-        line-height: 48px;
-      }
-
-      iron-collapse-button div[slot="collapse-content"] {
-        margin-right: -12px;
-      }
-
-      paper-button {
-        padding: 0.2em 0.5em 0.2em 0.5em !important;
-      }
-
-      .button {
-        padding: 0px 2px 0px 2px !important;
-      }
-
-      .rightalign {
-        text-align: right !important;
-      }
-
-      .centered-cell {
-        text-align: center !important;
-        vertical-align: middle !important;
-      }
-
+  <template id="styles">
+    <style include="second-domain-styles">
       .versichert {
         background-color: #f5f5f5 !important;
       }
@@ -132,20 +65,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         background-color: orangered !important;
       }
     </style>
-
-    <first-client id="firstclient"></first-client>
-    <basic-client id="bclient"></basic-client>
-    <grt-dialog id="deletedialog" dialog-type="confirmation" confirmation-name="Löschen" cancel-name="Abbrechen"
-      on-grtconfirm="_removeItem"></grt-dialog>
-    <grt-dialog id="grtinfodialog" dialog-type="info"></grt-dialog>
-    <export-chooser id="exportdialog" dialog-type="info" confirmation-name="Schließen"
-      on-export-data="exportVersicherte"></export-chooser>
-    <apps-dialog id="appsdialog" action-buttons="[[actionButtons]]" tasks="[[getSelected(mvdata.*)]]"></apps-dialog>
     <div>
       <div class="toolbar layout horizontal justified" flex>
         <template is="dom-if" if="[[spaltenConf.columns.length]]">
           <grt-grid-pagination id="pagesss" datalength="[[mvdata.length]]" page-size="{{pageSize}}"
-            pstart="{{_pageStart}}" on-pagechanged="changePage" style-domain="second-domain">
+            pstart="{{_pageStart}}" on-pagechanged="changePage" style-domain="[[styleDomain]]">
           </grt-grid-pagination>
         </template>
         <div class="layout horizontal justified" flex="50">
@@ -175,16 +99,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               <th class="button"></th>
             </thead>
             <tbody>
-              <template is="dom-repeat" items="[[mvpagedata]]" as="vs">
-                <tr class$="[[vs.versicherung.status]]">
+              <template is="dom-repeat" items="[[mvpagedata]]" as="rowdata">
+                <tr class$="[[rowdata.versicherung.status]]">
                   <td class="centered-cell">
-                    <paper-checkbox class="[[getClassByBeitrag(vs.BEITRAG)]]"
+                    <paper-checkbox class="[[getClassByBeitrag(rowdata.BEITRAG)]]"
                       id="[[getGridElementID(index, _pageStart, 'scb')]]" on-change="_checkOne"
                       checked="[[_isItemSelected(_pageStart, index, mvdata.*)]]"></paper-checkbox>
                   </td>
-                  <!-- <td class="rightalign">[[item.GARTENNUMMER]]</td>
-                  <td>[[item.NACHNAME]]</td>
-                  <td>[[item.VORNAME]]</td>
+                  <!--
                   <template is="dom-if" if="[[!_externeVersicherung(item.versicherung.name)]]">
                     <td class="rightalign">[[item.GBV]]</td>
                     <td class="rightalign">[[item.FED]]</td>
@@ -198,25 +120,25 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                   <template is="dom-if" if="[[_externeVersicherung(item.versicherung.name)]]">
                     <th colspan="8" class="centered-cell">[[item.versicherung.name]]</th>
                   </template> -->
-
                   <template is="dom-repeat" items="[[spaltenConf.columns]]" as="sc2">
                     <template is="dom-if" if="[[sc2.th_show]]">
-                      <td class$="[[getClassByColtype(sc2.coltype)]]">[[_getVSData(vs, sc2)]]</td>
+                      <td class$="[[getClassByColtype(sc2.coltype)]]">[[_getCellData(rowdata, sc2)]]</td>
                     </template>
                   </template>
                   <td class="button">
-                    <button id="bto[[vs.GARTENNUMMER]]" on-click="_openDetails"
+                    <button id="bto[[_getRowIdValue(rowdata, idKey)]]" on-click="_openDetails"
                       class="second-domain-endpagebutton action-button">
-                      <iron-icon id="cro[[vs.GARTENNUMMER]]" icon="[[getIcon(vs._detailsOpened)]]" slot="item-icon"
-                        on-click="_openDetails"></iron-icon>
+                      <iron-icon id="cro[[_getRowIdValue(rowdata, idKey)]]" icon="[[getIcon(rowdata._detailsOpened)]]"
+                        slot="item-icon" on-click="_openDetails"></iron-icon>
                     </button>
                   </td>
                 </tr>
-                <template is="dom-if" if="[[vs._detailsOpened]]">
+                <template is="dom-if" if="[[rowdata._detailsOpened]]">
                   <tr class="details">
                     <td colspan="13" class="no-padding">
-                      <iron-collapse-button expand-icon="add-circle-outline" collapse-icon="remove-circle-outline"
-                        class="detailelement light-element flex" opened>
+                      <iron-collapse-button id="clps[[_getRowIdValue(rowdata, idKey)]]_1"
+                        expand-icon="add-circle-outline" collapse-icon="remove-circle-outline"
+                        class="detailelement light-element flex" opened on-tap="onTap">
                         <div slot="collapse-trigger" class="flex">
                           <div class="layout horizontal justified">
                             <span>Daten des Versicherungnehmers</span>
@@ -224,9 +146,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         </div>
                         <div slot="collapse-content" class="corrected-margin">
                           <div class="mcard strong-text-color">
-                            <grt-member id="mmbr[[_pageStart]]-[[index]]" id-key="GARTENNUMMER" member="[[vs]]"
+                            <grt-member id="mmbr[[_pageStart]]-[[index]]" id-key="[[idKey]]" member="[[rowdata]]"
                               col-conf="[[spaltenConf]]" read-only="true">
-                              <h4 slot="title">Fördermitglied</h4>>
+                              <h4 slot="title">Versicherungsnehmer</h4>>
                             </grt-member>
                           </div>
                         </div>
@@ -235,15 +157,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                   </tr>
                   <tr class="details">
                     <td colspan="14" class="no-padding">
-                      <iron-collapse-button expand-icon="add-circle-outline" collapse-icon="remove-circle-outline"
-                        class="detailelement light-element flex" opened>
+                      <iron-collapse-button id="clps[[_getRowIdValue(rowdata, idKey)]]_2"
+                        expand-icon="add-circle-outline" collapse-icon="remove-circle-outline"
+                        class="detailelement light-element flex" opened on-tap="onTap">
                         <div slot="collapse-trigger" class="flex">
                           <div class="layout horizontal justified">
                             <span>Versicherungsdaten</span>
                             <button id="sbt[[index]]" on-click="_saveItemData"
-                              disabled="[[_saveButtonDisabled(dc, vs.versicherung.name, vs.versicherung.von, vs.versicherung.bis)]]">
+                              disabled="[[_saveButtonDisabled(dc, rowdata.versicherung.name, rowdata.versicherung.von, rowdata.versicherung.bis)]]">
                               <iron-icon icon="save" id="sic[[index]]" slot="item-icon"
-                                disabled="[[_saveButtonDisabled(dc, vs.versicherung.name, vs.versicherung.von, vs.versicherung.bis)]]"
+                                disabled="[[_saveButtonDisabled(dc, rowdata.versicherung.name, rowdata.versicherung.von, rowdata.versicherung.bis)]]"
                                 on-click="_saveItemData"></iron-icon>
                             </button>
                           </div>
@@ -251,25 +174,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
                         <div slot="collapse-content" class="corrected-margin">
                           <div class="mcard strong-text-color">
-                            Versicherer: <paper-input id="versName[[index]]" value="[[vs.versicherung.name]]"
+                            Versicherer: <paper-input id="versName[[index]]" value="[[rowdata.versicherung.name]]"
                               on-value-changed="_doOnVersicherungNameChanged"></paper-input>
-                            Von: <overlay-date-picker id="versVon[[index]]" date="{{vs.versicherung.von}}" required
+                            Von: <overlay-date-picker id="versVon[[index]]" date="{{rowdata.versicherung.von}}" required
                               on-value-changed="_doOnVersicherungVonChanged"></overlay-date-picker>
                             <!-- <paper-input id="versVon[[index]]" value="[[item.versicherung.von]]"
                               on-value-changed="_doOnVersicherungVonChanged"></paper-input> -->
-                            Bis: <overlay-date-picker id="versBis[[index]]" date="{{vs.versicherung.bis}}" required
+                            Bis: <overlay-date-picker id="versBis[[index]]" date="{{rowdata.versicherung.bis}}" required
                               on-value-changed="_doOnVersicherungBisChanged"></overlay-date-picker>
 
                             <!--<paper-input id="versBis[[index]]" value="[[item.versicherung.bis]]"
                               on-value-changed="_doOnVersicherungBisChanged"></paper-input>-->
                           </div>
                         </div>
-                        <template is="dom-if" if="[[_isKVDVersichert(vs.versicherung.name)]]">
+                        <template is="dom-if" if="[[_isKVDVersichert(rowdata.versicherung.name)]]">
                           <div slot="collapse-content" class="corrected-margin">
                             <div class="mcard strong-text-color">
                               <my-versicherungrechner id="[[getGridElementID(index, _pageStart, 'vrd')]]"
-                                vcs="[[vconfig]]" saved-data="[[vs]]" dosave="{{dosave}}" changed-saved-data="{{dc}}"
-                                on-savedversicherter="_postOnePaechter"></my-versicherungrechner>
+                                vcs="[[vconfig]]" saved-data="[[rowdata]]" dosave="{{dosave}}"
+                                changed-saved-data="{{dc}}" on-savemember="_postOnePaechter">
+                              </my-versicherungrechner>
                             </div>
                           </div>
                         </template>
@@ -286,61 +210,42 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </template>
 
   <script>
-    class MyVersicherte extends Polymer.Element {
+    class MyVersicherte extends customElements.get('my-tablemask') {
       static get is() { return 'my-versicherte'; }
+
+      static get template() {
+        let subTmplt;
+        if (!subTmplt) {
+          let superClass = customElements.get('my-tablemask');
+          subTmplt = superClass.template.cloneNode(true);
+          const subStyle = Polymer.DomModule.import('my-versicherte', 'template#styles').content;
+          const superStyle = subTmplt.content.querySelector('style');
+          superStyle.parentNode.appendChild(subStyle);
+        }
+        return subTmplt;
+      }
 
       static get properties() {
         return {
-          actionButtons: {
-            type: Array,
-            value: ['email', 'rechnung', 'meldung', 'brief']
+
+          idKey: {
+            type: String,
+            value: "GARTENNUMMER"
           },
 
-          pageSize: {
-            type: Number,
-            value: null,
-            notify: true,
-            observer: 'changePage'
+          styleDomain: {
+            type: String,
+            value: "second-domain"
           },
 
-          _pageStart: {
-            type: Number,
-            value: 0
+          domainname: {
+            type: String,
+            value: "versicherte"
           },
 
-          _loading: {
-            type: Boolean,
-            value: false
-          },
-
-          mvdata: {
-            type: Array,
-            value: [],
-            notify: true,
-            reflectToAttribute: true
-          },
-
-          mvpagedata: {
-            type: Array,
-            value: [],
-            notify: true,
-            reflectToAttribute: true
-          },
-
-          _pages: {
-            type: Object,
-            value: null
-          },
-
-          selected: {
-            type: Boolean,
-            value: false,
-            observer: '_activeChanged',
-          },
-
-          columnNames: {
-            type: Array,
-            value: []
+          datadomain: {
+            type: String,
+            value: "paechter"
           },
 
           vconfig: {
@@ -349,32 +254,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             notify: true
           },
 
-          openeddetails: {
-            type: Array,
-            value: []
-          },
-
           dosave: {
             type: Boolean,
             value: null,
             notify: true
           },
+
           dc: {
             type: Boolean,
             value: null,
             notify: true
-          },
-
-          spaltenConf: {
-            type: Array,
-            value: null,
-            notify: true,
-            observer: '_spaltenConfReady'
-          },
-
-          domainname:{
-            type: String,
-            value: "versicherte"
           },
 
           _defaultColumnConf: {
@@ -692,36 +581,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       }
 
-      _getVSData(fm, spalte) {
-        if (spalte.coltype === "date") {
-          let res = moment(fm[spalte.colname]);
-          if (res.isValid()) {
-            return res.format('DD.MM.YYYY HH:mm');
-          } else return fm[spalte.colname];
-        } else
-          return fm[spalte.colname];
+      static get observers() {
+        return ['setVersicherungstatus(mvdata)']
       }
 
-      _spaltenConfReady() {
-        if (this.spaltenConf && this.spaltenConf.columns && this.spaltenConf.columns.length) {
-          this.$.firstclient.getAsJSON('paechter').then((resp) => {
-            if (resp) {
-              resp = this.setVersicherungstatus(resp);
-              this.splitToObjects(resp).finally(() => {
-                //wenn pageSize nur an einer stelle initialisiert wird (in then von splitToObjects)
-                // dann der gleiche wert 10 wird nicht noch mal zu der pagination Componente getriggert
-                // denn er sich noch nicht geändert hatte, die Komp beim ersten mal aber nicht da war
-                this.set('pageSize', parseInt(0));
-                this.changePage();
-              });
-            } else {
-              showToast(this, 'Bei der Initialisierung der Seite wurden keine Versicherte gefunden', TOAST_TYPE.ERROR);
-            }
-          }).catch((err) => {
-            console.log("Fehler beim get fuer versicherte  kam:" + JSON.stringify(err))
-            showToast(this, 'Die Versicherten konnten nicht geladen werden', TOAST_TYPE.ERROR);
-          })
-        }
+      ready() {
+        super.ready();
+        window.addEventListener('vconfigchanged', (e) => {
+          this.set('vconfig', e.detail);
+        })
       }
 
       _cleanKVDInfos(versicherter) {
@@ -734,19 +602,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         return versicherter;
       }
 
-      _removeMetadata(versicherter) {
-        let vToSave = JSON.parse(JSON.stringify(versicherter))
-        const keysToReset = ["_detailsOpened"];
-        Object.keys(vToSave).forEach((vkey) => {
-          if (keysToReset.some((elem) => elem === vkey)) {
-            delete vToSave[vkey];
-          }
-        })
-        return vToSave;
-      }
-
       _doOnVersicherungNameChanged(e) {
-
         if (e && e.target) {
           let realIdx = e.target.id.substring(8);
           let path = 'mvpagedata.' + realIdx + '.versicherung.name';
@@ -754,16 +610,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.set('dc', true)
         }
       }
-      _doOnVersicherungVonChanged(e) {
 
+      _doOnVersicherungVonChanged(e) {
         if (e && e.target) {
           // let realIdx = e.target.id.substring(7);
           // let path = 'mvpagedata.' + realIdx + '.versicherung.von';
           // this.set(path, e.target.__data.value)
-          console.warn('changeevent for von')
           this.set('dc', true)
         }
       }
+
       _doOnVersicherungBisChanged(e) {
         if (e && e.target) {
           // let realIdx = e.target.id.substring(7);
@@ -788,218 +644,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         return false;
       }
 
-      ready() {
-        super.ready();
-
-        if (this.$)
-          this.$ = new Proxy(this.$, {
-            get: ($, id) => $[id] || this.shadowRoot.getElementById(id),
-            set: ($, id, element) => {
-              $[id] = element;
-              return true;
-            }
-          });
-        this._loadColumnConfigThenData();
-        window.addEventListener('vconfigchanged', (e) => {
-          console.warn('vconfigchanged in versicherte' + JSON.stringify(e.detail))
-          this.set('vconfig', e.detail);
-        })
-      }
-
-      _loadColumnConfigThenData() {
-        this.$.bclient.getDomaenenColumnConfig('versicherte').then((domConf) => {
-          if (!domConf || !domConf.columns || !Array.isArray(domConf.columns)) {
-            throw 'nicht gefunden';
-          } else {
-            domConf.columns.sort((a, b) => {
-              return (a.th_show && a.postion && !isNaN(a.position) && b.th_show && b.position && !isNaN(b.position) && parseInt(a.position) < parseInt(b.position) ? 1 : -1)
-            })
-            this.set('spaltenConf', domConf);
-            showToast(this, 'Die Versicherten-Spaltenkonfiguration wurde erfolgreich geladen', TOAST_TYPE.SUCCESS);
-          }
-
-        }).catch((err) => {
-          console.warn('conf column  err' + err)
-          this._defaultColumnConf.columns.sort((a, b) => {
-            return (a.th_show && a.postion && !isNaN(a.position) && b.th_show && b.position && !isNaN(b.position) && parseInt(a.position) < parseInt(b.position) ? 1 : -1)
-          })
-          this.set('spaltenConf', this._defaultColumnConf);
-          showToast(this, 'Keine Spaltenkonfiguration für die FM konnte geladen werden, default wird benutzt', TOAST_TYPE.ERROR);
-        })
-      }
-
-      _openDetails(e) {
-        e.model.set("vs._detailsOpened", !e.model.vs._detailsOpened);
-        if (e.model.vs._detailsOpened) {
-          this.push('openeddetails', true);
-        } else {
-          this.shift('openeddetails');
-        }
-        e.stopPropagation();
-      }
-
-      _sortChange(e) {
-        let self = this;
-        if (e.target && e.target.path && e.target.direction) {
-          let otherSorter = this.shadowRoot.querySelectorAll('column-sorter');
-          otherSorter.forEach((os) => {
-            if (os.direction && (os.colname !== e.target.colname)) {
-              os.direction = null;
-            }
-          })
-          let key = e.target.path;
-          let direction = e.target.direction;
-          let coltype = e.target.coltype;
-          let records = JSON.parse(JSON.stringify(self.mvdata));
-          switch (coltype) {
-            case 'numberstring':
-              records = this._alphaNumbersSorter(self, records, direction, key);
-              break;
-            case 'number':
-              records = this._numbersSorter(records, direction, key);
-              break;
-            case 'string':
-              records = this._stringsSorter(records, direction, key);
-              break;
-            default:
-              records = this._stringsSorter(records, direction, key);
-              break;
-          }
-          self.set('mvdata', records);
-          self.changePage();
-        }
-      }
-
-      _alphaNumbersSorter(self, records, direction, key) {
-        records = records.sort((o1, o2) => {
-          let result = self.naturalSorter((o1[key] || "0"), (o2[key] || "0"));
-          if (direction === 'asc') {
-            return (result < 0) ? -1 : 1;
-          } else {
-            return (result < 0) ? 1 : -1;
-          }
-          return 0;
-        });
-        return records;
-      }
-
-      _numbersSorter(records, direction, key) {
-        console.warn('aufgerufen')
-        records.sort((a, b) => {
-          if (direction === 'asc') {
-            if ((a[key] || 0) < (b[key] || 0)) return -1;
-            if ((a[key] || 0) > (b[key] || 0)) return 1;
-          } else {
-            if ((a[key] || 0) < (b[key] || 0)) return 1;
-            if ((a[key] || 0) > (b[key] || 0)) return -1;
-          }
-          return 0;
-        });
-        console.warn('beendet')
-        return records;
-      }
-
-      _stringsSorter(records, direction, key) {
-        records.sort((a, b) => {
-          if (direction === 'asc') {
-            if ((a[key] || "").toLowerCase() < (b[key] || "").toLowerCase()) return -1;
-            if ((a[key] || "").toLowerCase() > (b[key] || "").toLowerCase()) return 1;
-          } else {
-            if ((a[key] || "").toLowerCase() < (b[key] || "").toLowerCase()) return 1;
-            if ((a[key] || "").toLowerCase() > (b[key] || "").toLowerCase()) return -1;
-          }
-          return 0;
-        });
-        return records;
-      }
-
-      changePage() {
-        if (this._pageStart || this._pageStart === 0) {
-          let end = parseInt(this._pageStart) + (parseInt(this.pageSize));
-          let newItems = this.mvdata.slice(this._pageStart, end);
-          this.set('mvpagedata', newItems);
-          this.set('openeddetails', [])
-        }
-      }
-
-      splitToObjects(resp) {
-        let versichertenData = resp;
-        let columns = resp.columns;
-        let promises = [];
-
-        return Promise.all(promises).then(() => {
-          this.set('columnNames', columns);
-          this.set('mvdata', versichertenData);
-          this.set('pageSize', parseInt(10));
-        })
-      }
-
-      naturalSorter(as, bs) {
-        let a, b, a1, b1, i = 0, n, L,
-          rx = /(\.\d+)|(\d+(\.\d+)?)|([^\d.]+)|(\.\D+)|(\.$)/g;
-        if (as === bs) return 0;
-        a = as.toLowerCase().match(rx);
-        b = bs.toLowerCase().match(rx);
-        L = a.length;
-        while (i < L) {
-          if (!b[i]) return 1;
-          a1 = a[i],
-            b1 = b[i++];
-          if (a1 !== b1) {
-            n = a1 - b1;
-            if (!isNaN(n)) {
-              return n;
-            }
-            return a1 > b1 ? 1 : -1;
-          }
-        }
-        return b[i] ? -1 : 0;
-      }
-
       _setLoading(val) {
         this.set('_loading', val);
       }
 
-      _activeChanged(newV, oldV) {
-        console.log('selected changed newV:' + newV + " oldV:" + oldV)
-        if (newV) {
-          this.$.firstclient.getAsJSON('paechter').then((resp) => {
-            if (resp) {
-              resp = this.setVersicherungstatus(resp);
-              //this.set('pageSize', 10);
-              this.splitToObjects(resp).finally(() => {
-                this.changePage();
-              });
-            } else {
-              showToast(this, 'Bei der erneuten Initialisierung der Seite wurden keine Versichertendaten gefunden', TOAST_TYPE.ERROR);
-            }
-          })
-        }
-      }
-
-      _showExportDialog() {
-        if (!this.mvdata || !this.mvdata.length) {
-          this.$.grtinfodialog.showDialog(
-            {
-              "title": "Keine Daten",
-              "message": "Es gibt keine Versichertendaten, die man exportieren könnte."
-            })
-
-        } else {
-          this.$.exportdialog.showDialog(
-            {
-              "title": "Speicherort Auswahl",
-              "message": "Bitte wählen Sie ob eine lokale Speicherung erwünscht ist oder eine Speicherung auf dem Server."
-            })
-        }
-      }
-
       setVersicherungstatus(data) {
-        let newData = [];
-        data.forEach((paechter) => {
-          newData.push(this._setStatusForOneVersicherter(paechter));
-        })
-        return newData;
+        if (data && Array.isArray(data) && data.length) {
+          let newData = [];
+          data.forEach((paechter) => {
+            paechter = this._setStatusForOneVersicherter(paechter);
+          })
+          //this.set()
+        }
       }
 
       _setStatusForOneVersicherter(paechter) {
@@ -1014,33 +670,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         return paechter
       }
 
-      exportVersicherte(e) {
-        let dataAndColumns = { data: this.mvdata, columns: this.spaltenConf.columns }
-        this.$.firstclient.exportAsCSV(dataAndColumns, e.detail, this.domainname).then((savePath) => {
-          if (savePath && savePath.path) {
-            this.$.grtinfodialog.showDialog(
-              {
-                "title": "Daten als CSV - exportieren",
-                "message": "Die Daten der Versicheten wurden erfolgreich unter " + savePath.path + " gespeichert."
-              })
-          } else if (savePath) {
-            showToast(this, "Die Daten der Versicheten werden unter " + savePath + " gespeichert.", TOAST_TYPE.WARN, 'topRight');
-          }
-        }).catch((err) => {
-          showToast(this, 'Der Datenexport der Versicherten ist fehlgeschlagen', TOAST_TYPE.ERROR);
-        });
-      }
-
       //versicherungsdata save
       _saveItemData(e) {
-
         if (e && e.target && e.target.id && !e.target.disabled) {
           let idxActiveTable = parseInt(e.target.id.substring(3));
           let idxOrigTable = idxActiveTable + (parseInt(this._pageStart) || 0);
-
           if (this.mvpagedata[idxActiveTable].versicherung.name !== 'KVD') {
             let toSave = this._cleanKVDInfos(this.mvpagedata[idxActiveTable]);
-            let elike = { "type": "savedversicherter", "detail": { "data": toSave, "index": idxOrigTable } }
+
+            let elike = { "type": "savemember", "detail": { "data": toSave, "index": idxOrigTable } }
             this._postOnePaechter(elike)
           } else {
             this.set('dosave', idxOrigTable);
@@ -1051,117 +689,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _postOnePaechter(e) {
         let toSave = null;
-        if (e.type && e.type === 'add-v') {
-          toSave = e.detail;
-        } else if (e.type && e.type === 'savedversicherter') {
-          toSave = e.detail.data;
+        if (e.type && e.type === 'savemember') {
+          e.detail.data = this._setStatusForOneVersicherter(e.detail.data);
+          super._postOne(e, 'paechter')
         }
-        toSave = this._setStatusForOneVersicherter(toSave);
-        toSave = this._removeMetadata(toSave);
-        this.$.firstclient.postAsJSON(toSave, 'paechter', toSave.GARTENNUMMER).then(() => {
-          if (e.type && e.type === 'add-v') {
-            this._insertNewVersicherter(e);
-          } else if (e.type && e.type === 'savedversicherter') {
-            this._insertChangedVersicherter(e);
-          }
-          showToast(this, 'Die Änderungen des Versicherten wurden erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
-
-        }).catch((error) => {
-          showToast(this, 'Fehler bei der Speicherung der Änderungen', TOAST_TYPE.ERROR);
-          this.set('dosave', null);
-        })
-
       }
 
-      _insertChangedVersicherter(e) {
+      _insertChangedMember(e) {
         this.splice('mvdata', e.detail.index, 1, e.detail.data)
         // self.set('originaldata', self.vc);
         this.set('dosave', null);
         this.changePage();
         this.notifyPath('mvpagedata.' + (parseInt(e.detail.index) - (parseInt(this._pageStart) || 0)) + '.versicherung.status')
-      }
-
-      _insertNewVersicherter(e) {
-        let self = this;
-        self.splice('mvdata', self._pageStart, 0, e.detail);
-      }
-
-
-      // check-box and apps
-      _isItemSelected(_pageStart, index) {
-        let path = 'mvdata.' + (_pageStart + index) + '.selected';
-        return this.get(path);
-      }
-
-      _noOneSelected() {
-        return !this.mvdata.some((data) => data.selected);
-      }
-
-      _areAllSelected() {
-        return !this.mvdata.some((data) => !data.selected);
-      }
-
-      _checkAll(e) {
-        if (e.currentTarget.checked) {
-          this.mvdata.forEach((mv, idx) => {
-            let path = 'mvdata.' + idx + '.selected'
-            this.set(path, true)
-          })
-        } else {
-          this.mvdata.forEach((mv, idx) => {
-            let path = 'mvdata.' + idx + '.selected'
-            this.set(path, false)
-          })
-        }
-      }
-
-      getSelected() {
-        let thetasks = this.mvdata.filter((el) => el.selected === true);
-        return thetasks;
-      }
-
-      _checkOne(e) {
-        let realIndex = e.target.id.substring(3);
-        if (e.currentTarget.checked) {
-          let path = 'mvdata.' + realIndex + '.selected'
-          this.set(path, true)
-        } else {
-          let path = 'mvdata.' + realIndex + '.selected'
-          this.set(path, false)
-        }
-      }
-
-      _showApps(e) {
-        this.$.appsdialog.showDialog()
-        // iziToast.show({
-        //   position: "center",
-        //   title: 'Hey',
-        //   message: 'What would you like to add?',
-        // })
-      }
-
-      getGridElementID(index, _pageStart, prefix) {
-        let realIndex = (parseInt(index) + parseInt(_pageStart));
-        return prefix + realIndex;
-      }
-
-      //css and dynamic elements
-      isSaveDisabled() {
-        if ((this.openeddetails && this.openeddetails.length) || !this.mvdata || !this.mvdata.length) {
-          return true;
-        } else return false;
-      }
-
-      isExportDisabled() {
-        if ((this.openeddetails && this.openeddetails.length) || !this.mvdata || !this.mvdata.length) {
-          return true;
-        } else return false;
-      }
-
-      getClassByBeitrag(beitrag) {
-        if (!beitrag || beitrag.length === 0) {
-          return ".redc";
-        } else return ".redc";
       }
 
       getClassByColtype(coltype) {
@@ -1170,11 +709,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       }
 
-      getIcon(detailsOpened) {
-        if (detailsOpened) {
-          return 'close';
-        } else return 'create';
-      }
     }
 
     window.customElements.define(MyVersicherte.is, MyVersicherte);

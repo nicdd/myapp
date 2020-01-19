@@ -16,7 +16,7 @@
 <link rel="import" href="../utils/column-sorter.html">
 <link rel="import" href="../utils/grt-sand-clock.html">
 <link rel="import" href="../utils/grt-member.html">
-<link rel="import" href="../utils/grt-gartler-history.html">
+<link rel="import" href="../utils/grt-member-history.html">
 
 <dom-module id="my-tablemask">
     <template>
@@ -203,7 +203,8 @@
 
             _spaltenConfReady() {
                 if (this.spaltenConf && this.spaltenConf.columns && this.spaltenConf.columns.length) {
-                    this.$.firstclient.getAsJSON(this.domainname).then((resp) => {
+                    let dataDomain = (this.datadomain)? this.datadomain : this.domainname;
+                    this.$.firstclient.getAsJSON(dataDomain).then((resp) => {
                         if (resp) {
                             this.splitToObjects(resp).finally(() => {
                                 this.changePage();
@@ -212,7 +213,7 @@
                             showToast(this, 'Bei der Initialisierung der Seite wurden keine Daten gefunden', TOAST_TYPE.ERROR);
                         }
                     }).catch((err) => {
-                        console.log("Fehler beim get fuer " + this.domainname + " kam:" + JSON.stringify(err))
+                        console.log("Fehler beim get fuer " + dataDomain + " kam:" + JSON.stringify(err))
                         showToast(this, 'Die Daten konnten nicht geladen werden', TOAST_TYPE.ERROR);
                     })
                 }
@@ -253,24 +254,25 @@
             }
 
             _loadColumnConfigThenData() {
-                this.$.bclient.getDomaenenColumnConfig(this.domainname).then((domConf) => {
-                    if (!domConf || !domConf.columns || !Array.isArray(domConf.columns)) {
-                        throw 'nicht gefunden';
-                    } else {
-                        domConf.columns.sort((a, b) => {
+                if (this.selected) {
+                    this.$.bclient.getDomaenenColumnConfig(this.domainname).then((domConf) => {
+                        if (!domConf || !domConf.columns || !Array.isArray(domConf.columns)) {
+                            throw 'nicht gefunden';
+                        } else {
+                            domConf.columns.sort((a, b) => {
+                                return (a.th_show && a.postion && !isNaN(a.position) && b.th_show && b.position && !isNaN(b.position) && parseInt(a.position) < parseInt(b.position) ? 1 : -1)
+                            })
+                            this.set('spaltenConf', domConf);
+                            showToast(this, 'Die Spaltenkonfiguration wurde erfolgreich geladen', TOAST_TYPE.SUCCESS);
+                        }
+                    }).catch((err) => {
+                        this._defaultColumnConf.columns.sort((a, b) => {
                             return (a.th_show && a.postion && !isNaN(a.position) && b.th_show && b.position && !isNaN(b.position) && parseInt(a.position) < parseInt(b.position) ? 1 : -1)
                         })
-                        this.set('spaltenConf', domConf);
-                        showToast(this, 'Die Spaltenkonfiguration wurde erfolgreich geladen', TOAST_TYPE.SUCCESS);
-                    }
-
-                }).catch((err) => {
-                    this._defaultColumnConf.columns.sort((a, b) => {
-                        return (a.th_show && a.postion && !isNaN(a.position) && b.th_show && b.position && !isNaN(b.position) && parseInt(a.position) < parseInt(b.position) ? 1 : -1)
+                        this.set('spaltenConf', this._defaultColumnConf);
+                        showToast(this, 'Keine Spaltenkonfiguration konnte geladen werden, default wird benutzt', TOAST_TYPE.ERROR);
                     })
-                    this.set('spaltenConf', this._defaultColumnConf);
-                    showToast(this, 'Keine Spaltenkonfiguration konnte geladen werden, default wird benutzt', TOAST_TYPE.ERROR);
-                })
+                }
             }
 
             _openDetails(e) {
@@ -288,7 +290,6 @@
                     let icolapse = this.shadowRoot.querySelectorAll("iron-collapse-button");
                     let idprefix = e.target.id.substring(0, e.target.id.lastIndexOf('_'))
                     icolapse = Array.from(icolapse).filter((ic) => (ic.opened && ic.id.startsWith(idprefix)))
-                    console.warn('anzahl:' + icolapse.length)
                     if (!icolapse.length) {
                         this._openDetails(e);
                     }
@@ -532,14 +533,19 @@
                 self.splice('mvdata', self._pageStart, 0, e.detail);
             }
 
-            _postOne(e) {
+            _postOne(e, alternativeDomain) {
                 let toSave = null;
+                let dataDomain = (this.datadomain)? this.datadomain : this.domainname;
                 if (e.type && e.type === 'savemember') {
                     toSave = e.detail.data;
                     let mid = e.target.id;
                     toSave = this._removeMetadata(toSave);
-                    this.$.firstclient.postAsJSON(toSave, this.domainname, toSave[this.idKey]).then(() => {
-                        this.$[mid].pushSuccesfullEvent(e.type);
+                    this.$.firstclient.postAsJSON(toSave, dataDomain, toSave[this.idKey]).then(() => {
+                        try {
+                            this.$[mid].pushSuccesfullEvent(e.type);
+                        } catch (err) {
+                            console.warn('_postOne error domainname' + dataDomain + ' -> ' + err)
+                        }
                         this._insertChangedMember(e);
                         if (this.logg) {
                             let historyID = "history" + mid.substring(4);
@@ -562,7 +568,8 @@
 
                 } else {
                     this.$.sandhour.showDialog();
-                    this.$.firstclient.postAsJSON(this.mvdata, this.domainname).then(() => {
+                    let dataDomain = (this.datadomain)? this.datadomain : this.domainname;
+                    this.$.firstclient.postAsJSON(this.mvdata, dataDomain).then(() => {
                         showToast(this, 'Die Daten wurden erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
                     }).catch(() => {
                         showToast(this, 'Fehler beim Speichern der Daten', TOAST_TYPE.ERROR);
@@ -663,8 +670,9 @@
                     return v[this.idKey] === id;
                 });
                 let idx = this.mvdata.indexOf(elem);
+                let dataDomain = (this.datadomain)? this.datadomain : this.domainname;
                 if (idx >= 0) {
-                    this.$.firstclient.deleteOne(this.domainname, elem[this.idKey]).then(() => {
+                    this.$.firstclient.deleteOne(dataDomain, elem[this.idKey]).then(() => {
                         this.splice('mvdata', idx, 1);
                         showToast(this, 'Der Datensatz wurde erfolgreich gelöscht', TOAST_TYPE.SUCCESS);
                     }).catch(() => {
@@ -673,7 +681,7 @@
                 } else if (!elem && idx === -1) {
                     // ist ein fehlerhafter Datensatz ohne Gartennummer (Id), womöglich aus einer leeren Zeile der Importdatei
                     const rowIdx = id.substring(1); // ab dem minus-Zeichen, befindet sich die Zeilenindex
-                    this.$.firstclient.deleteOne(this.domainname, null).then(() => {
+                    this.$.firstclient.deleteOne(dataDomain, null).then(() => {
                         this.splice('mvdata', rowIdx, 1);
                         showToast(this, 'Der Datensatz wurde erfolgreich gelöscht', TOAST_TYPE.SUCCESS);
                     }).catch(() => {
