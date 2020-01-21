@@ -1,85 +1,17 @@
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
-<link rel="import" href="../../bower_components/paper-progress-button/paper-progress-button.html">
-<link rel="import" href="../../bower_components/iron-collapse-button/iron-collapse-button.html">
-<link rel="import" href="../../bower_components/iron-icons/editor-icons.html">
-<link rel="import" href="../clients/firstclient.html">
-<link rel="import" href="../clients/basicclient.html">
-<link rel="import" href="../shared-styles.html">
 <link rel="import" href="../critical-domain-styles.html">
-<link rel="import" href="../table-styles.html">
-
-<link rel="import" href="../utils/grt-grid-pagination.html">
-<link rel="import" href="../utils/export-chooser.html">
-<link rel="import" href="../utils/grt-dialog.html">
-<link rel="import" href="../utils/apps-dialog.html">
-<link rel="import" href="../utils/column-sorter.html">
+<link rel="import" href="my-tablemask.html">
 
 <dom-module id="my-unklare">
-  <template>
-    <style include="critical-domain-styles table-styles">
-      :host {
-        /* Stretch this element to fill viewport */
-        height: calc(100vh - 88px);
+  <template id="styles">
+    <style include="critical-domain-styles">
 
-        /* Make a flex column layout of children */
-        display: flex;
-
-        flex-direction: column;
-        padding: var(--content-padding);
-      }
-
-      .toolbar {
-        /* height: 40px; */
-        padding: 5px;
-        /*line-height: 32px;*/
-        background: #eee;
-      }
-
-      iron-collapse-button {
-        cursor: cursor;
-        padding-right: 12px;
-      }
-
-      iron-collapse-button div[slot="collapse-trigger"] {
-        height: 48px;
-        line-height: 48px;
-      }
-
-      iron-collapse-button div[slot="collapse-content"] {
-        margin-right: -12px;
-      }
-
-      paper-button {
-        padding: 0.2em 0.5em 0.2em 0.5em !important;
-      }
-
-      .button {
-        padding: 0px 2px 0px 2px !important;
-      }
-
-      .rightalign {
-        text-align: right !important;
-      }
-
-      .cb-cell {
-        text-align: center !important;
-        vertical-align: middle !important;
-      }
     </style>
-
-    <first-client id="firstclient"></first-client>
-    <basic-client id="bclient"></basic-client>
-    <grt-dialog id="deletedialog" dialog-type="confirmation" confirmation-name="Löschen" cancel-name="Abbrechen"
-      on-grtconfirm="_removeItem"></grt-dialog>
-    <grt-dialog id="grtinfodialog" dialog-type="info"></grt-dialog>
-    <export-chooser id="exportdialog" dialog-type="info" confirmation-name="Schließen"
-      on-export-data="exportUnklareFaelle"></export-chooser>
-    <apps-dialog id="appsdialog" action-buttons="[[actionButtons]]" tasks="[[getSelected(mvdata.*)]]"></apps-dialog>
     <div>
       <div class="toolbar layout horizontal justified" flex>
         <template is="dom-if" if="[[spaltenConf.columns.length]]">
           <grt-grid-pagination id="pagesss" datalength="[[mvdata.length]]" page-size="{{pageSize}}"
-            pstart="{{_pageStart}}" on-pagechanged="changePage" style-domain="critical-domain">
+            pstart="{{_pageStart}}" on-pagechanged="changePage" style-domain="[[styleDomain]]">
           </grt-grid-pagination>
         </template>
         <div class="layout horizontal justified" flex="50">
@@ -90,19 +22,18 @@
             on-click="_showExportDialog">Exportieren</paper-button>
         </div>
       </div>
-
       <div class="demo">
         <div class="table-responsive-vertical shadow-z-1">
           <table id="table" class="table table-condensed table-hover table-striped">
             <thead>
-              <th class="cb-cell">
+              <th class="centered-cell">
                 <paper-checkbox on-change="_checkAll" checked="[[_areAllSelected(mvdata.*)]]"></paper-checkbox>
               </th>
               <template is="dom-repeat" items="[[spaltenConf.columns]]" as="sc1">
                 <template is="dom-if" if="[[sc1.th_show]]">
                   <th>
                     <column-sorter id="[[sc1.colname]]" colname="[[sc1.alias]]" path="[[sc1.colname]]"
-                      on-sorter-changed="_sortChange">
+                      coltype="[[sc1.coltype]]" on-sorter-changed="_sortChange">
                     </column-sorter>
                   </th>
                 </template>
@@ -111,45 +42,46 @@
               <th class="button"></th>
             </thead>
             <tbody>
-              <template is="dom-repeat" items="[[mvpagedata]]" as="uk">
+              <template is="dom-repeat" items="[[mvpagedata]]" as="rowdata">
                 <tr>
-                  <td class="cb-cell">
-                    <paper-checkbox class="[[getClassByBeitrag(uk.BEITRAG)]]"
+                  <td class="centered-cell">
+                    <paper-checkbox class="[[getClassByBeitrag(rowdata.BEITRAG)]]"
                       id="[[getGridElementID(index, _pageStart, 'scb')]]" on-change="_checkOne"
                       checked="[[_isItemSelected(_pageStart, index, mvdata.*)]]"></paper-checkbox>
                   </td>
                   <template is="dom-repeat" items="[[spaltenConf.columns]]" as="sc2">
                     <template is="dom-if" if="[[sc2.th_show]]">
-                      <td>[[_getUkData(uk, sc2)]]</td>
+                      <td>[[_getCellData(rowdata, sc2)]]</td>
                     </template>
                   </template>
                   <td class="button">
-                    <button id="bto[[uk.GARTENNUMMER]]" on-click="_openDetails"
+                    <button id="bto[[_getRowIdValue(rowdata, idKey)]]" on-click="_openDetails"
                       class="critical-domain-endpagebutton action-button">
-                      <iron-icon id="cro[[uk.GARTENNUMMER]]" icon="[[getIcon(uk._detailsOpened)]]" slot="item-icon"
-                        on-click="_openDetails"></iron-icon>
+                      <iron-icon id="cro[[_getRowIdValue(rowdata, idKey)]]" icon="[[getIcon(rowdata._detailsOpened)]]"
+                        slot="item-icon" on-click="_openDetails"></iron-icon>
                     </button>
                   </td>
                   <td class="button">
-                    <button id="btr[[uk.GARTENNUMMER]]-[[index]]" on-click="_confirmRemove"
-                      class="critical-domain-endpagebutton action-button" disabled="[[uk._detailsOpened]]">
-                      <iron-icon id="irm[[uk.GARTENNUMMER]]-[[index]]" icon="delete" slot="item-icon"
+                    <button id="btr[[_getRowIdValue(rowdata, idKey)]]-[[index]]" on-click="_confirmRemove"
+                      class="critical-domain-endpagebutton action-button" disabled="[[rowdata._detailsOpened]]">
+                      <iron-icon id="irm[[_getRowIdValue(rowdata, idKey)]]-[[index]]" icon="delete" slot="item-icon"
                         on-click="_confirmRemove">
                       </iron-icon>
                     </button>
                   </td>
                 </tr>
-                <template is="dom-if" if="[[uk._detailsOpened]]">
+                <template is="dom-if" if="[[rowdata._detailsOpened]]">
                   <tr class="details">
                     <td colspan="15" class="no-padding">
-                      <iron-collapse-button expand-icon="add-circle-outline" collapse-icon="remove-circle-outline"
-                        class="detailelement light-element flex" opened>
+                      <iron-collapse-button id="clps[[_getRowIdValue(rowdata, idKey)]]_1"
+                        expand-icon="add-circle-outline" collapse-icon="remove-circle-outline"
+                        class="detailelement light-element flex" opened on-tap="onTap">
                         <div slot="collapse-trigger" class="flex">
                           <span>Abweichung zwischen dem Versicherten und dem Pächter zu der gleichen Gartennummer</span>
                         </div>
                         <div slot="collapse-content" class="corrected-margin">
                           <div class="mcard strong-text-color">
-                            <small>Grund:[[uk.grund]]</small>
+                            <small>Grund:[[rowdata.grund]]</small>
                             <div class="layout horizontal">
                               <table width="50%">
                                 <thead>
@@ -158,38 +90,18 @@
                                   <th>Pächter</th>
                                 </thead>
                                 <tbody>
-                                  <tr>
-                                    <td>[[_getAliasFor('NACHNAME')]]</td>
-                                    <td>[[uk.NACHNAME]]</td>
-                                    <td>[[uk.entsprechung.NACHNAME]]</td>
-                                  </tr>
-
-                                  <tr>
-                                    <td>[[_getAliasFor('VORNAME')]]</td>
-                                    <td>[[uk.VORNAME]]</td>
-                                    <td>[[uk.entsprechung.VORNAME]]</td>
-                                  </tr>
-                                  <tr>
-                                    <td>[[_getAliasFor('STRASSE')]]</td>
-                                    <td>[[uk.STRASSE]]</td>
-                                    <td>[[uk.entsprechung.STRASSE]]</td>
-                                  </tr>
-                                  <tr>
-                                    <td>[[_getAliasFor('PLZ')]]</td>
-                                    <td>[[uk.PLZ]]</td>
-                                    <td>[[uk.entsprechung.PLZ]]</td>
-                                  </tr>
-                                  <tr>
-                                    <td>[[_getAliasFor('WOHNORT')]]</td>
-                                    <td>[[uk.WOHNORT]]</td>
-                                    <td>[[uk.entsprechung.WOHNORT]]</td>
-                                  </tr>
-
+                                  <template is="dom-repeat" items="[[spaltenConf.columns]]" as="sc3">
+                                    <tr>
+                                      <td>[[sc3.alias]]</td>
+                                      <td>[[_getCellData(rowdata, sc3)]]</td>
+                                      <td>[[_getCellData(rowdata.entsprechung, sc3)]]</td>
+                                    </tr>
+                                  </template>
                                 </tbody>
                               </table>
 
                               <div class="layout vertical">
-                                <template is="dom-if" if="[[!uk.entsprechung.found]]">
+                                <template is="dom-if" if="[[!rowdata.entsprechung.found]]">
                                   <paper-icon-item style="color: #d84646">
                                     <iron-icon icon="warning" slot="item-icon"></iron-icon>
                                     <paper-item-body two-line>
@@ -204,11 +116,11 @@
                                   </paper-icon-item>
                                 </template>
                                 <paper-button id="adb[[index]]" class="under_button" bottom raised
-                                  on-click="_postOnePaechter" disabled="[[!uk.entsprechung.found]]">Pächterdaten
+                                  on-click="_postOnePaechter" disabled="[[!rowdata.entsprechung.found]]">Pächterdaten
                                   übernehmen und nach Pächter verschieben</paper-button>
 
-                                <paper-button id="rmb[[uk.GARTENNUMMER]]-[[index]]" class="under_button" bottom raised
-                                  on-click="_confirmRemove">Löschen</paper-button>
+                                <paper-button id="rmb[[_getRowIdValue(rowdata, idKey)]]-[[index]]" class="under_button"
+                                  bottom raised on-click="_confirmRemove">Löschen</paper-button>
                               </div>
                             </div>
                           </div>
@@ -226,83 +138,40 @@
 
   </template>
   <script>
-    class MyUnklare extends Polymer.Element {
+    class MyUnklare extends customElements.get('my-tablemask') {
       static get is() { return 'my-unklare'; }
+
+      static get template() {
+        let subTmplt;
+        if (!subTmplt) {
+          let superClass = customElements.get('my-tablemask');
+          subTmplt = superClass.template.cloneNode(true);
+          const subStyle = Polymer.DomModule.import('my-unklare', 'template#styles').content;
+          const superStyle = subTmplt.content.querySelector('style');
+          superStyle.parentNode.appendChild(subStyle);
+        }
+        return subTmplt;
+      }
 
       static get properties() {
         return {
-          testD: {
-            type: Boolean,
-            value: false,
-            notify: true
+          idKey: {
+            type: String,
+            value: "GARTENNUMMER"
           },
-          actionButtons: {
-            type: Array,
-            value: ['email', 'rechnung', 'meldung', 'brief']
-          },
-
-          pageSize: {
-            type: Number,
-            value: null,
-            notify: true,
-            observer: 'changePage'
+          styleDomain: {
+            type: String,
+            value: "critical-domain"
           },
 
-          _pageStart: {
-            type: Number,
-            value: 0
-          },
-
-          _loading: {
-            type: Boolean,
-            value: false
-          },
-
-          mvdata: {
-            type: Array,
-            value: [],
-            notify: true,
-            reflectToAttribute: true
-          },
-
-          mvpagedata: {
-            type: Array,
-            value: [],
-            notify: true,
-            reflectToAttribute: true
-          },
-
-          _pages: {
-            type: Object,
-            value: null
-          },
-
-          selected: {
-            type: Boolean,
-            value: false,
-            observer: '_activeChanged',
-          },
-
-          paechter: {
-            type: Array,
-            value: []
-          },
-
-          openeddetails: {
-            type: Array,
-            value: []
-          },
-
-          spaltenConf: {
-            type: Array,
-            value: null,
-            notify: true,
-            observer: '_spaltenConfReady'
-          },
-
-          domainname:{
+          domainname: {
             type: String,
             value: "unklareversicherte"
+          },
+
+          columnConfigDomain: {
+            type: String,
+            value: "versicherte"
           },
 
           _defaultColumnConf: {
@@ -619,339 +488,21 @@
         }
       }
 
-      _getUkData(uk, spalte) {
-        if (spalte.coltype === "date") {
-          let res = moment(uk[spalte.colname]);
-          if (res.isValid()) {
-            return res.format('DD.MM.YYYY HH:mm');
-          } else return uk[spalte.colname];
-        } else
-          return uk[spalte.colname];
-      }
-
-      _spaltenConfReady() {
-        if (this.spaltenConf && this.spaltenConf.columns && this.spaltenConf.columns.length) {
-          this.$.firstclient.getAsJSON('unklareversicherte').then((resp) => {
-            if (resp) {
-              this.splitToObjects(resp).finally(() => {
-                //wenn pageSize nur an einer stelle initialisiert wird (in then von splitToObjects)
-                // dann der gleiche wert 10 wird nicht noch mal zu der pagination Componente getriggert
-                // denn er sich noch nicht geändert hatte, die Komp beim ersten mal aber nicht da war
-                this.set('pageSize', parseInt(0));
-                this.changePage();
-              });
-            } else {
-              showToast(this, 'Bei der Initialisierung der Seite wurden keine unklare Versichertenfälle gefunden', TOAST_TYPE.ERROR);
-            }
-          }).catch((err) => {
-            console.log("Fehler beim get fuer unklare Versichertenfälle  kam:" + JSON.stringify(err))
-            showToast(this, 'Die unklaren Versichertenfälle konnten nicht geladen werden', TOAST_TYPE.ERROR);
-          })
-        }
-      }
-
-      _confirmRemove(e) {
-        e.preventDefault();
-        this.$.deletedialog.showDialog(
-          {
-            "title": "Ungeklärter Fall Löschen",
-            "message": "Bitte bestätigen Sie, dass Sie den Fall wirklich entfernen möchten.",
-            "origData": e.target.id.substring(3)
-          })
-        e.stopPropagation();
-      }
-
       ready() {
         super.ready();
-        if (this.$)
-          this.$ = new Proxy(this.$, {
-            get: ($, id) => $[id] || this.shadowRoot.getElementById(id),
-            set: ($, id, element) => {
-              $[id] = element;
-              return true;
-            }
-          });
-        this._loadColumnConfigThenData();
       }
 
-      _loadColumnConfigThenData() {
-        this.$.bclient.getDomaenenColumnConfig('versicherte').then((domConf) => {
-          if (!domConf || !domConf.columns || !Array.isArray(domConf.columns)) {
-            throw 'nicht gefunden';
-          } else {
-            domConf.columns.sort((a, b) => {
-              return (a.th_show && a.postion && !isNaN(a.position) && b.th_show && b.position && !isNaN(b.position) && parseInt(a.position) < parseInt(b.position) ? 1 : -1)
-            })
-            this.set('spaltenConf', domConf);
-            showToast(this, 'Die Spaltenkonfiguration für unklkaren Fälle wurde erfolgreich geladen', TOAST_TYPE.SUCCESS);
-          }
-        }).catch((err) => {
-          console.warn('conf column  err' + err)
-          this._defaultColumnConf.columns.sort((a, b) => {
-            return (a.th_show && a.postion && !isNaN(a.position) && b.th_show && b.position && !isNaN(b.position) && parseInt(a.position) < parseInt(b.position) ? 1 : -1)
-          })
-          this.set('spaltenConf', this._defaultColumnConf);
-          showToast(this, 'Keine Spaltenkonfiguration für die unklaren Fälle konnte geladen werden, default wird benutzt', TOAST_TYPE.ERROR);
-        })
-      }
-
-      _openDetails(e) {
-        e.model.set("uk._detailsOpened", !e.model.uk._detailsOpened);
-        if (e.model.uk._detailsOpened) {
-          this.push('openeddetails', true);
-        } else {
-          this.shift('openeddetails');
-        }
-        e.stopPropagation();
-      }
-
-      getClassByBeitrag(beitrag) {
-        if (!beitrag || beitrag.length === 0) {
-          return ".redc";
-        } else return ".redc";
-      }
-
-      _noOneSelected() {
-        return !this.mvdata.some((data) => data.selected);
-      }
-      _areAllSelected() {
-        return !this.mvdata.some((data) => !data.selected);
-      }
-      _checkAll(e) {
-        if (e.currentTarget.checked) {
-          this.mvdata.forEach((mv, idx) => {
-            let path = 'mvdata.' + idx + '.selected'
-            this.set(path, true)
-          })
-        } else {
-          this.mvdata.forEach((mv, idx) => {
-            let path = 'mvdata.' + idx + '.selected'
-            this.set(path, false)
-          })
-        }
-      }
-
-      getSelected() {
-        let thetasks = this.mvdata.filter((el) => el.selected === true);
-        return thetasks;
-      }
-
-      _checkOne(e) {
-        let realIndex = e.target.id.substring(3);
-        if (e.currentTarget.checked) {
-          let path = 'mvdata.' + realIndex + '.selected'
-          this.set(path, true)
-        } else {
-          let path = 'mvdata.' + realIndex + '.selected'
-          this.set(path, false)
-        }
-      }
-
-      isExportDisabled() {
-        if ((this.openeddetails && this.openeddetails.length) || !this.mvdata || !this.mvdata.length) {
-          return true;
-        } else return false;
-      }
-
-
-
-      getIcon(_detailsOpened) {
-        if (_detailsOpened) {
-          return 'close';
-        } else return 'create';
-      }
-
-
-
-      _removeItem(confirmEvent) {
-        let id = confirmEvent.detail.substring(0, confirmEvent.detail.indexOf('-'));
-        let elem = this.mvdata.find((v) => {
-          return v.GARTENNUMMER === id;
-        });
-        let idx = this.mvdata.indexOf(elem);
-        if (idx >= 0) {
-          this.$.firstclient.deleteOne('unklareversicherte', elem.GARTENNUMMER).then(() => {
-            this.splice('mvdata', idx, 1);
-            showToast(this, 'Der Ungeklärter Fall wurde erfolgreich gelöscht', TOAST_TYPE.SUCCESS);
-          }).catch(() => {
-            showToast(this, 'Fehler bei der Löschung des ungeklärten Falles. Versuchen Sie später noch einmal.', TOAST_TYPE.ERROR);
-          })
-        } else if (!elem && idx === -1) {
-          // ist ein fehlerhafter Datensatz ohne Gartennummer, womöglich aus einer leeren Zeile der Importdatei
-          const rowIdx = id.substring(1); // ab dem minus-Zeichen, befindet sich die Zeilenindex
-          this.$.firstclient.deleteOne('unklareversicherte', null).then(() => {
-            this.splice('mvdata', rowIdx, 1);
-            showToast(this, 'Der Ungeklärter Fall wurde erfolgreich gelöscht', TOAST_TYPE.SUCCESS);
-          }).catch(() => {
-            showToast(this, 'Fehler bei der Löschung des ungeklärten Falles. Versuchen Sie später noch einmal.', TOAST_TYPE.ERROR);
-          })
-        }
-      }
-
-      _sortChange(e) {
-        let self = this;
-        if (e.target && e.target.path && e.target.direction) {
-          let otherSorter = this.shadowRoot.querySelectorAll('column-sorter');
-          otherSorter.forEach((os) => {
-            if (os.direction && (os.colname !== e.target.colname)) {
-              os.direction = null;
-            }
-          })
-          let key = e.target.path;
-          let direction = e.target.direction;
-          let records = JSON.parse(JSON.stringify(self.mvdata));
-          if (key === 'GARTENNUMMER') {
-            // For Number-like Strings containing alphanummerical chars
-            records = records.sort(function (o1, o2) {
-              let result = self.naturalSorter((o1.GARTENNUMMER || "0"), (o2.GARTENNUMMER || "0"));
-              if (direction === 'asc') {
-                return (result < 0) ? -1 : 1;
-              } else {
-                return (result < 0) ? 1 : -1;
-              }
-              return 0;
-            });
-          } else if (!isNaN(this.mvdata[0][key])) {
-            // for numbers
-            records.sort(function (a, b) {
-              if (direction === 'asc') {
-                if (a[key] < b[key]) return -1;
-                if (a[key] > b[key]) return 1;
-              } else {
-                if (a[key] < b[key]) return 1;
-                if (a[key] > b[key]) return -1;
-              }
-              return 0;
-            });
-          } else {
-            // for strings
-            records.sort(function (a, b) {
-              if (direction === 'asc') {
-                if ((a[key] || "").toLowerCase() < (b[key] || "").toLowerCase()) return -1;
-                if ((a[key] || "").toLowerCase() > (b[key] || "").toLowerCase()) return 1;
-              } else {
-                if ((a[key] || "").toLowerCase() < (b[key] || "").toLowerCase()) return 1;
-                if ((a[key] || "").toLowerCase() > (b[key] || "").toLowerCase()) return -1;
-              }
-              return 0;
-            });
-
-          }
-          self.set('mvdata', records);
-          self.changePage();
-        }
-
-      }
-
-      naturalSorter(as, bs) {
-        let a, b, a1, b1, i = 0, n, L,
-          rx = /(\.\d+)|(\d+(\.\d+)?)|([^\d.]+)|(\.\D+)|(\.$)/g;
-        if (as === bs) return 0;
-        a = as.toLowerCase().match(rx);
-        b = bs.toLowerCase().match(rx);
-        L = a.length;
-        while (i < L) {
-          if (!b[i]) return 1;
-          a1 = a[i],
-            b1 = b[i++];
-          if (a1 !== b1) {
-            n = a1 - b1;
-            if (!isNaN(n)) {
-              return n;
-            }
-            return a1 > b1 ? 1 : -1;
-          }
-        }
-        return b[i] ? -1 : 0;
-      }
-
-      changePage() {
-        if (this._pageStart || this._pageStart === 0) {
-          let end = parseInt(this._pageStart) + (parseInt(this.pageSize));
-          let newItems = this.mvdata.slice(this._pageStart, end);
-          this.set('mvpagedata', newItems)
-          this.set('openeddetails', [])
-        }
-
-      }
-
-      _isItemSelected(_pageStart, index) {
-        let path = 'mvdata.' + (_pageStart + index) + '.selected';
-        return this.get(path);
-      }
-
-      splitToObjects(resp) {
+      processResponse(resp) {
         let unklareData = resp;
         let promises = [];
         unklareData.forEach((unklarer) => {
-          let getpaechterforunklarer = this.getPaechterBy(unklarer.GARTENNUMMER).then((ent) => {
+          let getpaechterforunklarer = this._getPaechterBy(unklarer[this.idKey]).then((ent) => {
             unklarer['entsprechung'] = ent;
           })
           promises.push(getpaechterforunklarer);
         })
-        return Promise.all(promises).then(() => {
-          this.set('mvdata', unklareData);
-          this.set('pageSize', parseInt(10));
-        })
-      }
-
-
-
-      _setLoading(val) {
-        this.set('_loading', val);
-      }
-
-      _activeChanged(newV, oldV) {
-        console.log('selected changed newV:' + newV + " oldV:" + oldV)
-        if (newV) {
-          this.$.firstclient.getAsJSON('unklareversicherte').then((resp) => {
-            if (resp) {
-              //this.set('pageSize', 10);
-              this.splitToObjects(resp).finally(() => {
-                this.changePage();
-              });
-            } else {
-              showToast(this, 'Bei der erneuten Initialisierung der Seite wurden keine Versichertendaten gefunden', TOAST_TYPE.ERROR);
-            }
-          }).catch((err) => {
-            console.log("Fehler beim get fuer versicherte  kam:" + JSON.stringify(err))
-          })
-        }
-      }
-
-      _showExportDialog() {
-
-        if (!this.mvdata || !this.mvdata.length) {
-          this.$.grtinfodialog.showDialog(
-            {
-              "title": "Keine Daten",
-              "message": "Es gibt keine unklaren Fälle, die man exportieren könnte."
-            })
-
-        } else {
-          this.$.exportdialog.showDialog(
-            {
-              "title": "Speicherort Auswahl",
-              "message": "Bitte wählen Sie ob eine lokale Speicherung erwünscht ist oder eine Speicherung auf dem Server."
-            })
-        }
-      }
-
-      exportUnklareFaelle(e) {
-        let dataAndColumns = { data: this.mvdata, columns: this.spaltenConf.columns }
-        this.$.firstclient.exportAsCSV(dataAndColumns, e.detail, this.domainname).then((savePath) => {
-          if (savePath && savePath.path) {
-            this.$.grtinfodialog.showDialog(
-              {
-                "title": "Daten als CSV - exportieren",
-                "message": "Die Daten der unklaren Fälle wurden erfolgreich unter " + savePath.path + " gespeichert."
-              })
-          } else if (savePath) {
-            showToast(this, "Die Daten der Unklaren-Fälle werden unter " + savePath + " gespeichert.", TOAST_TYPE.WARN, 'topRight');
-          }
-        }).catch((err) => {
-          showToast(this, 'Der Datenexport der unklaren Fälle ist fehlgeschlagen', TOAST_TYPE.ERROR);
-        });
+        this.set('mvdata', unklareData);
+        return Promise.resolve(unklareData);
       }
 
       _postOnePaechter(e) {
@@ -979,14 +530,14 @@
 
         let promises = [];
 
-        let postPachterPr = this.$.firstclient.postAsJSON(unklarerV, 'paechter', unklarerV.GARTENNUMMER).then(() => {
+        let postPachterPr = this.$.firstclient.postAsJSON(unklarerV, 'paechter', unklarerV[this.idKey]).then(() => {
 
           showToast(this, 'Der ungeklärte Fall wurde erfolgreich in einen neuen Pächter umgespeichert.', TOAST_TYPE.SUCCESS);
         }).catch((error) => {
           showToast(this, 'Fehler bei der Speicherung der Änderungen', TOAST_TYPE.ERROR);
         });
 
-        let deleteUnklarerPr = this.$.firstclient.deleteOne('unklareversicherte', unklarerV.GARTENNUMMER).then(() => {
+        let deleteUnklarerPr = this.$.firstclient.deleteOne('unklareversicherte', unklarerV[this.idKey]).then(() => {
           showToast(this, 'Der ungeklärte Fall wurde erfolgreich entfernt.', TOAST_TYPE.SUCCESS);
         }).catch(() => {
           showToast(this, 'Fehler bei der Löschung des ungeklärten Falles. Verschen Sie später noch einmal.', TOAST_TYPE.ERROR);
@@ -1000,22 +551,8 @@
         })
       }
 
-      getGridElementID(index, _pageStart, prefix) {
-        let realIndex = (parseInt(index) + parseInt(_pageStart));
-        return prefix + realIndex;
-      }
-
-      _showApps(e) {
-        this.$.appsdialog.showDialog()
-        // iziToast.show({
-        //   position: "center",
-        //   title: 'Hey',
-        //   message: 'What would you like to add?',
-        // })
-      }
-
-      getPaechterBy(ganr) {
-        return this.$.firstclient.getAsJSON('paechter', ganr).then((paechter) => {
+      _getPaechterBy(ganr) {
+        return super.getAsJSON('paechter', ganr).then((paechter) => {
           if (paechter) {
             paechter['found'] = true;
             return Promise.resolve(paechter);

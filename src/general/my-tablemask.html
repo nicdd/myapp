@@ -90,6 +90,21 @@
 
             static get properties() {
                 return {
+                    domainname: {
+                        type: String,
+                    },
+                    // Manche ChildKlassen können Daten von einer anderen Domäne als die eigene
+                    // enthalten (Bsp. Domäne Versicherte, lädt paechter) 
+                    datadomain: {
+                        type: String,
+
+                    },
+                    // Manche ChildKlassen können Spaltenkonfiguration von einer anderen Domäne als die eigene
+                    // gebrauchen (Bsp. Domäne UnklareVersicherte, lädt die Spaltenkonfiguration von versicherte) 
+                    columnConfigDomain: {
+                        type: String,
+
+                    },
 
                     selected: {
                         type: Boolean,
@@ -203,11 +218,11 @@
 
             _spaltenConfReady() {
                 if (this.spaltenConf && this.spaltenConf.columns && this.spaltenConf.columns.length) {
-                    let dataDomain = (this.datadomain)? this.datadomain : this.domainname;
+                    let dataDomain = (this.datadomain) ? this.datadomain : this.domainname;
                     this.$.firstclient.getAsJSON(dataDomain).then((resp) => {
                         if (resp) {
-                            this.splitToObjects(resp).finally(() => {
-                                this.changePage();
+                            this.processResponse(resp).then((finalData) => {
+                                this.set('pageSize', parseInt(10));
                             });
                         } else {
                             showToast(this, 'Bei der Initialisierung der Seite wurden keine Daten gefunden', TOAST_TYPE.ERROR);
@@ -217,6 +232,17 @@
                         showToast(this, 'Die Daten konnten nicht geladen werden', TOAST_TYPE.ERROR);
                     })
                 }
+            }
+
+            // can be overloaded from child classes
+            processResponse(resp) {
+                this.set('mvdata', resp);
+                return Promise.resolve(resp);
+            }
+
+            getAsJSON(fromDomain, id){
+                let readFromDomain = (fromDomain)? fromDomain : ((this.datadomain) ? this.datadomain : this.domainname);
+                return this.$.firstclient.getAsJSON(readFromDomain, id);
             }
 
             _confirmRemove(e) {
@@ -255,7 +281,8 @@
 
             _loadColumnConfigThenData() {
                 if (this.selected) {
-                    this.$.bclient.getDomaenenColumnConfig(this.domainname).then((domConf) => {
+                    let colConfDomain = (this.columnConfigDomain) ? this.columnConfigDomain : this.domainname;
+                    this.$.bclient.getDomaenenColumnConfig(colConfDomain).then((domConf) => {
                         if (!domConf || !domConf.columns || !Array.isArray(domConf.columns)) {
                             throw 'nicht gefunden';
                         } else {
@@ -437,7 +464,7 @@
                 return jmonat;
             }
 
-            changePage() {
+            changePage(newv, oldv) {
                 if (this._pageStart || this._pageStart === 0) {
                     let end = parseInt(this._pageStart) + (parseInt(this.pageSize));
                     let newItems = this.mvdata.slice(this._pageStart, end);
@@ -446,13 +473,7 @@
                 }
             }
 
-            splitToObjects(resp) {
-                let promises = [];
-                return Promise.all(promises).then(() => {
-                    this.set('mvdata', resp);
-                    this.set('pageSize', parseInt(10));
-                })
-            }
+            
 
             naturalSorter(as, bs) {
                 let a, b, a1, b1, i = 0, n, L,
@@ -533,9 +554,9 @@
                 self.splice('mvdata', self._pageStart, 0, e.detail);
             }
 
-            _postOne(e, alternativeDomain) {
+            _postOne(e) {
                 let toSave = null;
-                let dataDomain = (this.datadomain)? this.datadomain : this.domainname;
+                let dataDomain = (this.datadomain) ? this.datadomain : this.domainname;
                 if (e.type && e.type === 'savemember') {
                     toSave = e.detail.data;
                     let mid = e.target.id;
@@ -568,7 +589,7 @@
 
                 } else {
                     this.$.sandhour.showDialog();
-                    let dataDomain = (this.datadomain)? this.datadomain : this.domainname;
+                    let dataDomain = (this.datadomain) ? this.datadomain : this.domainname;
                     this.$.firstclient.postAsJSON(this.mvdata, dataDomain).then(() => {
                         showToast(this, 'Die Daten wurden erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
                     }).catch(() => {
@@ -670,7 +691,7 @@
                     return v[this.idKey] === id;
                 });
                 let idx = this.mvdata.indexOf(elem);
-                let dataDomain = (this.datadomain)? this.datadomain : this.domainname;
+                let dataDomain = (this.datadomain) ? this.datadomain : this.domainname;
                 if (idx >= 0) {
                     this.$.firstclient.deleteOne(dataDomain, elem[this.idKey]).then(() => {
                         this.splice('mvdata', idx, 1);
