@@ -293,6 +293,7 @@
                             this.set('spaltenConf', domConf);
                         }
                     }).catch((err) => {
+                        this.$.sandhour._closeDialog();
                         this._defaultColumnConf.columns.sort((a, b) => {
                             return (a.th_show && a.postion && !isNaN(a.position) && b.th_show && b.position && !isNaN(b.position) && parseInt(a.position) < parseInt(b.position) ? 1 : -1)
                         })
