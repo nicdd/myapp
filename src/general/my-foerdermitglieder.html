@@ -27,110 +27,118 @@
                         on-click="_showExportDialog">Exportieren</paper-button>
                 </div>
             </div>
-            <div class="demo">
-                <div class="table-responsive-vertical shadow-z-1">
-                    <table id="table" class="table table-condensed table-hover">
-                        <thead>
-                            <th class="centered-cell">
-                                <paper-checkbox on-change="_checkAll" checked="[[_areAllSelected(mvdata.*)]]">
-                                </paper-checkbox>
-                            </th>
-                            <template is="dom-repeat" items="[[spaltenConf.columns]]" as="sc1">
-                                <template is="dom-if" if="[[sc1.th_show]]">
-                                    <th>
-                                        <column-sorter id="[[sc1.colname]]" colname="[[sc1.alias]]"
-                                            path="[[sc1.colname]]" coltype="[[sc1.coltype]]" on-sorter-changed="_sortChange">
-                                        </column-sorter>
-                                    </th>
-                                </template>
-                            </template>
-                            <th class="button"></th>
-                            <th class="button"></th>
-                        </thead>
-                        <tbody>
-                            <template is="dom-repeat" items="[[mvpagedata]]" as="rowdata">
-                                <tr>
-                                    <td class="centered-cell">
-                                        <paper-checkbox class="[[getClassByBeitrag(rowdata.BEITRAG)]]"
-                                            id="[[getGridElementID(index, _pageStart, 'scb')]]" on-change="_checkOne"
-                                            checked="[[_isItemSelected(_pageStart, index, mvdata.*)]]"></paper-checkbox>
-                                    </td>
-                                    <template is="dom-repeat" items="[[spaltenConf.columns]]" as="sc2">
-                                        <template is="dom-if" if="[[sc2.th_show]]">
-                                            <td>[[_getCellData(rowdata, sc2)]]</td>
-                                        </template>
+            <template is="dom-if" if="[[mvpagedata.length]]">
+                <div class="demo">
+                    <div class="table-responsive-vertical shadow-z-1">
+                        <table id="table" class="table table-condensed table-hover">
+                            <thead>
+                                <th class="centered-cell">
+                                    <paper-checkbox on-change="_checkAll" checked="[[_areAllSelected(mvdata.*)]]">
+                                    </paper-checkbox>
+                                </th>
+                                <template is="dom-repeat" items="[[spaltenConf.columns]]" as="sc1">
+                                    <template is="dom-if" if="[[sc1.th_show]]">
+                                        <th>
+                                            <column-sorter id="[[sc1.colname]]" colname="[[sc1.alias]]"
+                                                path="[[sc1.colname]]" coltype="[[sc1.coltype]]"
+                                                on-sorter-changed="_sortChange">
+                                            </column-sorter>
+                                        </th>
                                     </template>
-
-                                    <td class="button">
-                                        <button id="bto[[_getRowIdValue(rowdata, idKey)]]" on-click="_openDetails"
-                                            class="first-domain-endpagebutton action-button">
-                                            <iron-icon id="cro[[_getRowIdValue(rowdata, idKey)]]"
-                                                icon="[[getIcon(rowdata._detailsOpened)]]" slot="item-icon"
-                                                on-click="_openDetails"></iron-icon>
-                                        </button>
-                                    </td>
-                                    <td class="button">
-                                        <button id="btr[[_getRowIdValue(rowdata, idKey)]]" on-click="_confirmRemove"
-                                            class="first-domain-endpagebutton action-button"
-                                            disabled="[[rowdata._detailsOpened]]">
-                                            <iron-icon id="rmi[[_getRowIdValue(rowdata, idKey)]]-[[index]]"
-                                                icon="delete" slot="item-icon" on-click="_confirmRemove"></iron-icon>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <template is="dom-if" if="[[rowdata._detailsOpened]]">
-                                    <tr class="details">
-                                        <td colspan="13" class="no-padding">
-                                            <iron-collapse-button id="clps[[_getRowIdValue(rowdata, idKey)]]_1" expand-icon="add-circle-outline"
-                                                collapse-icon="remove-circle-outline"
-                                                class="detailelement light-element flex" opened on-tap="onTap">
-                                                <div slot="collapse-trigger" class="flex">
-                                                    <div class="layout horizontal justified">
-                                                        <span>Datenbearbeitung</span>
-                                                    </div>
-                                                </div>
-                                                <div slot="collapse-content" class="corrected-margin">
-                                                    <div class="mcard strong-text-color">
-                                                        <grt-member id="mmbr[[_pageStart]]-[[index]]" id-key="[[idKey]]"
-                                                            member="[[rowdata]]" col-conf="[[spaltenConf]]"
-                                                            on-savemember="_postOne">
-                                                            <h4 slot="title">Fördermitglied</h4>>
-                                                        </grt-member>
-
-                                                    </div>
-                                                </div>
-                                            </iron-collapse-button>
-                                        </td>
-                                    </tr>
-                                    <tr class="details">
-                                        <td colspan="13" class="no-padding">
-                                            <iron-collapse-button id="clps[[_getRowIdValue(rowdata, idKey)]]_2"
-                                                expand-icon="add-circle-outline" collapse-icon="remove-circle-outline"
-                                                class="detailelement light-element flex" on-tap="onTap">
-                                                <div slot="collapse-trigger" class="flex">
-                                                    <div class="layout horizontal justified">
-                                                        <span>Änderungshistorie</span>
-                                                    </div>
-                                                </div>
-                                                <div slot="collapse-content" class="corrected-margin">
-                                                    <div class="mcard strong-text-color">
-                                                        <grt-member-history id="history[[_pageStart]]-[[index]]"
-                                                            ident="[[_getRowIdValue(rowdata, idKey)]]"
-                                                            domain="[[domainname]]">
-                                                            <h4 slot="title">Fördermitglied</h4>
-                                                        </grt-member-history>
-
-                                                    </div>
-                                                </div>
-                                            </iron-collapse-button>
-                                        </td>
-                                    </tr>
                                 </template>
-                            </template>
-                        </tbody>
-                    </table>
+                                <th class="button"></th>
+                                <th class="button"></th>
+                            </thead>
+                            <tbody>
+                                <template is="dom-repeat" items="[[mvpagedata]]" as="rowdata">
+                                    <tr>
+                                        <td class="centered-cell">
+                                            <paper-checkbox class="[[getClassByBeitrag(rowdata.BEITRAG)]]"
+                                                id="[[getGridElementID(index, _pageStart, 'scb')]]"
+                                                on-change="_checkOne"
+                                                checked="[[_isItemSelected(_pageStart, index, mvdata.*)]]">
+                                            </paper-checkbox>
+                                        </td>
+                                        <template is="dom-repeat" items="[[spaltenConf.columns]]" as="sc2">
+                                            <template is="dom-if" if="[[sc2.th_show]]">
+                                                <td>[[_getCellData(rowdata, sc2)]]</td>
+                                            </template>
+                                        </template>
+
+                                        <td class="button">
+                                            <button id="bto[[_getRowIdValue(rowdata, idKey)]]" on-click="_openDetails"
+                                                class="first-domain-endpagebutton action-button">
+                                                <iron-icon id="cro[[_getRowIdValue(rowdata, idKey)]]"
+                                                    icon="[[getIcon(rowdata._detailsOpened)]]" slot="item-icon"
+                                                    on-click="_openDetails"></iron-icon>
+                                            </button>
+                                        </td>
+                                        <td class="button">
+                                            <button id="btr[[_getRowIdValue(rowdata, idKey)]]" on-click="_confirmRemove"
+                                                class="first-domain-endpagebutton action-button"
+                                                disabled="[[rowdata._detailsOpened]]">
+                                                <iron-icon id="rmi[[_getRowIdValue(rowdata, idKey)]]-[[index]]"
+                                                    icon="delete" slot="item-icon" on-click="_confirmRemove">
+                                                </iron-icon>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <template is="dom-if" if="[[rowdata._detailsOpened]]">
+                                        <tr class="details">
+                                            <td colspan="13" class="no-padding">
+                                                <iron-collapse-button id="clps[[_getRowIdValue(rowdata, idKey)]]_1"
+                                                    expand-icon="add-circle-outline"
+                                                    collapse-icon="remove-circle-outline"
+                                                    class="detailelement light-element flex" opened on-tap="onTap">
+                                                    <div slot="collapse-trigger" class="flex">
+                                                        <div class="layout horizontal justified">
+                                                            <span>Datenbearbeitung</span>
+                                                        </div>
+                                                    </div>
+                                                    <div slot="collapse-content" class="corrected-margin">
+                                                        <div class="mcard strong-text-color">
+                                                            <grt-member id="mmbr[[_pageStart]]-[[index]]"
+                                                                id-key="[[idKey]]" member="[[rowdata]]"
+                                                                col-conf="[[spaltenConf]]" on-savemember="_postOne">
+                                                                <h4 slot="title">Fördermitglied</h4>>
+                                                            </grt-member>
+
+                                                        </div>
+                                                    </div>
+                                                </iron-collapse-button>
+                                            </td>
+                                        </tr>
+                                        <tr class="details">
+                                            <td colspan="13" class="no-padding">
+                                                <iron-collapse-button id="clps[[_getRowIdValue(rowdata, idKey)]]_2"
+                                                    expand-icon="add-circle-outline"
+                                                    collapse-icon="remove-circle-outline"
+                                                    class="detailelement light-element flex" on-tap="onTap">
+                                                    <div slot="collapse-trigger" class="flex">
+                                                        <div class="layout horizontal justified">
+                                                            <span>Änderungshistorie</span>
+                                                        </div>
+                                                    </div>
+                                                    <div slot="collapse-content" class="corrected-margin">
+                                                        <div class="mcard strong-text-color">
+                                                            <grt-member-history id="history[[_pageStart]]-[[index]]"
+                                                                ident="[[_getRowIdValue(rowdata, idKey)]]"
+                                                                domain="[[domainname]]">
+                                                                <h4 slot="title">Fördermitglied</h4>
+                                                            </grt-member-history>
+
+                                                        </div>
+                                                    </div>
+                                                </iron-collapse-button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
+            </template>
         </div>
     </template>
     <script>

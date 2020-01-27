@@ -22,120 +22,122 @@
             on-click="_showExportDialog">Exportieren</paper-button>
         </div>
       </div>
-      <div class="demo">
-        <div class="table-responsive-vertical shadow-z-1">
-          <table id="table" class="table table-condensed table-hover table-striped">
-            <thead>
-              <th class="centered-cell">
-                <paper-checkbox on-change="_checkAll" checked="[[_areAllSelected(mvdata.*)]]"></paper-checkbox>
-              </th>
-              <template is="dom-repeat" items="[[spaltenConf.columns]]" as="sc1">
-                <template is="dom-if" if="[[sc1.th_show]]">
-                  <th>
-                    <column-sorter id="[[sc1.colname]]" colname="[[sc1.alias]]" path="[[sc1.colname]]"
-                      coltype="[[sc1.coltype]]" on-sorter-changed="_sortChange">
-                    </column-sorter>
-                  </th>
-                </template>
-              </template>
-              <th class="button"></th>
-              <th class="button"></th>
-            </thead>
-            <tbody>
-              <template is="dom-repeat" items="[[mvpagedata]]" as="rowdata">
-                <tr>
-                  <td class="centered-cell">
-                    <paper-checkbox class="[[getClassByBeitrag(rowdata.BEITRAG)]]"
-                      id="[[getGridElementID(index, _pageStart, 'scb')]]" on-change="_checkOne"
-                      checked="[[_isItemSelected(_pageStart, index, mvdata.*)]]"></paper-checkbox>
-                  </td>
-                  <template is="dom-repeat" items="[[spaltenConf.columns]]" as="sc2">
-                    <template is="dom-if" if="[[sc2.th_show]]">
-                      <td>[[_getCellData(rowdata, sc2)]]</td>
-                    </template>
+      <template is="dom-if" if="[[mvpagedata.length]]">
+        <div class="demo">
+          <div class="table-responsive-vertical shadow-z-1">
+            <table id="table" class="table table-condensed table-hover table-striped">
+              <thead>
+                <th class="centered-cell">
+                  <paper-checkbox on-change="_checkAll" checked="[[_areAllSelected(mvdata.*)]]"></paper-checkbox>
+                </th>
+                <template is="dom-repeat" items="[[spaltenConf.columns]]" as="sc1">
+                  <template is="dom-if" if="[[sc1.th_show]]">
+                    <th>
+                      <column-sorter id="[[sc1.colname]]" colname="[[sc1.alias]]" path="[[sc1.colname]]"
+                        coltype="[[sc1.coltype]]" on-sorter-changed="_sortChange">
+                      </column-sorter>
+                    </th>
                   </template>
-                  <td class="button">
-                    <button id="bto[[_getRowIdValue(rowdata, idKey)]]" on-click="_openDetails"
-                      class="critical-domain-endpagebutton action-button">
-                      <iron-icon id="cro[[_getRowIdValue(rowdata, idKey)]]" icon="[[getIcon(rowdata._detailsOpened)]]"
-                        slot="item-icon" on-click="_openDetails"></iron-icon>
-                    </button>
-                  </td>
-                  <td class="button">
-                    <button id="btr[[_getRowIdValue(rowdata, idKey)]]-[[index]]" on-click="_confirmRemove"
-                      class="critical-domain-endpagebutton action-button" disabled="[[rowdata._detailsOpened]]">
-                      <iron-icon id="irm[[_getRowIdValue(rowdata, idKey)]]-[[index]]" icon="delete" slot="item-icon"
-                        on-click="_confirmRemove">
-                      </iron-icon>
-                    </button>
-                  </td>
-                </tr>
-                <template is="dom-if" if="[[rowdata._detailsOpened]]">
-                  <tr class="details">
-                    <td colspan="15" class="no-padding">
-                      <iron-collapse-button id="clps[[_getRowIdValue(rowdata, idKey)]]_1"
-                        expand-icon="add-circle-outline" collapse-icon="remove-circle-outline"
-                        class="detailelement light-element flex" opened on-tap="onTap">
-                        <div slot="collapse-trigger" class="flex">
-                          <span>Abweichung zwischen dem Versicherten und dem Pächter zu der gleichen Gartennummer</span>
-                        </div>
-                        <div slot="collapse-content" class="corrected-margin">
-                          <div class="mcard strong-text-color">
-                            <small>Grund:[[rowdata.grund]]</small>
-                            <div class="layout horizontal">
-                              <table width="50%">
-                                <thead>
-                                  <th></th>
-                                  <th>Versicherter</th>
-                                  <th>Pächter</th>
-                                </thead>
-                                <tbody>
-                                  <template is="dom-repeat" items="[[spaltenConf.columns]]" as="sc3">
-                                    <tr>
-                                      <td>[[sc3.alias]]</td>
-                                      <td>[[_getCellData(rowdata, sc3)]]</td>
-                                      <td>[[_getCellData(rowdata.entsprechung, sc3)]]</td>
-                                    </tr>
+                </template>
+                <th class="button"></th>
+                <th class="button"></th>
+              </thead>
+              <tbody>
+                <template is="dom-repeat" items="[[mvpagedata]]" as="rowdata">
+                  <tr>
+                    <td class="centered-cell">
+                      <paper-checkbox class="[[getClassByBeitrag(rowdata.BEITRAG)]]"
+                        id="[[getGridElementID(index, _pageStart, 'scb')]]" on-change="_checkOne"
+                        checked="[[_isItemSelected(_pageStart, index, mvdata.*)]]"></paper-checkbox>
+                    </td>
+                    <template is="dom-repeat" items="[[spaltenConf.columns]]" as="sc2">
+                      <template is="dom-if" if="[[sc2.th_show]]">
+                        <td>[[_getCellData(rowdata, sc2)]]</td>
+                      </template>
+                    </template>
+                    <td class="button">
+                      <button id="bto[[_getRowIdValue(rowdata, idKey)]]" on-click="_openDetails"
+                        class="critical-domain-endpagebutton action-button">
+                        <iron-icon id="cro[[_getRowIdValue(rowdata, idKey)]]" icon="[[getIcon(rowdata._detailsOpened)]]"
+                          slot="item-icon" on-click="_openDetails"></iron-icon>
+                      </button>
+                    </td>
+                    <td class="button">
+                      <button id="btr[[_getRowIdValue(rowdata, idKey)]]-[[index]]" on-click="_confirmRemove"
+                        class="critical-domain-endpagebutton action-button" disabled="[[rowdata._detailsOpened]]">
+                        <iron-icon id="irm[[_getRowIdValue(rowdata, idKey)]]-[[index]]" icon="delete" slot="item-icon"
+                          on-click="_confirmRemove">
+                        </iron-icon>
+                      </button>
+                    </td>
+                  </tr>
+                  <template is="dom-if" if="[[rowdata._detailsOpened]]">
+                    <tr class="details">
+                      <td colspan="15" class="no-padding">
+                        <iron-collapse-button id="clps[[_getRowIdValue(rowdata, idKey)]]_1"
+                          expand-icon="add-circle-outline" collapse-icon="remove-circle-outline"
+                          class="detailelement light-element flex" opened on-tap="onTap">
+                          <div slot="collapse-trigger" class="flex">
+                            <span>Abweichung zwischen dem Versicherten und dem Pächter zu der gleichen
+                              Gartennummer</span>
+                          </div>
+                          <div slot="collapse-content" class="corrected-margin">
+                            <div class="mcard strong-text-color">
+                              <small>Grund:[[rowdata.grund]]</small>
+                              <div class="layout horizontal">
+                                <table width="50%">
+                                  <thead>
+                                    <th></th>
+                                    <th>Versicherter</th>
+                                    <th>Pächter</th>
+                                  </thead>
+                                  <tbody>
+                                    <template is="dom-repeat" items="[[spaltenConf.columns]]" as="sc3">
+                                      <tr>
+                                        <td>[[sc3.alias]]</td>
+                                        <td>[[_getCellData(rowdata, sc3)]]</td>
+                                        <td>[[_getCellData(rowdata.entsprechung, sc3)]]</td>
+                                      </tr>
+                                    </template>
+                                  </tbody>
+                                </table>
+
+                                <div class="layout vertical">
+                                  <template is="dom-if" if="[[!rowdata.entsprechung.found]]">
+                                    <paper-icon-item style="color: #d84646">
+                                      <iron-icon icon="warning" slot="item-icon"></iron-icon>
+                                      <paper-item-body two-line>
+                                        <div>Fall nicht zuordnerbar</div>
+                                        <div secondary style="max-width: 25rem; white-space: normal;">Es konnte kein
+                                          Pächter
+                                          zu diesem Datensatz gefunden werden. Sie können den Fall lediglich löschen.
+                                          Falls
+                                          Sie den Datensatz trotzdem anlegen wollen, müssen die Daten, insbesondere die
+                                          Gartennummer, zuerst unter "Pächter" erfasst worden sein.</div>
+                                      </paper-item-body>
+                                    </paper-icon-item>
                                   </template>
-                                </tbody>
-                              </table>
+                                  <paper-button id="adb[[index]]" class="under_button" bottom raised
+                                    on-click="_postOnePaechter" disabled="[[!rowdata.entsprechung.found]]">Pächterdaten
+                                    übernehmen und nach Pächter verschieben</paper-button>
 
-                              <div class="layout vertical">
-                                <template is="dom-if" if="[[!rowdata.entsprechung.found]]">
-                                  <paper-icon-item style="color: #d84646">
-                                    <iron-icon icon="warning" slot="item-icon"></iron-icon>
-                                    <paper-item-body two-line>
-                                      <div>Fall nicht zuordnerbar</div>
-                                      <div secondary style="max-width: 25rem; white-space: normal;">Es konnte kein
-                                        Pächter
-                                        zu diesem Datensatz gefunden werden. Sie können den Fall lediglich löschen.
-                                        Falls
-                                        Sie den Datensatz trotzdem anlegen wollen, müssen die Daten, insbesondere die
-                                        Gartennummer, zuerst unter "Pächter" erfasst worden sein.</div>
-                                    </paper-item-body>
-                                  </paper-icon-item>
-                                </template>
-                                <paper-button id="adb[[index]]" class="under_button" bottom raised
-                                  on-click="_postOnePaechter" disabled="[[!rowdata.entsprechung.found]]">Pächterdaten
-                                  übernehmen und nach Pächter verschieben</paper-button>
-
-                                <paper-button id="rmb[[_getRowIdValue(rowdata, idKey)]]-[[index]]" class="under_button"
-                                  bottom raised on-click="_confirmRemove">Löschen</paper-button>
+                                  <paper-button id="rmb[[_getRowIdValue(rowdata, idKey)]]-[[index]]"
+                                    class="under_button" bottom raised on-click="_confirmRemove">Löschen</paper-button>
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      </iron-collapse-button>
-                    </td>
-                  </tr>
+                        </iron-collapse-button>
+                      </td>
+                    </tr>
+                  </template>
                 </template>
-              </template>
-            </tbody>
-          </table>
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      </template>
     </div>
-
   </template>
   <script>
     class MyUnklare extends customElements.get('my-tablemask') {

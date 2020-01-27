@@ -126,14 +126,13 @@
 
                     pageSize: {
                         type: Number,
-                        value: null,
-                        notify: true,
-                        observer: 'changePage'
+                        //     value: null,
+                        //     notify: true,
+                        //     observer: 'changePage'
                     },
 
                     _pageStart: {
-                        type: Number,
-                        value: 0
+                        type: Number
                     },
 
                     _loading: {
@@ -222,7 +221,6 @@
                     this.$.firstclient.getAsJSON(dataDomain).then((resp) => {
                         if (resp) {
                             this.processResponse(resp).then((finalData) => {
-                                this.set('pageSize', parseInt(10));
                             });
                         } else {
                             showToast(this, 'Bei der Initialisierung der Seite wurden keine Daten gefunden', TOAST_TYPE.ERROR);
@@ -230,6 +228,8 @@
                     }).catch((err) => {
                         console.log("Fehler beim get fuer " + dataDomain + " kam:" + JSON.stringify(err))
                         showToast(this, 'Die Daten konnten nicht geladen werden', TOAST_TYPE.ERROR);
+                    }).finally(()=>{
+                        this.$.sandhour._closeDialog();
                     })
                 }
             }
@@ -240,8 +240,8 @@
                 return Promise.resolve(resp);
             }
 
-            getAsJSON(fromDomain, id){
-                let readFromDomain = (fromDomain)? fromDomain : ((this.datadomain) ? this.datadomain : this.domainname);
+            getAsJSON(fromDomain, id) {
+                let readFromDomain = (fromDomain) ? fromDomain : ((this.datadomain) ? this.datadomain : this.domainname);
                 return this.$.firstclient.getAsJSON(readFromDomain, id);
             }
 
@@ -281,6 +281,7 @@
 
             _loadColumnConfigThenData() {
                 if (this.selected) {
+                    this.$.sandhour.showDialog();
                     let colConfDomain = (this.columnConfigDomain) ? this.columnConfigDomain : this.domainname;
                     this.$.bclient.getDomaenenColumnConfig(colConfDomain).then((domConf) => {
                         if (!domConf || !domConf.columns || !Array.isArray(domConf.columns)) {
@@ -290,7 +291,6 @@
                                 return (a.th_show && a.postion && !isNaN(a.position) && b.th_show && b.position && !isNaN(b.position) && parseInt(a.position) < parseInt(b.position) ? 1 : -1)
                             })
                             this.set('spaltenConf', domConf);
-                            showToast(this, 'Die Spaltenkonfiguration wurde erfolgreich geladen', TOAST_TYPE.SUCCESS);
                         }
                     }).catch((err) => {
                         this._defaultColumnConf.columns.sort((a, b) => {
@@ -465,15 +465,21 @@
             }
 
             changePage(newv, oldv) {
-                if (this._pageStart || this._pageStart === 0) {
-                    let end = parseInt(this._pageStart) + (parseInt(this.pageSize));
-                    let newItems = this.mvdata.slice(this._pageStart, end);
+                let pSize = this.pageSize;
+                let pStart = this._pageStart;
+                if ('object' === (typeof newv)) {
+                    pSize = parseInt(newv.detail.pagesize)
+                    pStart = parseInt(newv.detail.pagestart)
+                }
+                if (pStart || pStart === 0) {
+                    let end = parseInt(pStart) + (parseInt(pSize));
+                    let newItems = this.mvdata.slice(pStart, end);
                     this.set('mvpagedata', newItems);
                     this.set('openeddetails', [])
                 }
             }
 
-            
+
 
             naturalSorter(as, bs) {
                 let a, b, a1, b1, i = 0, n, L,
@@ -551,7 +557,7 @@
 
             _insertNewMember(e) {
                 let self = this;
-                self.splice('mvdata', self._pageStart, 0, e.detail);
+                self.splice('mvdata', (parseInt(self._pageStart) || 0), 0, e.detail);
             }
 
             _postOne(e) {
