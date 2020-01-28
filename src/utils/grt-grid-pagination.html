@@ -32,7 +32,7 @@ Pagination Element for Vaadin-Grid Tables
                         <<</button> <button id="previous" class$="[[pagebuttonClass]]" on-click="previousPage"
                             disabled="[[_isDisabled('previous', selPage)]]">
                             <</button> </div> <div class="vertically-centered">
-                                <grt-dropdown-input id="ssdd" label="Seite" items="[[_pages]]" display-properties="text"
+                                <grt-dropdown-input id="ssdd" label="Seite" items="[[_pages]]" display-properties="key"
                                     on-iron-select="pageChangedViaBox">
                                 </grt-dropdown-input>
                 </div>
@@ -124,10 +124,10 @@ Pagination Element for Vaadin-Grid Tables
             _pagesChanged() {
                 let self = this;
                 if (self.$.ssdd) {
-                    window.setTimeout(function () {
+                   // window.setTimeout(function () {
                         self.$.ssdd.selectedindex = null;
                         self.$.ssdd.selectedindex = self.selPage - 1;
-                    }, 170);
+                    //}, 170);
                 }
             }
 
@@ -223,7 +223,7 @@ Pagination Element for Vaadin-Grid Tables
                     let ln = Math.ceil(self.datalength / ps);
                     let newpags = [];
                     for (let i = 0; i < ln; i++) {
-                        newpags[i] = { "val": i + 1, "text": ((i + 1) + "_von_" + ln) };
+                        newpags[i] = { "val": i + 1, "key": ((i + 1) + "_von_" + ln) };
                     }
                     self.set('_pages', JSON.parse(JSON.stringify(newpags)));
                     self.updateItemsFromPage(self.selPage);

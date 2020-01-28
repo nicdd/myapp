@@ -7,25 +7,26 @@
 <dom-module id="grt-dropdown-input">
     <template>
         <style include="shared-styles">
-            :host{
+            :host {
                 @apply --paper-input-container;
             }
-            .dropdown-content{
-                overflow-x:hidden;
-            }
-            paper-item{
-                cursor:pointer;
+
+            .dropdown-content {
+                overflow-x: hidden;
             }
 
-            paper-item.hover{
-               background-color: var(--app-primary-light-color);
+            paper-item {
+                cursor: pointer;
             }
 
-            
+            paper-item.hover {
+                background-color: var(--app-primary-light-color);
+            }
         </style>
-        <paper-dropdown-menu disabled="[[disabled]]" label="[[label]]" invalid="[[invalid]]" on-iron-select="_itemSelected" error-message="[[errorMessage]]">
-            <paper-listbox slot="dropdown-content" class="dropdown-content" selected="{{selectedindex}}">
-                <template is="dom-repeat" items="[[items]]">
+        <paper-dropdown-menu disabled="[[disabled]]" label="[[label]]" invalid="[[invalid]]"
+            on-iron-select="_itemSelected" error-message="[[errorMessage]]">
+            <paper-listbox id="listBox" slot="dropdown-content" class="dropdown-content" selected="{{selectedindex}}">
+                <template id="itemTemplate" is="dom-repeat" items="[[items]]">
                     <paper-item>[[_getDisplayText(item)]]</paper-item>
                 </template>
             </paper-listbox>
@@ -40,16 +41,18 @@
 
             static get properties() {
                 return {
-                    items:{
-                        type: Array
+                    items: {
+                        type: Array,
+                        notify: true,
+                        observer: '_itemsChanged'
                     },
-                    label:{
+                    label: {
                         type: String
                     },
-                    disabled:{
+                    disabled: {
                         type: Boolean
                     },
-                    required:{
+                    required: {
                         type: Boolean,
                         value: false
                     },
@@ -58,7 +61,7 @@
                         value: true,
                         notify: true
                     },
-                    selected:{
+                    selected: {
                         type: Object,
                         notify: true
                     },
@@ -77,62 +80,79 @@
                         value: null
                     },
 
-                    errorMessage:{
+                    errorMessage: {
                         type: String,
                         value: null
                     }
                 }
             }
 
-            ready(){
+            ready() {
                 super.ready();
-                let isInvalid= this.selected === undefined;
-                if(this.required === true){
+                let isInvalid = this.selected === undefined;
+                if (this.required === true) {
                     this.set("invalid", isInvalid)
                 } else {
                     this.set("invalid", false);
                 }
 
-                if(!isInvalid){
-                    let preselectedIndex = this.items.findIndex((value)=> value === this.selected);
+                if (!isInvalid) {
+                    let preselectedIndex = this.items.findIndex((value) => value === this.selected);
                     this.set('selectedindex', preselectedIndex);
                 }
             }
 
-            _itemSelected(e){
+            _itemsChanged() {
+                let selected = this.$.listBox.selected;
+                // Clear the selection. If it's still valid, we'll reestablish it below.
+                this.$.listBox.selected = -1;
+                // Do we still have enough items that the current item can stay selected?
+                if (selected < this.items.length) {
+                    // Force an update to the listBox's `items` so when we select an item
+                    // below, it will reflect the new content.
+                    this.$.itemTemplate.render();
+                    this.$.listBox.forceSynchronousItemUpdate();
+                    // Force a refresh of the paper-dropdown-menu's value by reestablishing
+                    // the selection, which will raise the iron-select event with the
+                    // updated value.
+                    this.$.listBox.selected = selected;
+                }
+            }
+
+            _itemSelected(e) {
                 this.set("invalid", false);
                 this.set("selected", this.items[e.target.selected]);
             }
 
-            _getDisplayText(item){
-                if(null === this.displayProperties){
+            _getDisplayText(item) {
+                if (null === this.displayProperties) {
                     return item;
                 } else {
                     let itemTextToDisplay = "";
                     let prarray = [];
-                    if (this.displayProperties.indexOf(",") >= 0){
+                    if (this.displayProperties.indexOf(",") >= 0) {
                         prarray = this.displayProperties.split(",").map(elem => elem.trim());
                     } else {
                         prarray.push(this.displayProperties);
                     }
 
-                    prarray.forEach((property)=>{
-                        if(item[property]){
+                    prarray.forEach((property) => {
+                        if (item[property]) {
                             itemTextToDisplay += item[property];
-                            if(this.separator){
+                            if (this.separator) {
                                 itemTextToDisplay += this.separator;
                             }
                             itemTextToDisplay += " ";
                         }
                     })
                     itemTextToDisplay = itemTextToDisplay.trim();
-                    if(this.separator)
-                    itemTextToDisplay = itemTextToDisplay.substring(0, itemTextToDisplay.length -1);
+                    if (this.separator)
+                        itemTextToDisplay = itemTextToDisplay.substring(0, itemTextToDisplay.length - 1);
                     return itemTextToDisplay;
                 }
             }
 
-            resetItem(invalid){
+            resetItem(invalid) {
                 invalid = invalid || false;
                 this.set("invalid", invalid);
                 this.set("selectedindex", null)
