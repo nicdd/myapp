@@ -2,93 +2,37 @@
 <link rel="import" href="../../bower_components/vaadin-dialog/vaadin-dialog.html">
 <link rel="import" href="../../bower_components/paper-progress-button/paper-progress-button.html">
 
-<dom-module id="grt-sand-clock">
+<dom-module id="grt-sand-clock" theme-for="vaadin-dialog-overlay">
     <template>
         <style include="shared-styles">
-            /* :host {
-                display: inline-block;
-                padding: 3px;
-            } */
-            
-            /* :host(#overlay)[part="overlay"] {
-                border: 3px solid violet !important;
-                padding: 0px !important;
-            }
-            :host(#overlay)[part="overlay"] #content[part="content"] {
-                border: 3px solid violet !important;
-                padding: 0px !important;
-            }
-             */
-
-            vaadin-dialog {
-                
-                --padding: 0px !important;
-            }
-
-            /* x-foo::part(some-box) { ... } */
-
-
-            .mdialog {
-                display: flex;
-                min-width: 12rem !important;
-                min-height: 250px !important;
-                text-align: center !important;
-                vertical-align: middle !important;
-            }
-
-            * {
-                margin: 0 auto;
-                -webkit-user-select: none;
-            }
-
-            body {
-                height: 100vh;
-                width: 100vw;
-                overflow: hidden;
-            }
-
-            .container {
-                width: 100%;
-                height: 100%;
-                overflow: hidden;
-                background-image: linear-gradient(to right top, #c4e4f9, #cde7f8, #d5e9f8, #ddecf7, #e5eff6);
-            }
-
-            #hourglass {
-                margin: auto;
+            :host([theme~="grt-sand-clock"]) [part="content"] {
                 position: absolute;
-                bottom: 0;
-                left: 0;
-                top: 0;
-                right: 0;
-                width: 250px;
-                height: 250px;
-                /* Scaled it cause it looks cuter */
-
-                transform: scale(0.75);
+                overflow-x: hidden;
+                overflow-y: hidden;
+                padding: 0;
             }
 
             #bottom {
-                position: absolute;
-                top: 125px;
-                left: 50px;
-                border-left: 75px solid transparent;
-                border-right: 75px solid transparent;
-                border-bottom: 125px solid #194872;
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                border-left: 50px solid transparent;
+                border-right: 50px solid transparent;
+                border-bottom: 100px solid #194872;
                 animation: flipbottom 5s infinite ease-in-out;
-                transform-origin: 75px 0px;
+                transform-origin: 50px 0px;
                 border-radius: 0rem;
             }
 
             #bottom_two {
-                position: absolute;
-                top: 125px;
-                left: 50px;
-                border-left: 75px solid transparent;
-                border-right: 75px solid transparent;
-                border-bottom: 125px solid #a0c5dd;
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                border-left: 50px solid transparent;
+                border-right: 50px solid transparent;
+                border-bottom: 100px solid #a0c5dd;
                 animation: flipbottom 5s infinite ease-in-out;
-                transform-origin: 75px 0px;
+                transform-origin: 50px 0px;
                 animation-delay: 0.8s;
                 border-radius: 0.2rem;
             }
@@ -140,16 +84,10 @@
             }
         </style>
 
-        <vaadin-dialog id="vdialog" no-close-on-outside-click no-close-on-esc>
+        <vaadin-dialog id="vdialog" theme="grt-sand-clock" no-close-on-outside-click no-close-on-esc>
             <template>
-                <div class="mdialog">
-                    <div class="container">
-                        <div id="hourglass">
-                            <div id="bottom"></div>
-                            <div id="bottom_two"></div>
-                        </div>
-                    </div>
-                </div>
+                <div id="bottom"></div>
+                <div id="bottom_two"></div>
             </template>
         </vaadin-dialog>
     </template>
