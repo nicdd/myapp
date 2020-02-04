@@ -287,15 +287,17 @@
                         if (!domConf || !domConf.columns || !Array.isArray(domConf.columns)) {
                             throw 'nicht gefunden';
                         } else {
-                            domConf.columns.sort((a, b) => {
-                                return (a.th_show && a.postion && !isNaN(a.position) && b.th_show && b.position && !isNaN(b.position) && parseInt(a.position) < parseInt(b.position) ? 1 : -1)
+                            domConf.columns.sort((a, b) =>{
+                                if (!b.th_show || !b.position && isNaN(b.position)) return -1;
+                                else return (a.th_show && !!a.position && !isNaN(a.position) && (parseInt(a.position) < parseInt(b.position))) ? -1 : 1;
                             })
                             this.set('spaltenConf', domConf);
                         }
                     }).catch((err) => {
                         this.$.sandhour._closeDialog();
                         this._defaultColumnConf.columns.sort((a, b) => {
-                            return (a.th_show && a.postion && !isNaN(a.position) && b.th_show && b.position && !isNaN(b.position) && parseInt(a.position) < parseInt(b.position) ? 1 : -1)
+                            if (!b.th_show || !b.position && isNaN(b.position)) return -1;
+                            else return (a.th_show && !!a.position && !isNaN(a.position) && (parseInt(a.position) < parseInt(b.position))) ? -1 : 1;
                         })
                         this.set('spaltenConf', this._defaultColumnConf);
                         showToast(this, 'Keine Spaltenkonfiguration konnte geladen werden, default wird benutzt', TOAST_TYPE.ERROR);
@@ -399,11 +401,9 @@
             _stringsSorter(records, direction, key) {
                 records.sort((a, b) => {
                     if (direction === 'asc') {
-                        if ((a[key] || "").toLowerCase() < (b[key] || "").toLowerCase()) return -1;
-                        if ((a[key] || "").toLowerCase() > (b[key] || "").toLowerCase()) return 1;
+                        return a[key].localeCompare((b[key] || ""))
                     } else {
-                        if ((a[key] || "").toLowerCase() < (b[key] || "").toLowerCase()) return 1;
-                        if ((a[key] || "").toLowerCase() > (b[key] || "").toLowerCase()) return -1;
+                        return b[key].localeCompare((a[key] || ""))
                     }
                     return 0;
                 });
