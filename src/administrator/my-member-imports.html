@@ -18,33 +18,33 @@
     </style>
     
     <ud-stepper id="stepper" vertical linear>
-        <ud-step title="Allgemeine Spaltenkonfiguration" completed="[[stepsCompletion.gencols]]" editable hide-actions>
+        <ud-step title="Allgemeine Spaltenkonfiguration" selected="{{selectedASK}}" completed="[[stepsCompletion.gencols]]" editable hide-actions>
           <div >
-            <general-column-configuration completed="{{stepsCompletion.gencols}}"></general-column-configuration>
+            <general-column-configuration selected="[[_isMaskSelected(selected, selectedASK)]]" completed="{{stepsCompletion.gencols}}"></general-column-configuration>
           </div>
         </ud-step>
         <ud-step title="Pächter importieren" completed="[[stepsCompletion.importingpaechter]]" editable="[[stepsCompletion.gencols]]" 
-        optional="[[stepsCompletion.gencols]]" optional-text="" hide-actions>
+        optional="[[stepsCompletion.gencols]]" optional-text="" hide-actions selected="{{selectedPaechterimport}}">
           <div >
-            <import-paechter completed="{{stepsCompletion.importingpaechter}}"></import-paechter>
+            <import-paechter completed="{{stepsCompletion.importingpaechter}}" selected="[[_isMaskSelected(selected, selectedPaechterimport)]]"></import-paechter>
           </div>
         </ud-step>
         <ud-step title="Versicherte importieren" completed="[[stepsCompletion.importingpaechter]]" editable="[[stepsCompletion.importingpaechter]]" 
-        optional="[[stepsCompletion.importingpaechter]]" optional-text="" hide-actions>
+        optional="[[stepsCompletion.importingpaechter]]" optional-text="" hide-actions selected="{{selectedVersicherteimport}}">
           <div >
-            <import-versicherte completed="{{stepsCompletion.importingversicherte}}"></import-versicherte>
+            <import-versicherte completed="{{stepsCompletion.importingversicherte}}" selected="[[_isMaskSelected(selected, selectedVersicherteimport)]]"></import-versicherte>
           </div>
         </ud-step>
         <ud-step title="Fördermitglieder importieren" completed="[[stepsCompletion.importingfoerdermitglieder]]" editable="[[stepsCompletion.importingpaechter]]" 
-        optional="[[stepsCompletion.gencols]]" optional-text="" hide-actions>
+        optional="[[stepsCompletion.gencols]]" optional-text="" hide-actions selected="{{selectedFMimport}}">
           <div>
-            <import-foerdermitglieder completed="{{stepsCompletion.importingfoerdermitglieder}}"></import-foerdermitglieder>
+            <import-foerdermitglieder completed="{{stepsCompletion.importingfoerdermitglieder}}" selected="[[_isMaskSelected(selected, selectedFMimport)]]"></import-foerdermitglieder>
           </div>
         </ud-step>
         <ud-step title="Allgemeine Tabelle importieren" completed="[[stepsCompletion.importingallgemein]]" editable="[[stepsCompletion.gencols]]" 
-        optional="[[stepsCompletion.gencols]]" optional-text="" hide-actions>
+        optional="[[stepsCompletion.gencols]]" optional-text="" hide-actions selected="{{selectedAllgemeinImport}}">
           <div >
-            <import-allgemein completed="{{stepsCompletion.importingallgemein}}"></import-allgemein>
+            <import-allgemein completed="{{stepsCompletion.importingallgemein}}" selected="[[_isMaskSelected(selected, selectedAllgemeinImport)]]"></import-allgemein>
           </div>
         </ud-step>
         
@@ -57,6 +57,10 @@
       static get is() { return 'my-member-imports'; }
       static get properties() {
         return {
+          //hat nichts mit stepper selected zu tun
+          selected:{
+            type: Boolean
+          },
          stepsCompletion:{
            type: Object,
            value:{
@@ -69,6 +73,10 @@
            notify: true
          }
         };
+      }
+
+      _isMaskSelected(maskSelection, stepperSelection){
+        return !!maskSelection && !!stepperSelection;
       }
 
       static get observers() {

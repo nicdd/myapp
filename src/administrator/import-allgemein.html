@@ -1,3 +1,61 @@
+<!--
+Beschreibung:
+
+Ein Import-Vorgang bedeutet neben der Datenimportierung aus einer CSV-Tabelle auch das Konfigurieren
+der Tabellenspalten.
+
+Vor der Durchführung eines Import-Vorgangs gibt es die folgenden möglichen Ausgangssituationen:
+
+1. - es existiert keine Spaltenkonfiguration und keine Daten für den entsprechenden Bereich (Domäne);
+2. - es existiert eine Spaltenkonfiguration aber keine Daten;
+3. - es existiert keine Spaltenkonfiguration aber die Daten existieren bereits;
+4. - sowohl die Spaltenkonfiguration als auch die Daten sind vorhanden.
+
+In der Auganssituation 1:
+
+Der Benutzer sieht zuerst die Domänenname und den Button "Lokale CSV-Datei importieren".
+Nach der Betätigung des Buttons bzw. Importierung der Daten, wird dem Benutzer die Maske zur 
+Konfigurierung der Tabellenspalten, wobei die Auswahlmöglichkeiten in der Auswahlbox "Entsprechung"
+die aus den Spaltennamen der CSV-Datei bestehen. Dies sichert eine richtige Zurdnung zwischen den 
+importierten und später dargestellten Daten.
+Nach der Vervollständigung der Konfiguration, werden die Daten und die Spaltenkonfiguration gespeichert.
+
+In der Auganssituation 2:
+
+Die vorhandene Spaltenkonfiguration wird noch nicht angezeigt. Der Benutzer muss wie in der Ausganssituation 1
+Daten importieren. Danach wird ihm die vorhandene Spaltenkonfiguration angezeigt, er kann diese bearbeiten. 
+
+In der Auganssituation 3:
+
+Die Felder der Maske für die Spaltenkonfiguration werden angezeigt, diese werden am Anfang allerdings
+nur mit in den technischen Spaltennamen automatisch vervollständigt. Die restlichen Eingaben werden
+durch den Benutzer vorgenommen und anschließend gespeichert.  
+
+In der Auganssituation 4:
+
+Hier könnte die Intention des Benutzers sein, entweder 
+  a. die vorhandenen Daten mit neuen Daten zu überschreiben, oder 
+  b. nur die vorhandene Konfiguration zu bearbeiten.
+
+  Per Radiobuttons enscheidet er sich für eine dieser 2 Optionen.
+
+  Im Falle von "a" wird er in der Ausgangssituation 2 versetzt.
+  
+  Im Falle von "b" wird die Spaltenkonfiguration ohne den Tabellenkopf "Entsprechung" angezeigt.
+  Das Ergebnis der Bearbeitung der Spaltenkonfiguration, darf nicht zur Inkonsistenz zwischen
+  der am Ende der Bearbeitung zu speichernden Spaltenkonf. und den vorhandenen Daten. 
+  Aus diesem Grund wird der Benutzer:
+  
+  b1 - keine der vorhandenen Spalten entfernen dürfen;
+  b3 - an einer vorhandenen Spalte die Optionen "Spaltenname" und "Datentyp" nicht verändern dürfen;
+  b2 - an einer vorhandenen Spalte nur die Optionen "Anzeigen", "Gruppe und Gruppenposition",
+       "Alias" sowie die Rollen-Checkboxen verändern dürfen;
+  b3 - neue Gruppe/-n hinzufügen oder vorhandene löschen;
+  b4 - neue Spalte hinzufügen, wobei die Eintragung in "Spaltenname" nicht bereits vorhanden ist. 
+
+-->
+
+
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/paper-progress-button/paper-progress-button.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
@@ -83,7 +141,8 @@
     <div class="toolbar layout horizontal center-justified" flex>
       <paper-input id="domname" always-float-label minlength="1" maxlength="100" allowed-pattern="^[a-zA-Z0-9]$"
         required auto-validate label="Domänenname" error-message="Pflichteingabe - nur Kleinbuchstaben"
-        on-input="_validateForSNameAliasEntsprechung" value="{{domainname}}" disabled="[[disableDomainNameInput]]"></paper-input>
+        on-input="_validateForSNameAliasEntsprechung" value="{{domainname}}" disabled="[[disableDomainNameInput]]">
+      </paper-input>
       <granite-file-reader disabled="[[domainname.length]]" read-as="dataURL" accept=".csv"
         on-file-read="_doOnFileRead">
         <div class="clickHere">Lokale CSV-Datei importieren</div>
@@ -97,23 +156,23 @@
           </b>
           <div class="layout horizontal">
             <div class="layout horizontal" style="min-width: 70vh;">
-            <div class="cardcontent layout horizontal">
-              <paper-input class="labelgroup" min="1" max="100" always-float-label label="Anzahl der Spalten"
-                type="number" required value="{{tempAnzahlSpalten}}"></paper-input>
-              <paper-button bottom raised
-                disabled="[[_isUebernehmenDisabled(tempAnzahlSpalten, spaltenConf.columns.length)]]"
-                on-click="_addReduceColumns">[[_getUebernehmenButtonName(tempAnzahlSpalten,
-                spaltenConf.columns.length)]]
-              </paper-button>
-            </div>
+              <div class="cardcontent layout horizontal">
+                <paper-input class="labelgroup" min="1" max="100" always-float-label label="Anzahl der Spalten"
+                  type="number" required value="{{tempAnzahlSpalten}}"></paper-input>
+                <paper-button bottom raised
+                  disabled="[[_isUebernehmenDisabled(tempAnzahlSpalten, spaltenConf.columns.length)]]"
+                  on-click="_addReduceColumns">[[_getUebernehmenButtonName(tempAnzahlSpalten,
+                  spaltenConf.columns.length)]]
+                </paper-button>
+              </div>
 
-            <div class="layout horizontal">
-              <paper-input class="labelgroup" always-float-label label="Neue Spaltengruppe" value="{{lastNewGroup}}">
-              </paper-input>
-              <paper-button bottom raised disabled="[[!lastNewGroup]]" on-click="_addNewColumnGroup">hinzufügen
-              </paper-button>
+              <div class="layout horizontal">
+                <paper-input class="labelgroup" always-float-label label="Neue Spaltengruppe" value="{{lastNewGroup}}">
+                </paper-input>
+                <paper-button bottom raised disabled="[[!lastNewGroup]]" on-click="_addNewColumnGroup">hinzufügen
+                </paper-button>
+              </div>
             </div>
-          </div>
 
             <div class="cardcontent">
               <template is="dom-repeat" items="[[spaltenConf.column_groups]]">
@@ -143,8 +202,10 @@
               <th class="contentcol" title="Technischer Spaltenname für die Datenbanktabelle">Spaltenname</th>
               <th class="contentcol" title="Erforderlicher Hinweis für die technische Verarbeitung">Datentyp</th>
               <th class="contentcol" title="So wird diese Spalte in der Maske aussehen">Alias</th>
-              <th class="contentcol" title="Die Entsprechung in der zu importierenden Tabelle">Entsprechung
-                Import</th>
+              <template is="dom-if" if="[[secondColumns.length]]">
+                <th class="contentcol" title="Die Entsprechung in der zu importierenden Tabelle">Entsprechung
+                  Import</th>
+              </template>
               <th class="contentcol" title="Darf für den Pächter-Bereich verfügbar sein">Pächter</th>
               <th class="contentcol" title="Darf für den Versicherungs-Bereich verfügbar sein">Versicherung</th>
               <th class="contentcol" title="Darf für den FM-Bereich verfügbar sein">F-Mitglieder</th>
@@ -189,19 +250,24 @@
                     </paper-input>
                   </td>
                   <td class="contentcol">
-                    <grt-dropdown-input id="ctp[[index]]" items='["number","numberstring","string","longstring","object","boolean", "date"]' required selected="{{item.coltype}}"
-                       on-iron-select="validate" error-message="Eingabe erfolrderlich"></grt-dropdown-input>
+                    <grt-dropdown-input id="ctp[[index]]"
+                      items='["number","numberstring","string","longstring","object","boolean", "date"]' required
+                      selected="{{item.coltype}}" on-iron-select="validate" error-message="Eingabe erfolrderlich">
+                    </grt-dropdown-input>
                   </td>
                   <td class="contentcol">
                     <paper-input id="als[[index]]" on-input="_validateForSNameAliasEntsprechung" value="{{item.alias}}"
                       auto-validate allowed-pattern="^[a-zA-Z0-9 äöüß-]$" required
                       error-message="Das Feld muss einen Spaltennamen enthalten"></paper-input>
                   </td>
-                  <td class="contentcol">
-                    <grt-dropdown-input id="ctp[[index]]" items="[[secondColumns]]" selected="{{entPaars.index.right}}"
-                      on-iron-select="_doOnSelect" required error-message="Pflichtauswahl oder **Keine**">
-                    </grt-dropdown-input>
-                  </td>
+                  <template is="dom-if" if="[[secondColumns.length]]">
+                    <td class="contentcol">
+                      <grt-dropdown-input id="ctp[[index]]" items="[[secondColumns]]"
+                        selected="{{entPaars.index.right}}" on-iron-select="_doOnSelect" required
+                        error-message="Pflichtauswahl oder **Keine**">
+                      </grt-dropdown-input>
+                    </td>
+                  </template>
                   <td class="contentcol">
                     <paper-checkbox id="cbp[[index]]" checked="[[_hasRole('paechter', item)]]"
                       on-change="_doOnCbChecked" disabled="[[_isCBDisabled('paechter')]]">
@@ -229,9 +295,8 @@
             </tbody>
           </table>
         </div>
-        isdiasbled: [[_isDisabled(formInvalid, anzeigeOptsInvalid)]] formInvalid [[formInvalid]] anzeigeOptsInvalid [[anzeigeOptsInvalid]]
-        <paper-button  on-click="_mergeImportedAndSave">
-          Weiter</paper-button>
+        <paper-button on-click="_mergeImportedAndSave">
+          [[_getText(spaltenConf.*, dataAndColumns.*)]]</paper-button>
       </div>
     </template>
 
@@ -244,13 +309,18 @@
       static get properties() {
         return {
 
+          selected: {
+            type: Boolean,
+            observer: "_selectedChanged"
+          },
+
           domainname: {
             type: String,
           },
 
-          disableDomainNameInput:{
+          disableDomainNameInput: {
             type: Boolean,
-          }, 
+          },
 
           tempAnzahlSpalten: {
             type: Number,
@@ -313,7 +383,7 @@
 
           _defaultColumnConf: {
             type: Object,
-            value: {column_groups:[], columns: [{ "colname": "GARTENNUMMER", "coltype": "string", "alias": "GNr", "rolen": ["paechter", "versicherung"] }, { "colname": "ANREDE", "coltype": "string", "alias": "Anrede", "rolen": ["paechter", "versicherung"] }, { "colname": "NACHNAME", "coltype": "string", "alias": "Nachname", "rolen": ["paechter", "versicherung"] }, { "colname": "VORNAME", "coltype": "string", "alias": "Vorname", "rolen": ["paechter", "versicherung"] }, { "colname": "STRASSE", "coltype": "string", "alias": "Strasse", "rolen": ["paechter", "versicherung"] }, { "colname": "PLZ", "coltype": "string", "alias": "PLZ", "rolen": ["paechter", "versicherung"] }, { "colname": "WOHNORT", "coltype": "string", "alias": "Wohnort", "rolen": ["paechter", "versicherung"] }, { "colname": "TELEFON", "coltype": "string", "alias": "Telefon", "rolen": ["paechter", "versicherung"] }, { "colname": "WEG", "coltype": "string", "alias": "Weg", "rolen": ["paechter", "versicherung"] }, { "colname": "FLAECHE", "coltype": "string", "alias": "Fläche", "rolen": ["paechter", "versicherung"] }, { "colname": "GEBURTSDATUM", "coltype": "string", "alias": "Geburtsdatum", "rolen": ["paechter"] }, { "colname": "EMAIL", "coltype": "string", "alias": "E-Mail", "rolen": ["paechter", "versicherung"] }, { "colname": "BEMERKUNGEN", "coltype": "string", "alias": "Bemerkung (P)", "rolen": ["paechter"] }, { "colname": "V_BEMERKUNG", "coltype": "string", "alias": "Bemerkung (V)", "rolen": ["versicherung"] }, { "colname": "GBV", "coltype": "number", "alias": "GBV", "rolen": ["versicherung"] }, { "colname": "FED", "coltype": "number", "alias": "FED", "rolen": ["versicherung"] }, { "colname": "HOEV", "coltype": "number", "alias": "HöV", "rolen": ["versicherung"] }, { "colname": "A7_1", "coltype": "number", "alias": "Solar", "rolen": ["versicherung"] }, { "colname": "A7_3", "coltype": "string", "alias": "SA", "rolen": ["versicherung"] }, { "colname": "A7_4", "coltype": "number", "alias": "GS", "rolen": ["versicherung"] }, { "colname": "UV", "coltype": "number", "alias": "Unfall", "rolen": ["versicherung"] }, { "colname": "BEITRAG", "coltype": "number", "alias": "Beitrag", "rolen": ["versicherung"] }]}
+            value: { column_groups: [], columns: [{ "colname": "GARTENNUMMER", "coltype": "string", "alias": "GNr", "rolen": ["paechter", "versicherung"] }, { "colname": "ANREDE", "coltype": "string", "alias": "Anrede", "rolen": ["paechter", "versicherung"] }, { "colname": "NACHNAME", "coltype": "string", "alias": "Nachname", "rolen": ["paechter", "versicherung"] }, { "colname": "VORNAME", "coltype": "string", "alias": "Vorname", "rolen": ["paechter", "versicherung"] }, { "colname": "STRASSE", "coltype": "string", "alias": "Strasse", "rolen": ["paechter", "versicherung"] }, { "colname": "PLZ", "coltype": "string", "alias": "PLZ", "rolen": ["paechter", "versicherung"] }, { "colname": "WOHNORT", "coltype": "string", "alias": "Wohnort", "rolen": ["paechter", "versicherung"] }, { "colname": "TELEFON", "coltype": "string", "alias": "Telefon", "rolen": ["paechter", "versicherung"] }, { "colname": "WEG", "coltype": "string", "alias": "Weg", "rolen": ["paechter", "versicherung"] }, { "colname": "FLAECHE", "coltype": "string", "alias": "Fläche", "rolen": ["paechter", "versicherung"] }, { "colname": "GEBURTSDATUM", "coltype": "string", "alias": "Geburtsdatum", "rolen": ["paechter"] }, { "colname": "EMAIL", "coltype": "string", "alias": "E-Mail", "rolen": ["paechter", "versicherung"] }, { "colname": "BEMERKUNGEN", "coltype": "string", "alias": "Bemerkung (P)", "rolen": ["paechter"] }, { "colname": "V_BEMERKUNG", "coltype": "string", "alias": "Bemerkung (V)", "rolen": ["versicherung"] }, { "colname": "GBV", "coltype": "number", "alias": "GBV", "rolen": ["versicherung"] }, { "colname": "FED", "coltype": "number", "alias": "FED", "rolen": ["versicherung"] }, { "colname": "HOEV", "coltype": "number", "alias": "HöV", "rolen": ["versicherung"] }, { "colname": "A7_1", "coltype": "number", "alias": "Solar", "rolen": ["versicherung"] }, { "colname": "A7_3", "coltype": "string", "alias": "SA", "rolen": ["versicherung"] }, { "colname": "A7_4", "coltype": "number", "alias": "GS", "rolen": ["versicherung"] }, { "colname": "UV", "coltype": "number", "alias": "Unfall", "rolen": ["versicherung"] }, { "colname": "BEITRAG", "coltype": "number", "alias": "Beitrag", "rolen": ["versicherung"] }] }
           },
 
           lastNewGroup: {
@@ -324,6 +394,19 @@
 
       static get observers() {
         return ['_bothValidations(spaltenConf.columns.length, entPaars.length)'];
+      }
+
+      _selectedChanged(newV, oldV) {
+        if (newV) {
+          this._tryThisColumnConfig().then((conf) => {
+            if (conf && conf.columns && Array.isArray(conf.columns)) {
+              conf.columns = this._checkForMustColumns(conf.columns);
+              let anzC = conf.columns.length;
+              this.set('tempAnzahlSpalten', anzC)
+              this.set('spaltenConf', conf);
+            }
+          })
+        }
       }
 
       _addNewColumnGroup() {
@@ -419,40 +502,39 @@
             }
             finalArray.push(thirdArray);
           })
-          
+
           this._importLocalMemberPressed(finalArray);
         }
       }
 
-      _tryThisColumnConfig(){
-        return this.$.bclient.getDomaenenColumnConfig(this.domainname);
+      _tryThisColumnConfig() {
+        return this.$.bclient.getDomaenenColumnConfig(this.domainname).then((domConf) => {
+          showToast(this, 'Die domänenspezifische Spaltenkonfiguration wurde erfolgreich geladen', TOAST_TYPE.SUCCESS);
+          return domConf;
+        }).catch((err) => {
+          showToast(this, 'Die domänenspezifische Spaltenkonfiguration konnte nicht geladen werden, die allgemeine Spaltenkofiguration wird benutzt', TOAST_TYPE.WARN);
+          return this.$.bclient.getDomaenenColumnConfig('general').then((generalConf) => {
+            if (Array.isArray(generalConf)) {
+              return { "columns": generalConf, "column_groups": [] }
+            } else return generalConf;
+          }).catch((err) => {
+            showToast(this, 'Keine Spaltenkonfigurationnn konnte geladen werden. Default wird benutzt.', TOAST_TYPE.WARN);
+            return this._defaultColumnConf;
+          })
+        })
       }
 
       _importLocalMemberPressed(localMemberFromCSVAsArray) {
         this._tryThisColumnConfig().then((domConf) => {
           if (!domConf) {
+            showToast(this, 'Keine Spaltenkonfigurationnn konnte geladen werden', TOAST_TYPE.ERROR);
             throw 'nicht gefunden';
           } else {
             this._initData(domConf, localMemberFromCSVAsArray);
-            showToast(this, 'Die domänenspezifische Spaltenkonfiguration wurde erfolgreich geladen', TOAST_TYPE.SUCCESS);
           }
-
-        }).catch((err) => {
-          showToast(this, 'Die domänenspezifische Spaltenkonfiguration konnte nicht geladen werden, die allgemeine Spaltenkofiguration wird benutzt', TOAST_TYPE.WARN);
-          this.$.bclient.getDomaenenColumnConfig('general').then((generalConf) => {
-            if (!generalConf) {
-              throw 'nicht gefunden';
-            } else {
-              this._initData(generalConf, localMemberFromCSVAsArray);
-              showToast(this, 'Die allgemeine Spaltenkonfiguration wurde erfolgreich geladen', TOAST_TYPE.SUCCESS);
-            }
-          }).catch((err) => {
-            showToast(this, 'Keine Spaltenkonfigurationnn konnte geladen werden', TOAST_TYPE.ERROR);
-            this._initData(this._defaultColumnConf, localMemberFromCSVAsArray);
-          })
-        }).finally(() => {
           let anzSpElem = this.shadowRoot.getElementById('domname');
           anzSpElem.scrollIntoView({ behavior: "smooth" });
+
         })
       }
 
@@ -510,34 +592,41 @@
       // Speichern
 
       _mergeImportedAndSave() {
-        
-        let data = JSON.parse(JSON.stringify(this.dataAndColumns.data));
-        let newData = [];
-        data.forEach((memberData) => {
-          let newMember = new Member(this.entPaars);
-          Object.keys(memberData).forEach((key) => {
-            let correspondingPaar = this.entPaars.find((p) => p.right === key);
-            if (correspondingPaar) {
-              newMember[correspondingPaar.left] = memberData[key];
-            }
+        if (!this.dataAndColumns) {
+          this._saveSpaltenConfig();
+        } else {
+          let data = JSON.parse(JSON.stringify(this.dataAndColumns.data));
+          let newData = [];
+          data.forEach((memberData) => {
+            let newMember = new Member(this.entPaars);
+            Object.keys(memberData).forEach((key) => {
+              let correspondingPaar = this.entPaars.find((p) => p.right === key);
+              if (correspondingPaar) {
+                newMember[correspondingPaar.left] = memberData[key];
+              }
+            })
+            newMember = this._checkDataForMustContent(newMember);
+            newData.push(newMember);
           })
-          newMember = this._checkDataForMustContent(newMember);
-          newData.push(newMember);
-        })
-        newData = this._makeUnicIds(newData);
-        this.saveToDB(newData).then(() => {
-          showToast(this, 'Sie haben die Daten erfolgreich importiert.', TOAST_TYPE.SUCCESS);
-          this.set('completed', true)
-        }).catch(() => {
-          this.set('completed', false)
-          showToast(this, 'Fehler bei der Übertragung der importierten Daten in die Datenbank.', TOAST_TYPE.ERROR);
-        }).finally(() => {
-          this.$.bclient.postDomaenenColumnConfig(this.spaltenConf, this.domainname).then(() => {
-            showToast(this, 'Die Konfiguration der Spalten für die Domäne' + this.domainname + 'wurde erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
+          newData = this._makeUnicIds(newData);
+          this.saveToDB(newData).then(() => {
+            showToast(this, 'Sie haben die Daten erfolgreich importiert.', TOAST_TYPE.SUCCESS);
+            this.set('completed', true)
           }).catch(() => {
-            showToast(this, 'Fehler bei der Speicherung der Spaltenkonfiguration für die Domäne ' + this.domainname, TOAST_TYPE.ERROR);
-          });
-        })
+            this.set('completed', false)
+            showToast(this, 'Fehler bei der Übertragung der importierten Daten in die Datenbank.', TOAST_TYPE.ERROR);
+          }).finally(() => {
+            this._saveSpaltenConfig();
+          })
+        }
+      }
+
+      _saveSpaltenConfig() {
+        this.$.bclient.postDomaenenColumnConfig(this.spaltenConf, this.domainname).then(() => {
+          showToast(this, 'Die Konfiguration der Spalten für die Domäne' + this.domainname + 'wurde erfolgreich gespeichert', TOAST_TYPE.SUCCESS);
+        }).catch(() => {
+          showToast(this, 'Fehler bei der Speicherung der Spaltenkonfiguration für die Domäne ' + this.domainname, TOAST_TYPE.ERROR);
+        });
       }
 
       _checkDataForMustContent(newMember) {
@@ -789,7 +878,7 @@
         return item.rolen && Array.isArray(item.rolen) && item.rolen.indexOf(rolename) >= 0;
       }
 
-      _isCBDisabled(cbrolle){
+      _isCBDisabled(cbrolle) {
         return cbrolle !== this.domainname;
       }
 
@@ -808,10 +897,12 @@
       }
 
       _getMaxLengthGroupPos(idx, position, gruppe) {
+        let toReturn = 999;
+
         let allDDWithThisValue = this.spaltenConf.columns.filter((el) => {
           return el.gruppe === gruppe;
         });
-        let toReturn = 999;
+
         // Trick um die Feldinvalidierung bei Eingaben über die Anzahl der Spalten zu erzwingen
         if (position > allDDWithThisValue.length || !this.spaltenConf.column_groups.some((gr) => gr === gruppe)) {
           toReturn = 0;
@@ -824,6 +915,7 @@
           gosElem.setAttribute('maxlength', toReturn);
           gosElem.validate();
         }
+
         return toReturn;
       }
 
@@ -845,6 +937,14 @@
         } else {
           return false;
         }
+      }
+
+      _getText(){
+        if (!!this.dataAndColumns){
+          return "Neue Daten und Spaltenkonfiguration Speichern";
+        } else if (!!this.spaltenConf){
+          return "Spaltenkonfiguration Speichern";
+        } else return "Weiter"
       }
 
 
