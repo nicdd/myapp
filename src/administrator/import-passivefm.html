@@ -1,0 +1,20 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="import-foerdermitglieder.html">
+
+<dom-module id="import-passivefm">
+  <script>
+    class ImportPassivefm extends customElements.get('import-foerdermitglieder') {
+      static get is() { return 'import-passivefm'; }
+      
+
+      ready() {
+        super.ready();
+        this.set('domainname', 'passivefm');
+        this.set('disableDomainNameInput', true);
+      }
+
+    }
+
+    window.customElements.define(ImportPassivefm.is, ImportPassivefm);
+  </script>
+</dom-module>

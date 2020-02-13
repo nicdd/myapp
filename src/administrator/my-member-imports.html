@@ -6,6 +6,7 @@
 <link rel="import" href="../administrator/import-paechter.html">
 <link rel="import" href="../administrator/import-versicherte.html">
 <link rel="import" href="../administrator/import-foerdermitglieder.html">
+<link rel="import" href="../administrator/import-passivefm.html">
 <link rel="import" href="../administrator/import-allgemein.html">
 
 <dom-module id="my-member-imports">
@@ -40,6 +41,12 @@
             <import-foerdermitglieder completed="{{stepsCompletion.importingfoerdermitglieder}}" selected="[[_isMaskSelected(selected, selectedFMimport)]]"></import-foerdermitglieder>
           </div>
         </ud-step>
+        <ud-step title="Passive Fördermitglieder importieren" completed="[[stepsCompletion.importingpassivefm]]" editable="[[stepsCompletion.importingpaechter]]" 
+        optional="[[stepsCompletion.gencols]]" optional-text="" hide-actions selected="{{selectedPFMimport}}">
+          <div>
+            <import-passivefm completed="{{stepsCompletion.importingpassivefm}}" selected="[[_isMaskSelected(selected, selectedPFMimport)]]"></import-passivefm>
+          </div>
+        </ud-step>
         <ud-step title="Allgemeine Tabelle importieren" completed="[[stepsCompletion.importingallgemein]]" editable="[[stepsCompletion.gencols]]" 
         optional="[[stepsCompletion.gencols]]" optional-text="" hide-actions selected="{{selectedAllgemeinImport}}">
           <div >
@@ -67,6 +74,7 @@
              importingpaechter: false,
              importingversicherte: true,
              importingfoerdermitglieder: false,
+             importingpassivefm: false,
              importingallgemein: false
            },
            notify: true

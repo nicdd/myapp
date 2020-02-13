@@ -509,6 +509,9 @@ Hier könnte die Intention des Benutzers sein, entweder
 
       _tryThisColumnConfig() {
         return this.$.bclient.getDomaenenColumnConfig(this.domainname).then((domConf) => {
+          if (!domConf) {
+            throw 'nicht gefunden';
+          } else
           showToast(this, 'Die domänenspezifische Spaltenkonfiguration wurde erfolgreich geladen', TOAST_TYPE.SUCCESS);
           return domConf;
         }).catch((err) => {
